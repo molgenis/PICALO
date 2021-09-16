@@ -1,7 +1,7 @@
 """
 File:         logger.py
 Created:      2020/10/16
-Last Changed:
+Last Changed: 2021/09/15
 Author(s):    M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -29,31 +29,46 @@ import os
 
 
 class Logger:
-    def __init__(self, outdir, clear_log=False):
+    def __init__(self, outdir, verbose=False, clear_log=False):
         self.logfile = os.path.join(outdir, "log.log")
+        self.verbose = verbose
+        self.level = logging.INFO
+        if verbose:
+            self.level = logging.DEBUG
 
         if clear_log:
             self.clear_logfile()
 
-        self.logger = self.set_logger(self.logfile)
+        self.logger = self.set_logger()
 
     def clear_logfile(self):
         if os.path.exists(self.logfile) and os.path.isfile(self.logfile):
             os.remove(self.logfile)
 
-    @staticmethod
-    def set_logger(logfile):
+    def set_logger(self):
+        # Construct stream handler.
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(self.level)
+        stream_handler.setFormatter(logging.Formatter('%(asctime)s  [%(levelname)-4.4s]  %(message)s', "%H:%M:%S"))
+
+        # Construct file handler.
+        file_handler = logging.FileHandler(self.logfile)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s  %(module)-16s %(levelname)-8s %(message)s', "%Y-%m-%d %H:%M:%S"))
+
+        # Construct logger object.
         logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s "
-                   "[%(levelname)-4.4s]  "
-                   "%(message)s",
-            handlers=[logging.StreamHandler(), logging.FileHandler(logfile)])
+            level=logging.DEBUG,
+            handlers=[stream_handler, file_handler])
 
         return logging.getLogger(__name__)
 
     def get_logger(self):
         return self.logger
 
-    def get_logfile(self):
-        return self.logfile
+    def print_arguments(self):
+        self.logger.info("Arguments:")
+        self.logger.info("  > Logfile: {}".format(self.logfile))
+        self.logger.info("  > Verbose: {}".format(self.verbose))
+        self.logger.info("  > Level: {}".format(self.level))
+        self.logger.info("")

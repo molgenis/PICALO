@@ -3,7 +3,7 @@
 """
 File:         decon_optimizer.py
 Created:      2020/11/16
-Last Changed: 2021/07/28
+Last Changed: 2021/09/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -64,8 +64,10 @@ if __name__ == '__main__':
     IEQTL_ALPHA = CLA.get_argument('ieqtl_alpha')
     MAF = CLA.get_argument('minor_allele_frequency')
     MGS = CLA.get_argument('min_group_size')
+    TOL = CLA.get_argument('tol')
     N_COMPONENTS = CLA.get_argument('n_components')
-    N_ITERATIONS = CLA.get_argument('n_iterations')
+    MAX_ITER = CLA.get_argument('max_iter')
+    VERBOSE = CLA.get_argument('verbose')
     OUTDIR = CLA.get_argument('outdir')
 
     # Start the program.
@@ -81,8 +83,10 @@ if __name__ == '__main__':
                    ieqtl_alpha=IEQTL_ALPHA,
                    maf=MAF,
                    mgs=MGS,
+                   tol=TOL,
                    n_components=N_COMPONENTS,
-                   n_iterations=N_ITERATIONS,
+                   max_iter=MAX_ITER,
+                   verbose=VERBOSE,
                    outdir=OUTDIR
                    )
     PROGRAM.start()

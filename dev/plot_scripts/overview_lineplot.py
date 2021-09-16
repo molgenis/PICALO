@@ -112,61 +112,47 @@ class main():
     def start(self):
         self.print_arguments()
 
-        comp_dict = {}
-        n_ieqtls_df = pd.DataFrame(np.nan, index=["iteration{}".format(x) for x in range(100)], columns=["index"])
-        n_ieqtls_df["index"] = np.arange(1, (n_ieqtls_df.shape[0] + 1))
-        rss_df = pd.DataFrame(np.nan, index=["iteration{}".format(x) for x in range(100)], columns=["index"])
-        rss_df["index"] = np.arange(1, (rss_df.shape[0] + 1))
-        eucl_dist_df = pd.DataFrame(np.nan, index=["iteration{}".format(x) for x in range(100)], columns=["index"])
-        eucl_dist_df["index"] = np.arange(1, (eucl_dist_df.shape[0] + 1))
+        print("Loading data")
+        info_dict = {}
+        df_m_list = []
         for i in range(1, 11):
             fpath = os.path.join(self.input_directory, "PIC{}".format(i), "info_df.txt.gz")
             if os.path.exists(fpath):
                 df = self.load_file(fpath, header=0, index_col=0)
-                print(df)
 
-                comp_dict["PIC{}".format(i)] = df.loc["iteration0", "covariate"]
+                info_dict["PIC{}".format(i)] = df.loc["iteration0", "covariate"]
 
-                n_ieqtls = df[["N"]]
-                n_ieqtls.columns = ["PIC{}".format(i)]
-                n_ieqtls_df = n_ieqtls_df.merge(n_ieqtls, left_index=True, right_index=True, how="left")
+                df["index"] = np.arange(1, (df.shape[0] + 1))
+                df["component"] = "PIC{}".format(i)
+                df_m = df.melt(id_vars=["index", "covariate", "component"])
+                df_m_list.append(df_m)
 
-                eucl_dist = df[["Euclidean distance"]]
-                eucl_dist.columns = ["PIC{}".format(i)]
-                eucl_dist_df = eucl_dist_df.merge(eucl_dist, left_index=True, right_index=True, how="left")
+        print("Merging data")
+        df_m = pd.concat(df_m_list, axis=0)
+        df_m["log10 value"] = np.log10(df_m["value"])
 
-                rss = np.log10(df[["RSS"]])
-                rss.columns = ["PIC{}".format(i)]
-                rss_df = rss_df.merge(rss, left_index=True, right_index=True, how="left")
+        print("Plotting")
+        for variable in df_m["variable"].unique():
+            print("\t{}".format(variable))
 
-        print(n_ieqtls_df)
-        print(eucl_dist_df)
-        print(rss_df)
-        print(comp_dict)
+            subset_m = df_m.loc[df_m["variable"] == variable, :]
+            if variable == "Overlap %":
+                subset_m = subset_m.loc[subset_m["index"] != 1, :]
 
-        n_ieqtl_df_m = n_ieqtls_df.melt(id_vars=["index"])
-        self.lineplot(df_m=n_ieqtl_df_m, x="index", y="value", hue="variable",
-                      style=None, palette=self.palette,
-                      title="N ieQTLs per iteration", xlabel="iteration",
-                      ylabel="n ieQTLs", filename="ieQTL_counts",
-                      info=comp_dict,
-                      outdir=self.outdir)
+            self.lineplot(df_m=subset_m, x="index", y="value", hue="component",
+                          style=None, palette=self.palette,
+                          xlabel="iteration", ylabel=variable,
+                          filename=variable.replace(" ", "_").lower(),
+                          info=info_dict,
+                          outdir=self.outdir)
 
-        eucl_dist_df_m = eucl_dist_df.melt(id_vars=["index"])
-        self.lineplot(df_m=eucl_dist_df_m, x="index", y="value", hue="variable",
-                      style=None, palette=self.palette,
-                      title="Eucledian distance between vector\nbefore and after iteration", xlabel="iteration",
-                      ylabel="Eucledian distance", filename="ieQTL_eucl_dist_comps",
-                      info=comp_dict,
-                      outdir=self.outdir)
-
-        rss_df_m = rss_df.melt(id_vars=["index"])
-        self.lineplot(df_m=rss_df_m, x="index", y="value", hue="variable",
-                      style=None, palette=self.palette,
-                      title="RSS between vector\nbefore and after iteration", xlabel="iteration",
-                      ylabel="RSS", filename="ieQTL_rss_comps",
-                      info=comp_dict,
-                      outdir=self.outdir)
+            if "Likelihood" in variable:
+                self.lineplot(df_m=subset_m, x="index", y="log10 value", hue="component",
+                              style=None, palette=self.palette,
+                              xlabel="iteration", ylabel="log10 " + variable,
+                              filename="log10_" + variable.replace(" ", "_").lower(),
+                              info=info_dict,
+                              outdir=self.outdir)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,

@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/07/13
+Last Changed: 2021/09/16
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -19,6 +19,10 @@ GNU General Public License for more details.
 A copy of the GNU General Public License can be found in the LICENSE file in the
 root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 """
+
+# Standard imports.
+import math
+import time
 
 # Third party imports.
 from scipy.special import betainc
@@ -51,7 +55,8 @@ def calc_ols_rsquared(m, idx):
 
 
 def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
-                      include_intercept=False, include_inter_as_covariate=False):
+                      include_intercept=False, include_inter_as_covariate=False,
+                      log=None):
     if X_m is None and X_inter_m is None:
         return y_m
     if X_inter_m is not None and inter_m is None:
@@ -89,7 +94,18 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
 
     # Loop over expression rows.
     y_m_corrected = np.empty_like(y_m, dtype=np.float64)
-    for i in range(y_m.shape[0]):
+    last_print_time = None
+    n_rows = y_m.shape[0]
+    for i in range(n_rows):
+        # Update user on progress.
+        now_time = int(time.time())
+        if log is not None and (last_print_time is None or (now_time - last_print_time) >= 30 or i == (n_rows - 1)):
+            log.debug("\t\t{:,}/{:,} rows processed [{:.2f}%]".format(i,
+                                                                      (n_rows - 1),
+                                                                      (100 / (n_rows - 1)) * i))
+            last_print_time = now_time
+
+        # Initialize the correction matrix.
         X = None
 
         # Add the covariates without interaction.
@@ -110,7 +126,7 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
                 X = np.hstack((X, inter_a))
 
         X = summarize_matrix(X)
-        y_m_corrected[i, :] = calc_residuals(X=X, y=y_m[i, :])
+        y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
 
     return y_m_corrected
 
@@ -151,7 +167,7 @@ def remove_interaction_covariates(y_m, X_m, inter_m,
         if include_intercept:
             X = np.hstack((np.ones((X.shape[0], 1)), X))
 
-        y_m_corrected[i, :] = calc_residuals(X=X, y=y_m[i, :])
+        y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
 
     return y_m_corrected
 
@@ -169,7 +185,7 @@ def remove_covariates_elementwise(y_m, X_m, a=None,
         if include_intercept:
             X = np.hstack((np.ones((X.shape[0], 1)), X))
 
-        y_m_corrected[i, :] = calc_residuals(X=X, y=y_m[i, :])
+        y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
 
     return y_m_corrected
 
@@ -197,18 +213,14 @@ def fit_and_predict(X, y):
     return predict(X=X, betas=fit(X=X, y=y))
 
 
-def calc_residuals(X, y):
-    y_hat = fit_and_predict(X=X, y=y)
+def calc_residuals(y, y_hat):
     return y - y_hat
 
 
-def calc_rss(y, y_hat, sum=True):
-    res = y - y_hat
+def calc_rss(y, y_hat):
+    res = calc_residuals(y=y, y_hat=y_hat)
     res_squared = res * res
-    if sum:
-        return np.sum(res_squared)
-    else:
-        return res_squared
+    return np.sum(res_squared)
 
 
 def calc_std(rss, n, df, inv_m):
@@ -250,5 +262,12 @@ def calc_pearsonr(x, y):
     return dev_sum / np.sqrt(x_rss * y_rss)
 
 
-def calc_eucledian_distance(x, y):
-    return np.linalg.norm(x - y)
+def calc_regression_log_likelihood(residuals):
+    """
+    https://www.stat.cmu.edu/~cshalizi/mreg/15/lectures/06/lecture-06.pdf
+
+    this boils down to np.sum(stats.norm.logpdf(residuals, 0.0, np.std(residuals)))
+    """
+    n = np.size(residuals)
+    s = np.std(residuals)
+    return -(n / 2) * math.log(2 * math.pi) - n * math.log(s) - (1 / (2 * s ** 2)) * np.sum(residuals ** 2)

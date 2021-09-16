@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/08/30
+Last Changed: 2021/09/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -33,7 +33,7 @@ import numpy as np
 from src.logger import Logger
 from src.force_normaliser import ForceNormaliser
 from src.objects.data import Data
-from src.interaction_optimizer import InteractionOptimizer
+from src.inter_optimizer import InteractionOptimizer
 from src.statistics import remove_covariates, fit_and_predict
 from src.utilities import save_dataframe
 
@@ -41,16 +41,17 @@ from src.utilities import save_dataframe
 class Main:
     def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
                  tech_covariate_path, tech_covariate_with_inter_path,
-                 covariate_path, sample_dataset_path, eqtl_alpha, ieqtl_alpha, maf,
-                 mgs, n_components, n_iterations, outdir):
+                 covariate_path, sample_dataset_path, eqtl_alpha, ieqtl_alpha,
+                 maf, mgs, tol, n_components, max_iter, verbose, outdir):
         # Safe arguments.
         self.genotype_na = genotype_na
         self.eqtl_alpha = eqtl_alpha
         self.ieqtl_alpha = ieqtl_alpha
         self.maf = maf
         self.mgs = mgs
+        self.tol = tol
         self.n_components = n_components
-        self.n_iterations = n_iterations
+        self.max_iter = max_iter
 
         # Define the current directory.
         current_dir = str(Path(__file__).parent.parent)
@@ -61,7 +62,10 @@ class Main:
             os.makedirs(self.outdir)
 
         # Initialize logger.
-        logger = Logger(outdir=self.outdir, clear_log=True)
+        logger = Logger(outdir=self.outdir,
+                        verbose=verbose,
+                        clear_log=True)
+        logger.print_arguments()
         self.log = logger.get_logger()
 
         # Initialize data object.
@@ -140,7 +144,7 @@ class Main:
 
         # Check for nan values.
         if covs_df.isna().values.sum() > 0:
-            print("\t  Covariate file contains nan values.")
+            self.log.error("\t  Covariate file contains nan values.")
             exit()
 
         # Transpose if need be.
@@ -212,12 +216,13 @@ class Main:
 
         self.log.info("Starting identifying interaction components.")
 
-        io = InteractionOptimizer(n_iterations=self.n_iterations,
-                                  covariates=covariates,
+        io = InteractionOptimizer(covariates=covariates,
                                   dataset_m=dataset_m,
                                   samples=samples,
                                   genotype_na=self.genotype_na,
                                   ieqtl_alpha=self.ieqtl_alpha,
+                                  max_iter=self.max_iter,
+                                  tol=self.tol,
                                   log=self.log)
 
         pic_m = np.empty((self.n_components, len(samples)), dtype=np.float64)
@@ -256,9 +261,11 @@ class Main:
                 comp_expr_m = remove_covariates(y_m=expr_m,
                                                 X_m=corr_m,
                                                 X_inter_m=corr_inter_m,
-                                                inter_m=geno_m)
+                                                inter_m=geno_m,
+                                                log=self.log)
 
                 # Optimize the cell fractions in X iterations.
+                self.log.info("")
                 pic_a = io.process(eqtl_m=eqtl_m,
                                    geno_m=geno_m,
                                    expr_m=comp_expr_m,
@@ -426,7 +433,8 @@ class Main:
         self.log.info("  > Minimal group size: >{}".format(self.mgs))
         self.log.info("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))
         self.log.info("  > N components: {}".format(self.n_components))
-        self.log.info("  > N iterations: {}".format(self.n_iterations))
+        self.log.info("  > Max iterations: {}".format(self.max_iter))
+        self.log.info("  > Tolerance: {}".format(self.tol))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")
 

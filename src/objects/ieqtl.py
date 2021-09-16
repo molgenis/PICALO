@@ -1,7 +1,7 @@
 """
 File:         ieqtl.py
 Created:      2021/04/08
-Last Changed: 2021/07/01
+Last Changed: 2021/09/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,9 +23,10 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Third party imports.
 import numpy as np
+from scipy import stats
 
 # Local application imports.
-from src.statistics import inverse, calc_rss, fit_and_predict, fit, predict, calc_std, calc_p_value
+from src.statistics import inverse, fit, predict, calc_residuals, calc_rss, fit_and_predict, calc_std, calc_p_value, calc_regression_log_likelihood
 
 
 class IeQTL:
@@ -50,7 +51,7 @@ class IeQTL:
 
         # Initialize empty properties variables.
         self.betas = np.empty(4, dtype=np.float64)
-        self.rs = np.empty(self.n, dtype=np.float64)
+        self.residuals = np.empty(self.n, dtype=np.float64)
         self.rss = None
         self.std = None
         self.p_value = None
@@ -85,8 +86,9 @@ class IeQTL:
         # the residuals for optimization later.
         inv_m = inverse(self.X)
         self.betas = fit(X=self.X, y=self.y, inv_m=inv_m)
-        self.rs = calc_rss(y=self.y, y_hat=predict(X=self.X, betas=self.betas), sum=False)
-        self.rss = np.sum(self.rs)
+        y_hat = predict(X=self.X, betas=self.betas)
+        self.residuals = calc_residuals(y=self.y, y_hat=y_hat)
+        self.rss = np.sum(self.residuals * self.residuals)
         self.std = calc_std(rss=self.rss, n=self.n, df=self.X.shape[1], inv_m=inv_m)
 
         # Calculate interaction p-value.
@@ -107,8 +109,11 @@ class IeQTL:
         if not self.is_computed:
             self.compute()
 
-        # Initialize the evaluiation matrix.
+        # Initialize the evaluation matrix.
         eval_m = np.copy(self.X)
+
+        # Calculate the residuals squared.
+        rs = self.residuals * self.residuals
 
         # Evaluate the log likelihood function for each sample on position
         # x1 and x3.
@@ -120,14 +125,14 @@ class IeQTL:
             eval_m[:, 3] = eval_m[:, 1] * eval_m[:, 2]
 
             # Calculate the y_hat of the model for the original betas.
-            adj_sample_y_hat = predict(X=eval_m, betas=self.betas)
+            adj_y_hat = predict(X=eval_m, betas=self.betas)
 
             # Calculate the residuals squared per sample for this model.
-            adj_res = self.y - adj_sample_y_hat
-            adj_rs = adj_res * adj_res
+            adj_residuals = calc_residuals(y=self.y, y_hat=adj_y_hat)
+            adj_rs = adj_residuals * adj_residuals
 
             # Save the adjusted residuals squared.
-            y_values.append(self.rss - self.rs + adj_rs)
+            y_values.append(self.rss - rs + adj_rs)
 
         # Determine the coefficients.
         self.coef_a, self.coef_b = self.calc_parabola_vertex(x1=self.x1,
@@ -179,6 +184,17 @@ class IeQTL:
             return full_a, full_b
         else:
             return self.coef_a, self.coef_b
+
+    def calc_log_likelihood(self, new_cov=None):
+        residuals = self.residuals.copy()
+        if new_cov is not None:
+            new_X = self.X.copy()
+            new_X[:, 2] = new_cov[self.mask]
+            new_X[:, 3] = new_X[:, 1] * new_X[:, 2]
+
+            residuals = calc_residuals(y=self.y, y_hat=predict(X=new_X, betas=self.betas))
+
+        return calc_regression_log_likelihood(residuals=residuals)
 
     def __str__(self):
         return "IeQTL(snp={}, gene={}, cov={}, is_computed={}, " \
