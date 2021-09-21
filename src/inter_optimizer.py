@@ -38,16 +38,16 @@ from src.visualiser import Visualiser
 
 
 class InteractionOptimizer:
-    def __init__(self, covariates, dataset_m, samples,
-                 genotype_na, ieqtl_alpha, max_iter, tol, log):
+    def __init__(self, covariates, dataset_m, samples, genotype_na,
+                 ieqtl_alpha, max_iter, tol, sliding_window_size, log):
         self.covariates = covariates
         self.samples = samples
         self.genotype_na = genotype_na
         self.ieqtl_alpha = ieqtl_alpha
         self.max_iter = max_iter
         self.tol = tol
+        self.sliding_window_size = sliding_window_size
         self.log = log
-        self.sliding_window_size = 5
         self.fn = ForceNormaliser(dataset_m=dataset_m,
                                   samples=samples,
                                   log=log)

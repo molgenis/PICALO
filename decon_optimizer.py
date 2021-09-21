@@ -67,6 +67,7 @@ if __name__ == '__main__':
     MAF = CLA.get_argument('minor_allele_frequency')
     MGS = CLA.get_argument('min_group_size')
     TOL = CLA.get_argument('tol')
+    SLIDING_WINDOW_SIZE = CLA.get_argument('sliding_window_size')
     N_COMPONENTS = CLA.get_argument('n_components')
     MAX_ITER = CLA.get_argument('max_iter')
     VERBOSE = CLA.get_argument('verbose')
@@ -88,6 +89,7 @@ if __name__ == '__main__':
                    maf=MAF,
                    mgs=MGS,
                    tol=TOL,
+                   sliding_window_size=SLIDING_WINDOW_SIZE,
                    n_components=N_COMPONENTS,
                    max_iter=MAX_ITER,
                    verbose=VERBOSE,

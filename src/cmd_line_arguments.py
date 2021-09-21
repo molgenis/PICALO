@@ -145,6 +145,14 @@ class CommandLineArguments:
                             help="The convergence threshold. The optimization "
                                  "will stop when the liklihood gain is below "
                                  "this threshold. Default: 1e-3.")
+        parser.add_argument("-sw",
+                            "--sliding_window_size",
+                            type=int,
+                            required=False,
+                            default=5,
+                            help="The size of the sliding window or which the "
+                                 "average log likelihood is calculated. "
+                                 "Default: = 5.")
         parser.add_argument("-n_components",
                             type=int,
                             required=False,

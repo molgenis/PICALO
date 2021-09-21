@@ -43,8 +43,8 @@ class Main:
     def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
                  tech_covariate_path, tech_covariate_with_inter_path,
                  covariate_path, sample_dataset_path, eqtl_alpha, ieqtl_alpha,
-                 call_rate, hw_pval, maf, mgs, tol, n_components,  max_iter,
-                 verbose, outdir):
+                 call_rate, hw_pval, maf, mgs, tol, sliding_window_size,
+                 n_components,  max_iter, verbose, outdir):
         # Safe arguments.
         self.genotype_na = genotype_na
         self.eqtl_alpha = eqtl_alpha
@@ -54,6 +54,7 @@ class Main:
         self.maf = maf
         self.mgs = mgs
         self.tol = tol
+        self.sliding_window_size = sliding_window_size
         self.n_components = n_components
         self.max_iter = max_iter
 
@@ -260,6 +261,7 @@ class Main:
                                   ieqtl_alpha=self.ieqtl_alpha,
                                   max_iter=self.max_iter,
                                   tol=self.tol,
+                                  sliding_window_size=self.sliding_window_size,
                                   log=self.log)
 
         pic_m = np.empty((self.n_components, len(samples)), dtype=np.float64)
@@ -596,6 +598,7 @@ class Main:
         self.log.info("  > N components: {}".format(self.n_components))
         self.log.info("  > Max iterations: {}".format(self.max_iter))
         self.log.info("  > Tolerance: {}".format(self.tol))
+        self.log.info("  > Sliding window size: {}".format(self.sliding_window_size))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")
 
