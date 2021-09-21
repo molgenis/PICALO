@@ -207,7 +207,8 @@ class InteractionOptimizer:
             sw_sum_abs_norm_delta_ll = sum_abs_norm_delta_ll
             if iteration > 0:
                 sw_sum_abs_norm_delta_ll = np.mean(sum_abs_norm_delta_ll_a[max(iteration - self.sliding_window_size, 0):(iteration + 1)])
-            self.log.debug("\t\t\tSliding window sum absolute normalized \u0394 log likelihood: {:,.2f}".format(sw_sum_abs_norm_delta_ll))
+            self.log.debug("\t\t\tSum absolute normalized \u0394 log likelihood: {:.2e}".format(sum_abs_norm_delta_ll))
+            self.log.debug("\t\t\tSliding window sum absolute normalized \u0394 log likelihood: {:.2e}".format(sw_sum_abs_norm_delta_ll))
 
             # Compare the included ieQTLs with the previous iteration.
             included_ieqtl_ids = {ieqtl.get_ieqtl_id() for ieqtl in ieqtls}
@@ -218,7 +219,7 @@ class InteractionOptimizer:
                 n_overlap = len(overlap)
                 pct_overlap = (100 / prev_included_ieqtls[0]) * n_overlap
 
-                self.log.debug("\t\t\tOverlap in included ieQTLs: {:,} [{:.2f}%]".format(n_overlap, pct_overlap))
+                self.log.debug("\t\t\tOverlap in included ieQTL(s): {:,} [{:.2f}%]".format(n_overlap, pct_overlap))
 
             # Store the stats.
             info_m[iteration, :] = np.array([len(ieqtls),

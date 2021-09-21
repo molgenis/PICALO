@@ -148,16 +148,12 @@ class Main:
         combined_keep_mask = n_keep_mask & mgs_keep_mask & mgs_keep_mask & hwpval_keep_mask & maf_keep_mask
         geno_n_skipped = np.size(combined_keep_mask) - np.sum(combined_keep_mask)
         if geno_n_skipped > 0:
-            self.log.warning("\t  {:,} eQTLs have been skipped due to sample "
-                             "size threshold".format(np.size(n_keep_mask) - np.sum(n_keep_mask)))
-            self.log.warning("\t  {:,} eQTLs have been skipped due to min. "
-                             "genotype group size threshold".format(np.size(mgs_keep_mask) - np.sum(mgs_keep_mask)))
-            self.log.warning("\t  {:,} eQTLs have been skipped due to HW "
-                             "p-value threshold".format(np.size(hwpval_keep_mask) - np.sum(hwpval_keep_mask)))
-            self.log.warning("\t  {:,} eQTLs have been skipped due to MAF "
-                             "threshold".format(np.size(maf_keep_mask) - np.sum(maf_keep_mask)))
+            self.log.warning("\t  {:,} eQTL(s) failed the sample size threshold".format(np.size(n_keep_mask) - np.sum(n_keep_mask)))
+            self.log.warning("\t  {:,} eQTL(s) failed the min. genotype group size threshold".format(np.size(mgs_keep_mask) - np.sum(mgs_keep_mask)))
+            self.log.warning("\t  {:,} eQTL(s) failed the Hardy-Weinberg p-value threshold".format(np.size(hwpval_keep_mask) - np.sum(hwpval_keep_mask)))
+            self.log.warning("\t  {:,} eQTL(s) failed the MAF threshold".format(np.size(maf_keep_mask) - np.sum(maf_keep_mask)))
             self.log.warning("\t  ----------------------------------------")
-            self.log.warning("\t  total {:,} eQTLs have been skipped".format(geno_n_skipped))
+            self.log.warning("\t  {:,} eQTL(s) are discarded in total".format(geno_n_skipped))
 
         # Select rows that meet requirements.
         eqtl_signif_df = eqtl_signif_df.loc[combined_keep_mask, :]
@@ -173,7 +169,7 @@ class Main:
         ########################################################################
 
         self.log.info("Loading other data")
-        self.log.info("\tIncluded {} eQTLs.".format(np.sum(keep_mask)))
+        self.log.info("\tIncluded {:,} eQTLs.".format(np.sum(keep_mask)))
         skiprows = None
         if (eqtl_fdr_n_skipped + geno_n_skipped) > 0:
             skiprows = [x+1 for x in eqtl_df.index[~keep_mask]]
@@ -269,10 +265,11 @@ class Main:
         pic_m = np.empty((self.n_components, len(samples)), dtype=np.float64)
         n_components_performed = 0
         pic_a = None
-        converged = False
+        converged = True
         for comp_count in range(self.n_components):
             if not converged:
-                self.log.warning("Stopping process do to unconverged component")
+                self.log.warning("Last component did not converge, stop "
+                                 "further identification of components.")
                 break
 
             self.log.info("\tIdentifying PIC {}".format(comp_count + 1))
