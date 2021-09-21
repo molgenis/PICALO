@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/09/15
+Last Changed: 2021/09/17
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -47,18 +47,22 @@ class InteractionOptimizer:
         self.max_iter = max_iter
         self.tol = tol
         self.log = log
+        self.sliding_window_size = 5
         self.fn = ForceNormaliser(dataset_m=dataset_m,
                                   samples=samples,
                                   log=log)
 
     def process(self, eqtl_m, geno_m, expr_m, covs_m, corr_m, corr_inter_m,
                 outdir):
+
+        converged = False
         pic_a = None
         cov = None
         results_df = None
         prev_included_ieqtls = (0, set())
         n_iterations_performed = 0
-        info_m = np.empty((self.max_iter, 11), dtype=np.float64)
+        info_m = np.empty((self.max_iter, 5), dtype=np.float64)
+        sum_abs_norm_delta_ll_a = np.empty(self.max_iter, dtype=np.float64)
         iterations_m = np.empty((self.max_iter + 1, geno_m.shape[1]), dtype=np.float64)
         for iteration in range(n_iterations_performed, self.max_iter):
             self.log.info("\t\tIteration: {}".format(iteration))
@@ -171,7 +175,7 @@ class InteractionOptimizer:
 
             # Calculate the combined log likelihood of the new interaction
             # vector.
-            pre_optimization_ll_a = self.calculate_log_likelihood(ieqtls=ieqtls, vector=None)
+            pre_optimization_ll_a = self.calculate_log_likelihood(ieqtls=ieqtls)
 
             self.log.info("\t\t  Optimizing ieQTLs")
 
@@ -189,7 +193,7 @@ class InteractionOptimizer:
             # for ieqtl in ieqtls:
             #     if ieqtl.get_eqtl_id() == "ENSG00000019186.10:20:54173204:rs2248137:C_G":
             #         visualiser.plot(ieqtl, out_path=outdir, iteration=iteration, ocf=None)
-            #         visualiser.plot(ieqtl, out_path=outdir, iteration=iteration, ocf=pic_a)
+            #         visualiser.plot(ieqtl, out_path=outdir, iteration=iteration, ocf=optimized_pic_a)
 
             self.log.debug("\t\t  Calculating the total log likelihood after optimization")
 
@@ -198,28 +202,12 @@ class InteractionOptimizer:
             post_optimization_ll_a = self.calculate_log_likelihood(ieqtls=ieqtls, vector=optimized_pic_a)
 
             # Calculate the change in total log likelihood.
-            delta_ll_a = post_optimization_ll_a - pre_optimization_ll_a
-            min_delta_ll, max_delta_ll, mean_delta_ll, sum_delta_ll = np.min(delta_ll_a), np.max(delta_ll_a), np.mean(delta_ll_a), np.sum(delta_ll_a)
-            sum_absolute_delta_ll = np.sum(np.abs(post_optimization_ll_a - pre_optimization_ll_a))
-            mean_absolute_delta_ll = np.mean(np.abs(post_optimization_ll_a - pre_optimization_ll_a))
-            sum_absolute_normalized_delta_ll = np.sum(np.abs(post_optimization_ll_a - pre_optimization_ll_a) / np.abs(pre_optimization_ll_a))
-            mean_absolute_normalized_delta_ll = np.mean(np.abs(post_optimization_ll_a - pre_optimization_ll_a) / np.abs(pre_optimization_ll_a))
-
-            self.log.debug("\t\t\t\u0394 Log likelihood: min = {:,.2f}"
-                           "\tmax = {:,.2f}\tmean = {:,.2f}"
-                           "\tsum = {:,.2f}\t".format(min_delta_ll,
-                                                      max_delta_ll,
-                                                      mean_delta_ll,
-                                                      sum_delta_ll))
-            self.log.debug("\t\t\tConvergence criteria: "
-                           "sum abs \u0394 ll = {:,.2f}"
-                           "\tmean abs \u0394 ll = {:,.2f}"
-                           "\tsum abs normalized \u0394 ll = {:,.2f}"
-                           "\tmean abs normalized \u0394 ll = {:,.2f}"
-                           .format(sum_absolute_delta_ll,
-                                   mean_absolute_delta_ll,
-                                   sum_absolute_normalized_delta_ll,
-                                   mean_absolute_normalized_delta_ll))
+            sum_abs_norm_delta_ll = np.sum(np.abs(post_optimization_ll_a - pre_optimization_ll_a) / np.abs(pre_optimization_ll_a))
+            sum_abs_norm_delta_ll_a[iteration] = sum_abs_norm_delta_ll
+            sw_sum_abs_norm_delta_ll = sum_abs_norm_delta_ll
+            if iteration > 0:
+                sw_sum_abs_norm_delta_ll = np.mean(sum_abs_norm_delta_ll_a[max(iteration - self.sliding_window_size, 0):(iteration + 1)])
+            self.log.debug("\t\t\tSliding window sum absolute normalized \u0394 log likelihood: {:,.2f}".format(sw_sum_abs_norm_delta_ll))
 
             # Compare the included ieQTLs with the previous iteration.
             included_ieqtl_ids = {ieqtl.get_ieqtl_id() for ieqtl in ieqtls}
@@ -236,14 +224,8 @@ class InteractionOptimizer:
             info_m[iteration, :] = np.array([len(ieqtls),
                                              n_overlap,
                                              pct_overlap,
-                                             min_delta_ll,
-                                             max_delta_ll,
-                                             mean_delta_ll,
-                                             sum_delta_ll,
-                                             sum_absolute_delta_ll,
-                                             mean_absolute_delta_ll,
-                                             sum_absolute_normalized_delta_ll,
-                                             mean_absolute_normalized_delta_ll])
+                                             sum_abs_norm_delta_ll,
+                                             sw_sum_abs_norm_delta_ll])
 
             # Print stats.
             rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
@@ -258,11 +240,12 @@ class InteractionOptimizer:
             prev_included_ieqtls = (n_ieqtls, included_ieqtl_ids)
             n_iterations_performed += 1
 
-            # # Check if we converged.
-            # if np.sum(np.abs(post_optimization_ll_a - pre_optimization_ll_a)) < self.tol:
-            #     self.log.warning("Model converged")
-            #     self.log.info("")
-            #     break
+            # Check if we converged.
+            if sw_sum_abs_norm_delta_ll < self.tol:
+                self.log.warning("\t\tModel converged")
+                self.log.info("")
+                converged = True
+                break
 
             del ieqtls, optimized_pic_a
 
@@ -279,12 +262,8 @@ class InteractionOptimizer:
         info_df = pd.DataFrame(info_m[:n_iterations_performed, :],
                                index=["iteration{}".format(i) for i in range(n_iterations_performed)],
                                columns=["N", "N Overlap", "Overlap %",
-                                        "Min Log Likelihood", "Max Log Likelihood",
-                                        "Mean Log Likelihood", "Sum Log Likelihood",
-                                        "Sum Abs Delta Log Likelihood",
-                                        "Mean Abs Delta Log Likelihood",
-                                        "Sum Abs Normalized Delta Log Likelihood",
-                                        "Mean Abs Normalized Delta Log Likelihood"])
+                                        "Mean Sum Abs Normalized Delta Log Likelihood",
+                                        "Sliding Window Mean Sum Abs Normalized Delta Log Likelihood"])
         info_df.insert(0, "covariate", cov)
         save_dataframe(df=info_df,
                        outpath=os.path.join(outdir, "info_df.txt.gz"),
@@ -294,7 +273,7 @@ class InteractionOptimizer:
 
         del iteration_df, iterations_m, info_df, info_m
 
-        return pic_a
+        return pic_a, converged
 
     def get_ieqtls(self, eqtl_m, geno_m, expr_m, cova_a, cov):
         n_eqtls = eqtl_m.shape[0]
@@ -350,7 +329,7 @@ class InteractionOptimizer:
         return optimized_a
 
     @staticmethod
-    def calculate_log_likelihood(ieqtls, vector):
+    def calculate_log_likelihood(ieqtls, vector=None):
         log_likelihoods = np.empty(len(ieqtls), dtype=np.float64)
         for i, ieqtl in enumerate(ieqtls):
             log_likelihoods[i] = ieqtl.calc_log_likelihood(new_cov=vector)

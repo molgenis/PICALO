@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/09/15
+Last Changed: 2021/09/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,6 +23,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
+import cProfile
 import os
 
 # Third party imports.
@@ -42,11 +43,14 @@ class Main:
     def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
                  tech_covariate_path, tech_covariate_with_inter_path,
                  covariate_path, sample_dataset_path, eqtl_alpha, ieqtl_alpha,
-                 maf, mgs, tol, n_components, max_iter, verbose, outdir):
+                 call_rate, hw_pval, maf, mgs, tol, n_components,  max_iter,
+                 verbose, outdir):
         # Safe arguments.
         self.genotype_na = genotype_na
         self.eqtl_alpha = eqtl_alpha
         self.ieqtl_alpha = ieqtl_alpha
+        self.call_rate = call_rate
+        self.hw_pval = hw_pval
         self.maf = maf
         self.mgs = mgs
         self.tol = tol
@@ -94,40 +98,77 @@ class Main:
 
         eqtl_fdr_n_skipped = np.size(eqtl_fdr_keep_mask) - np.sum(eqtl_fdr_keep_mask)
         if eqtl_fdr_n_skipped > 0:
-            self.log.warning("\t{} eQTLs have been skipped due to "
+            self.log.warning("\t{:,} eQTLs have been skipped due to "
                              "FDR cut-off.".format(eqtl_fdr_n_skipped))
         self.log.info("")
 
         ########################################################################
 
-        self.log.info("Loading genotype data")
+        self.log.info("Loading genotype data and dataset info")
         skiprows = None
         if eqtl_fdr_n_skipped > 0:
             skiprows = [x+1 for x in eqtl_df.index[~eqtl_fdr_keep_mask]]
         geno_df = self.data.get_geno_df(skiprows=skiprows, nrows=max(eqtl_signif_df.index)+1)
+        std_df = self.data.get_std_df()
 
-        self.log.info("Checking MAf and SNP group sizes of genotype matrix.")
-        eqtl_stats = geno_df.apply(self.calculate_eqtl_stats, 1)
-        eqtl_stats.reset_index(drop=True, inplace=True)
-        eqtl_stats["FDR"] = eqtl_signif_df["FDR"]
+        # Check if samples match up.
+        if geno_df.columns.tolist() != std_df.iloc[:, 0].values.tolist():
+            self.log.error("The expression file indices do not match the "
+                           "eQTL file.")
+            exit()
+
+        self.log.info("\tCalculating genotype call rate per dataset")
+        geno_df, call_rate_df = self.calculate_call_rate(df=geno_df, datasets=std_df.iloc[:, 1])
+        call_rate_n_skipped = (call_rate_df.min(axis=1) < self.call_rate).sum()
+        if call_rate_n_skipped > 0:
+            self.log.warning("\t  {:,} eQTLs have had dataset(s) filled with NaN "
+                             "values due to call rate threshold ".format(call_rate_n_skipped))
+
+        save_dataframe(df=call_rate_df,
+                       outpath=os.path.join(self.outdir, "call_rate.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
+        del call_rate_df
+
+        self.log.info("\tCalculating genotype stats for inclusing criteria")
+        geno_stats_df = self.calculate_genotype_stats(df=geno_df)
+
+        save_dataframe(df=geno_stats_df,
+                       outpath=os.path.join(self.outdir, "genotype_stats.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
 
         # Checking which eQTLs pass the requirements
-        geno_keep_mask = ((eqtl_stats.loc[:, "MAF"] > self.maf) | (eqtl_stats.loc[:, "MGS"] > self.mgs)).to_numpy(dtype=bool)
-        geno_n_skipped = np.size(geno_keep_mask) - np.sum(geno_keep_mask)
+        n_keep_mask = (geno_stats_df.loc[:, "N"] >= 6).to_numpy()
+        mgs_keep_mask = (geno_stats_df.loc[:, "min GS"] >= self.mgs).to_numpy()
+        hwpval_keep_mask = (geno_stats_df.loc[:, "HW pval"] >= self.hw_pval).to_numpy()
+        maf_keep_mask = (geno_stats_df.loc[:, "MAF"] > self.maf).to_numpy()
+        combined_keep_mask = n_keep_mask & mgs_keep_mask & mgs_keep_mask & hwpval_keep_mask & maf_keep_mask
+        geno_n_skipped = np.size(combined_keep_mask) - np.sum(combined_keep_mask)
         if geno_n_skipped > 0:
-            self.log.warning("\t{} eQTLs have been skipped due to "
-                             "FDR cut-off.".format(geno_n_skipped))
+            self.log.warning("\t  {:,} eQTLs have been skipped due to sample "
+                             "size threshold".format(np.size(n_keep_mask) - np.sum(n_keep_mask)))
+            self.log.warning("\t  {:,} eQTLs have been skipped due to min. "
+                             "genotype group size threshold".format(np.size(mgs_keep_mask) - np.sum(mgs_keep_mask)))
+            self.log.warning("\t  {:,} eQTLs have been skipped due to HW "
+                             "p-value threshold".format(np.size(hwpval_keep_mask) - np.sum(hwpval_keep_mask)))
+            self.log.warning("\t  {:,} eQTLs have been skipped due to MAF "
+                             "threshold".format(np.size(maf_keep_mask) - np.sum(maf_keep_mask)))
+            self.log.warning("\t  ----------------------------------------")
+            self.log.warning("\t  total {:,} eQTLs have been skipped".format(geno_n_skipped))
 
         # Select rows that meet requirements.
-        eqtl_signif_df = eqtl_signif_df.loc[geno_keep_mask, :]
-        geno_df = geno_df.loc[geno_keep_mask, :]
+        eqtl_signif_df = eqtl_signif_df.loc[combined_keep_mask, :]
+        geno_df = geno_df.loc[combined_keep_mask, :]
 
         # Combine the skip masks.
         keep_mask = np.copy(eqtl_fdr_keep_mask)
-        keep_mask[eqtl_fdr_keep_mask] = geno_keep_mask
+        keep_mask[eqtl_fdr_keep_mask] = combined_keep_mask
         self.log.info("")
 
-        del eqtl_stats, eqtl_fdr_keep_mask, geno_keep_mask
+        del geno_stats_df, eqtl_fdr_keep_mask, combined_keep_mask
 
         ########################################################################
 
@@ -205,8 +246,8 @@ class Main:
         # TODO uncomment this?
         # covs_m = np.vstack((covs_m, tcov_m.T[:10, :]))
         # covariates = covariates + tcov_labels[:10]
-        # covs_m = tcov_m.T[:10, :]
-        # covariates = tcov_labels[:10]
+        covs_m = tcov_m.T[:10, :]
+        covariates = tcov_labels[:10]
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
         covs_m = fn.process(covs_m)
         self.log.info("")
@@ -226,8 +267,14 @@ class Main:
                                   log=self.log)
 
         pic_m = np.empty((self.n_components, len(samples)), dtype=np.float64)
+        n_components_performed = 0
         pic_a = None
+        converged = False
         for comp_count in range(self.n_components):
+            if not converged:
+                self.log.warning("Stopping process do to unconverged component")
+                break
+
             self.log.info("\tIdentifying PIC {}".format(comp_count + 1))
 
             # Prepare component output directory.
@@ -266,13 +313,13 @@ class Main:
 
                 # Optimize the cell fractions in X iterations.
                 self.log.info("")
-                pic_a = io.process(eqtl_m=eqtl_m,
-                                   geno_m=geno_m,
-                                   expr_m=comp_expr_m,
-                                   covs_m=covs_m,
-                                   corr_m=corr_m,
-                                   corr_inter_m=corr_inter_m,
-                                   outdir=comp_outdir)
+                pic_a, converged = io.process(eqtl_m=eqtl_m,
+                                              geno_m=geno_m,
+                                              expr_m=comp_expr_m,
+                                              covs_m=covs_m,
+                                              corr_m=corr_m,
+                                              corr_inter_m=corr_inter_m,
+                                              outdir=comp_outdir)
 
                 # Save.
                 pic_m[comp_count, :] = pic_a
@@ -281,8 +328,11 @@ class Main:
                     np.save(f, pic_a)
                 f.close()
 
-        components_df = pd.DataFrame(pic_m,
-                                     index=["PIC{}".format(i+1) for i in range(self.n_components)],
+                # Increment counter.
+                n_components_performed += 1
+
+        components_df = pd.DataFrame(pic_m[:n_components_performed, :],
+                                     index=["PIC{}".format(i+1) for i in range(n_components_performed)],
                                      columns=samples)
 
         save_dataframe(df=components_df,
@@ -348,27 +398,139 @@ class Main:
                            "covariates file header.")
             exit()
 
-    def calculate_eqtl_stats(self, genotype):
-        group_sizes = self.calculate_group_sizes(genotype)
-        maf = self.calculate_maf(group_sizes)
-        smallest_group_size = min(group_sizes)
-        n = sum(group_sizes)
+    def calculate_call_rate(self, df, datasets):
+        # Convert pandas to numpy array.
+        datasets_a = datasets.to_numpy()
 
-        return pd.Series([maf, smallest_group_size, n], index=["MAF", "MGS", "N"])
+        # Calculate the fraction of NaNs per dataset.
+        dataset_counts = list(zip(*np.unique(datasets_a, return_counts=True)))
+        dataset_names = [x[0] for x in dataset_counts]
+        call_rate_df = pd.DataFrame(np.nan, index=df.index, columns=["{} CR".format(dataset) for dataset in dataset_names])
+        for dataset, n_samples in dataset_counts:
+            sample_mask = datasets_a == dataset
+            call_rate_s = (df.loc[:, sample_mask] != self.genotype_na).sum(axis=1) / n_samples
+            call_rate_df.loc[:, dataset] = call_rate_s
+
+            # If the call rate is too high, replace all genotypes of that
+            # dataset with missing.
+            row_mask = call_rate_s < self.call_rate
+            df.loc[row_mask, sample_mask] = self.genotype_na
+
+        return df, call_rate_df
+
+    def calculate_genotype_stats(self, df):
+        rounded_m = df.to_numpy(dtype=np.float64)
+        rounded_m = np.rint(rounded_m)
+
+        # Calculate the total samples that are not NaN.
+        nan = np.sum(rounded_m == self.genotype_na, axis=1)
+        n = rounded_m.shape[1] - nan
+
+        # Count the genotypes.
+        zero_a = np.sum(rounded_m == 0, axis=1)
+        one_a = np.sum(rounded_m == 1, axis=1)
+        two_a = np.sum(rounded_m == 2, axis=1)
+
+        # Calculate the smallest genotype group size.
+        sgz = np.minimum.reduce([zero_a, one_a, two_a])
+
+        # Calculate the Hardy-Weinberg p-value.
+        hwe_pvalues_a = self.calc_hwe_pvalue(obs_hets=one_a, obs_hom1=zero_a, obs_hom2=two_a)
+
+        # Count the alleles.
+        allele1_a = (zero_a * 2) + one_a
+        allele2_a = (two_a * 2) + one_a
+
+        # Calculate the MAF.
+        maf = np.minimum(allele1_a, allele2_a) / (allele1_a + allele2_a)
+
+        # Determine which allele is the minor allele.
+        allele_m = np.column_stack((allele1_a, allele2_a))
+        ma = np.argmin(allele_m, axis=1) * 2
+
+        # Construct output data frame.
+        output_df = pd.DataFrame({"N": n,
+                                  "NaN": nan,
+                                  "0": zero_a,
+                                  "1": one_a,
+                                  "2": two_a,
+                                  "min GS": sgz,
+                                  "HW pval": hwe_pvalues_a,
+                                  "allele 1": allele1_a,
+                                  "allele 2": allele2_a,
+                                  "MA": ma,
+                                  "MAF": maf,
+                                  })
+        del rounded_m, allele_m
+
+        return output_df
 
     @staticmethod
-    def calculate_group_sizes(genotype):
-        x = genotype.copy()
-        x = np.rint(x)
-        unique, counts = np.unique(x, return_counts=True)
-        group_sizes = dict(zip(unique, counts))
-        return np.array([group_sizes.get(0, 0), group_sizes.get(1, 0), group_sizes.get(2, 0)], dtype=np.float64)
+    def calc_hwe_pvalue(obs_hets, obs_hom1, obs_hom2):
+        """
+        exact SNP test of Hardy-Weinberg Equilibrium as described in Wigginton,
+        JE, Cutler, DJ, and Abecasis, GR (2005) A Note on Exact Tests of
+        Hardy-Weinberg Equilibrium. AJHG 76: 887-893
+        """
+        if not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype):
+            obs_hets = np.rint(obs_hets)
+            obs_hom1 = np.rint(obs_hom1)
+            obs_hom2 = np.rint(obs_hom2)
 
-    @staticmethod
-    def calculate_maf(group_sizes):
-        allele1 = group_sizes[0] * 2 + group_sizes[1]
-        allele2 = group_sizes[2] * 2 + group_sizes[1]
-        return min(allele1, allele2) / (allele1 + allele2)
+        # Force homc to be the max and homr to be the min observed genotype.
+        obs_homc = np.maximum(obs_hom1, obs_hom2)
+        obs_homr = np.minimum(obs_hom1, obs_hom2)
+
+        # Calculate some other stats we need.
+        rare_copies = 2 * obs_homr + obs_hets
+        l_genotypes = obs_hets + obs_homc + obs_homr
+        n = np.size(obs_hets)
+
+        # Get the distribution midpoint.
+        mid = np.rint(rare_copies * (2 * l_genotypes - rare_copies) / (2 * l_genotypes)).astype(np.int)
+        mid[mid % 2 != rare_copies % 2] += 1
+
+        # Calculate the start points for the evaluation.
+        curr_homr = (rare_copies - mid) / 2
+        curr_homc = l_genotypes - mid - curr_homr
+
+        # Calculate the left side.
+        left_steps = np.floor(mid / 2).astype(int)
+        max_left_steps = np.max(left_steps)
+        left_het_probs = np.zeros((n, max_left_steps + 1), dtype=np.float64)
+        left_het_probs[:, 0] = 1
+        for i in np.arange(0, max_left_steps, 1, dtype=np.float64):
+            prob = left_het_probs[:, int(i)] * (mid - (i * 2)) * ((mid - (i * 2)) - 1.0) / (4.0 * (curr_homr + i + 1.0) * (curr_homc + i + 1.0))
+            prob[mid - (i * 2) <= 0] = 0
+            left_het_probs[:, int(i) + 1] = prob
+
+        # Calculate the right side.
+        right_steps = np.floor((rare_copies - mid) / 2).astype(int)
+        max_right_steps = np.max(right_steps)
+        right_het_probs = np.zeros((n, max_right_steps + 1), dtype=np.float64)
+        right_het_probs[:, 0] = 1
+        for i in np.arange(0, max_right_steps, 1, dtype=np.float64):
+            prob = right_het_probs[:, int(i)] * 4.0 * (curr_homr - i) * (curr_homc - i) / (((i * 2) + mid + 2.0) * ((i * 2) + mid + 1.0))
+            prob[(i * 2) + mid >= rare_copies] = 0
+            right_het_probs[:, int(i) + 1] = prob
+
+        # Combine the sides.
+        het_probs = np.hstack((np.flip(left_het_probs, axis=1), right_het_probs[:, 1:]))
+
+        # Normalize.
+        sum = np.sum(het_probs, axis=1)
+        het_probs = het_probs / sum[:, np.newaxis]
+
+        # Replace values higher then probability of obs_hets with 0.
+        threshold_col_a = (max_left_steps - left_steps) + np.floor(obs_hets / 2).astype(int)
+        threshold = np.array([het_probs[i, threshold_col] for i, threshold_col in enumerate(threshold_col_a)])
+        het_probs[het_probs > threshold[:, np.newaxis]] = 0
+
+        # Calculate the p-values.
+        p_hwe = np.sum(het_probs, axis=1)
+        p_hwe[p_hwe > 1] = 1
+
+        return p_hwe
 
     def load_tech_cov(self, df, name, samples):
         if df is None:
@@ -429,6 +591,8 @@ class Main:
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
         self.log.info("  > eQTL alpha: <{}".format(self.eqtl_alpha))
+        self.log.info("  > SNP call rate: >{}".format(self.call_rate))
+        self.log.info("  > Hardy-Weinberg p-value: >{}".format(self.hw_pval))
         self.log.info("  > MAF: >{}".format(self.maf))
         self.log.info("  > Minimal group size: >{}".format(self.mgs))
         self.log.info("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))

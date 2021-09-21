@@ -3,7 +3,7 @@
 """
 File:         decon_optimizer.py
 Created:      2020/11/16
-Last Changed: 2021/09/15
+Last Changed: 2021/09/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -62,6 +62,8 @@ if __name__ == '__main__':
     SAMPLE_DATASET_PATH = CLA.get_argument('sample_to_dataset')
     EQTL_ALPHA = CLA.get_argument('eqtl_alpha')
     IEQTL_ALPHA = CLA.get_argument('ieqtl_alpha')
+    CALL_RATE = CLA.get_argument('call_rate')
+    HW_PVAL = CLA.get_argument('hardy_weinberg_pvalue')
     MAF = CLA.get_argument('minor_allele_frequency')
     MGS = CLA.get_argument('min_group_size')
     TOL = CLA.get_argument('tol')
@@ -81,6 +83,8 @@ if __name__ == '__main__':
                    sample_dataset_path=SAMPLE_DATASET_PATH,
                    eqtl_alpha=EQTL_ALPHA,
                    ieqtl_alpha=IEQTL_ALPHA,
+                   call_rate=CALL_RATE,
+                   hw_pval=HW_PVAL,
                    maf=MAF,
                    mgs=MGS,
                    tol=TOL,

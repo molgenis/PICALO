@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2021/09/15
+Last Changed: 2021/09/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -110,19 +110,34 @@ class CommandLineArguments:
                             default=0.05,
                             help="The interaction eQTL significance cut-off. "
                                  "Default: <0.05.")
+        parser.add_argument("-cr",
+                            "--call_rate",
+                            type=float,
+                            required=False,
+                            default=0.95,
+                            help="The minimal call rate of a SNP (per dataset)."
+                                 "Equals to (1 - missingness). "
+                                 "Default: >= 0.95.")
+        parser.add_argument("-hw",
+                            "--hardy_weinberg_pvalue",
+                            type=float,
+                            required=False,
+                            default=1e-4,
+                            help="The Hardy-Weinberg p-value threshold."
+                                 "Default: >= 1e-4.")
         parser.add_argument("-maf",
                             "--minor_allele_frequency",
                             type=float,
                             required=False,
-                            default=0.05,
-                            help="The MAF cut-off. Default: >0.05.")
+                            default=0.01,
+                            help="The MAF threshold. Default: >0.01.")
         parser.add_argument("-mgs",
                             "--min_group_size",
                             type=int,
                             required=False,
                             default=2,
                             help="The minimal number of samples per genotype "
-                                 "group. Default: 2.")
+                                 "group. Default: >= 2.")
         parser.add_argument("-tol",
                             type=float,
                             required=False,
