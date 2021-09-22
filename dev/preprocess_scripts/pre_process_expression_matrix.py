@@ -3,7 +3,7 @@
 """
 File:         pre_process_expression_matrix.py
 Created:      2021/05/25
-Last Changed: 2021/07/22
+Last Changed: 2021/09/22
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -72,7 +72,8 @@ class main():
         self.solo_correction = getattr(arguments, 'solo_correction')
         self.gte_path = getattr(arguments, 'gene_to_expression')
         self.gte_prefix = getattr(arguments, 'gte_prefix')
-        self.exclude = getattr(arguments, 'exclude')
+        self.gte_exclude = getattr(arguments, 'gte_exclude')
+        self.sample_exclude_path = getattr(arguments, 'sample_exclude')
         outdir = getattr(arguments, 'outdir')
         outfolder = getattr(arguments, 'outfolder')
 
@@ -154,12 +155,17 @@ class main():
                             type=str,
                             required=True,
                             help="The gene-expression link file prefix.")
-        parser.add_argument("-e",
-                            "--exclude",
+        parser.add_argument("-ge",
+                            "--gte_exclude",
                             nargs="*",
                             type=str,
                             default=[],
                             help="The gene-expression link files to exclude.")
+        parser.add_argument("-se",
+                            "--sample_exclude",
+                            type=str,
+                            default=None,
+                            help="The samples to exclude. Default: None.")
         parser.add_argument("-od",
                             "--outdir",
                             type=str,
@@ -197,7 +203,7 @@ class main():
         dataset_to_sample_dict = {}
         for infile in glob.glob(os.path.join(self.gte_path, "{}*.txt".format(self.gte_prefix))):
             file = os.path.basename(infile).replace(".txt", "").replace(self.gte_prefix, "")
-            if file in self.exclude:
+            if file in self.gte_exclude:
                 continue
             gte_df = self.load_file(infile, header=None, index_col=None)
             gte_df["file"] = file
@@ -206,11 +212,21 @@ class main():
             else:
                 gte_combined_df = pd.concat([gte_combined_df, gte_df], axis=0, ignore_index=True)
 
-            dataset_to_sample_dict[file] = gte_df.iloc[:, 1]
+            dataset_to_sample_dict[file] = set(gte_df.iloc[:, 1].values)
         gte_combined_df["cohort"] = gte_combined_df.iloc[:, 2].map(self.file_cohort_dict)
         sample_to_cohort = dict(zip(gte_combined_df.iloc[:, 1], gte_combined_df.iloc[:, 3]))
         samples = gte_combined_df.iloc[:, 1].values.tolist()
         print("\tN samples: {}".format(len(samples)))
+
+        # Remove samples to exclude.
+        if self.sample_exclude_path is not None:
+            sample_exclude_df = self.load_file(self.sample_exclude_path, header=None, index_col=None)
+            sample_to_exclude = sample_exclude_df.iloc[:, 0].tolist()
+            print("\tRemoving N samples: {}".format(len(sample_to_exclude)))
+
+            gte_combined_df = gte_combined_df.loc[~gte_combined_df.iloc[:, 1].isin(sample_to_exclude), :]
+            samples = gte_combined_df.iloc[:, 1].values.tolist()
+            print("\tN samples: {}".format(len(samples)))
 
         # Safe sample cohort data frame.
         sample_cohort_df = gte_combined_df.iloc[:, [1, 3]]
@@ -227,8 +243,11 @@ class main():
         print("\tDatasets: {} [N = {}]".format(", ".join(datasets), len(datasets)))
 
         dataset_df = pd.DataFrame(0, index=samples, columns=datasets)
+        samples_set = set(samples)
         for dataset in datasets:
-            dataset_df.loc[dataset_to_sample_dict[dataset], dataset] = 1
+            dataset_samples = dataset_to_sample_dict[dataset]
+            dataset_samples = dataset_samples.intersection(samples_set)
+            dataset_df.loc[dataset_samples, dataset] = 1
         dataset_df.index.name = "-"
 
         # Load data.
@@ -289,26 +308,27 @@ class main():
                  plot_appendix="_2_CovariatesRemovedOLS")
         del correction_df, corrected_df
 
-        step = 10
-        for name in ["TechnicalCovariates", "MDS", "Datasets"]:
-            if name in self.solo_correction:
-                print("Step {}: remove {} components OLS.".format(step, name))
-                correction_df = correction_segments[name]
-                self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "{}_matrix.txt.gz".format(name)))
-                corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
-                step += 1
+        if self.solo_correction is not None:
+            step = 10
+            for name in ["TechnicalCovariates", "MDS", "Datasets"]:
+                if name in self.solo_correction:
+                    print("Step {}: remove {} components OLS.".format(step, name))
+                    correction_df = correction_segments[name]
+                    self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "{}_matrix.txt.gz".format(name)))
+                    corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
+                    step += 1
 
-                print("\tSaving file.")
-                self.save_file(df=corrected_df,
-                               outpath=os.path.join(self.file_outdir,
-                                                    "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.{}RemovedOLS.txt.gz".format(filename, name)))
+                    print("\tSaving file.")
+                    self.save_file(df=corrected_df,
+                                   outpath=os.path.join(self.file_outdir,
+                                                        "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.{}RemovedOLS.txt.gz".format(filename, name)))
 
-                print("Step {}: PCA analysis.".format(step))
-                self.pca(df=corrected_df, filename=filename,
-                         sample_to_cohort=sample_to_cohort,
-                         file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.{}RemovedOLS".format(name),
-                         plot_appendix="_2_{}RemovedOLS".format(name))
-                step += 1
+                    print("Step {}: PCA analysis.".format(step))
+                    self.pca(df=corrected_df, filename=filename,
+                             sample_to_cohort=sample_to_cohort,
+                             file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.{}RemovedOLS".format(name),
+                             plot_appendix="_2_{}RemovedOLS".format(name))
+                    step += 1
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -381,7 +401,7 @@ class main():
 
         # split the MDS components per cohort.
         mds_columns = df.columns[mds_mask]
-        mds_df = pd.DataFrame(0, index=df.index, columns=["{}_{}".format(a, b) for a in cohort_df.columns for b in mds_columns])
+        mds_df = pd.DataFrame(0, index=df.index, columns=["{}_{}".format(a, b) for a in dataset_df.columns for b in mds_columns])
         for cohort in dataset_df.columns:
             mask = dataset_df.loc[:, cohort] == 1
             for mds_col in mds_columns:
@@ -517,7 +537,8 @@ class main():
         print("  > Technical covariates: {}".format(self.tcov_path))
         print("  > GtE path: {}".format(self.gte_path))
         print("  >   GtE prefix: {}".format(self.gte_prefix))
-        print("  >   Exclude: {}".format(self.exclude))
+        print("  >   Exclude: {}".format(self.gte_prefix))
+        print("  > Sample exclude path: {}".format(self.sample_exclude_path))
         print("  > Solo correction: {}".format(self.solo_correction))
         print("  > Plot output directory: {}".format(self.plot_outdir))
         print("  > File output directory: {}".format(self.file_outdir))
