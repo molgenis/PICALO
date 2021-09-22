@@ -42,11 +42,12 @@ from src.utilities import save_dataframe
 class Main:
     def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
                  tech_covariate_path, tech_covariate_with_inter_path,
-                 covariate_path, sample_dataset_path, eqtl_alpha, ieqtl_alpha,
-                 call_rate, hw_pval, maf, mgs, tol, sliding_window_size,
-                 n_components,  max_iter, verbose, outdir):
+                 covariate_path, sample_dataset_path, min_sample_size,
+                 eqtl_alpha, ieqtl_alpha, call_rate, hw_pval, maf, mgs, tol,
+                 sliding_window_size, n_components,  max_iter, verbose, outdir):
         # Safe arguments.
         self.genotype_na = genotype_na
+        self.min_sample_size = min_sample_size
         self.eqtl_alpha = eqtl_alpha
         self.ieqtl_alpha = ieqtl_alpha
         self.call_rate = call_rate
@@ -118,6 +119,23 @@ class Main:
                            "eQTL file.")
             exit()
 
+        self.log.info("\tChecking dataset sample sizes")
+        # Check if each dataset has the minimal number of samples.
+        exclude_datasets = []
+        exclude_samples = []
+        dataset_sample_sizes = dict(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
+        for dataset, sample_size in dataset_sample_sizes.items():
+            if sample_size < self.min_sample_size:
+                exclude_datasets.append(dataset)
+                exclude_samples.extend(std_df.loc[std_df.iloc[:, 1] == dataset, std_df.columns[0]].values.tolist())
+        if len(exclude_datasets) > 0:
+            self.log.critical("\t  {} dataset(s) encompassing {:,} samples "
+                              "failed the minimal sample size "
+                              "threshold".format(len(exclude_datasets),
+                                                 len(exclude_samples)))
+            self.log.critical("\t  Please remove samples from input data.")
+            exit()
+
         self.log.info("\tCalculating genotype call rate per dataset")
         geno_df, call_rate_df = self.calculate_call_rate(df=geno_df, datasets=std_df.iloc[:, 1])
         call_rate_n_skipped = (call_rate_df.min(axis=1) < self.call_rate).sum()
@@ -176,8 +194,6 @@ class Main:
             skiprows = [x+1 for x in eqtl_df.index[~keep_mask]]
         expr_df = self.data.get_expr_df(skiprows=skiprows, nrows=max(eqtl_signif_df.index)+1)
         dataset_df = self.data.get_dataset_df()
-        datasets = dataset_df.columns.tolist()
-        self.log.info("\t  Datasets: {}".format(", ".join(datasets)))
         covs_df = self.data.get_covs_df()
 
         # Check for nan values.
@@ -190,6 +206,8 @@ class Main:
             self.log.warning("\t  Transposing covariate matrix.")
             covs_df = covs_df.T
 
+        datasets = dataset_df.columns.tolist()
+        self.log.info("\t  Datasets: {}".format(", ".join(datasets)))
         covariates = covs_df.index.tolist()
         self.log.info("\t  Covariates: {}".format(", ".join(covariates)))
         self.log.info("")

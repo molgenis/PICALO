@@ -1,7 +1,7 @@
 """
 File:         logger.py
 Created:      2020/10/16
-Last Changed: 2021/09/15
+Last Changed: 2021/09/22
 Author(s):    M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -41,6 +41,15 @@ class Logger:
 
         self.logger = self.set_logger()
 
+        self.level_map = {
+            0: "NOTSET",
+            10: "DEBUG",
+            20: "INFO",
+            30: "WARNING",
+            40: "ERROR",
+            50: "CRITICAL"
+        }
+
     def clear_logfile(self):
         if os.path.exists(self.logfile) and os.path.isfile(self.logfile):
             os.remove(self.logfile)
@@ -70,5 +79,5 @@ class Logger:
         self.logger.info("Arguments:")
         self.logger.info("  > Logfile: {}".format(self.logfile))
         self.logger.info("  > Verbose: {}".format(self.verbose))
-        self.logger.info("  > Level: {}".format(self.level))
+        self.logger.info("  > Level: {}".format(self.level_map[self.level]))
         self.logger.info("")

@@ -96,6 +96,13 @@ class CommandLineArguments:
                             type=str,
                             required=True,
                             help="The path to the sample-dataset link matrix.")
+        parser.add_argument("-mss",
+                            "--min_sample_size",
+                            type=int,
+                            required=False,
+                            default=30,
+                            help="The minimal number of samples per dataset."
+                                 "Default: >= 30.")
         parser.add_argument("-ea",
                             "--eqtl_alpha",
                             type=float,
