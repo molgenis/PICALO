@@ -49,7 +49,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./visualise_results.py -id ../../output/test -p ../../data/MetaBrainColorPalette.json -ep /groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/pre_process_expression_matrix/CortexEUR-cis-NoENA-NoGVEX -mp /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX -o CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX
+./visualise_results.py -h
 """
 
 
