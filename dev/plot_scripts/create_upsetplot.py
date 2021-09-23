@@ -3,7 +3,7 @@
 """
 File:         create_upsetplot.py
 Created:      2021/05/10
-Last Changed: 2021/07/01
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -26,6 +26,7 @@ from __future__ import print_function
 from pathlib import Path
 import itertools
 import argparse
+import json
 import os
 
 # Third party imports.
@@ -66,26 +67,19 @@ class main():
         arguments = self.create_argument_parser()
         self.input_directory = getattr(arguments, 'indir')
         self.eqtl_path = getattr(arguments, 'eqtl')
+        self.palette_path = getattr(arguments, 'palette')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
-        self.cell_type_palette = {
-            "Neuron": "#0072B2",
-            "Oligodendrocyte": "#009E73",
-            "EndothelialCell": "#CC79A7",
-            "Macrophage": "#E69F00",
-            "Astrocyte": "#D55E00"
-        }
-
-        self.comp_palette = {
-            1: "#0072B2",
-            2: "#009E73",
-            3: "#CC79A7",
-            4: "#E69F00",
-        }
+        # Loading palette.
+        self.palette = None
+        if self.palette_path is not None:
+            with open(self.palette_path) as f:
+                self.palette = json.load(f)
+            f.close()
 
     @staticmethod
     def create_argument_parser():
@@ -109,6 +103,14 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the eqtl matrix.")
+        parser.add_argument("-p",
+                            "--palette",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to a json file with the"
+                                 "dataset to color combinations.")
+
         return parser.parse_args()
 
     def start(self):
@@ -117,7 +119,7 @@ class main():
         print("Load eQTL data.")
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
         eqtl_df.index = eqtl_df["SNPName"] + ":" + eqtl_df["ProbeName"]
-        eqtl_df = eqtl_df[["Iteration"]]
+        eqtl_df = eqtl_df[["Iteration"]].astype(str)
         eqtl_df.columns = ["eQTL level"]
         eqtl_hlines = None
 
@@ -132,7 +134,7 @@ class main():
             for j in range(100):
                 iteration = "iteration{}".format(j)
                 iter_abbreviation = "iter{}".format(j)
-                fpath = os.path.join(self.input_directory, pic, "results_{}_df.txt.gz".format(iteration))
+                fpath = os.path.join(self.input_directory, pic, "results_{}.txt.gz".format(iteration))
                 if os.path.exists(fpath):
                     df = self.load_file(fpath, header=0, index_col=None)
                     df.index = df["SNP"] + ":" + df["gene"]
@@ -159,7 +161,7 @@ class main():
                 level_df.reset_index(drop=False, inplace=True)
                 level_df_m = level_df.melt(id_vars=["index"])
                 self.plot(df_m=level_df_m, x="variable", y="value", hue="index",
-                          ylabel="%", palette=self.comp_palette,
+                          ylabel="%", palette=self.palette,
                           filename=pic, outdir=self.outdir,
                           hlines=eqtl_hlines)
 
@@ -286,7 +288,10 @@ class main():
                          ax=ax1)
 
         for label, value in hlines.items():
-            ax1.axhline(value, ls='--', color=palette[label], zorder=-1)
+            color = "#000000"
+            if palette is not None:
+                color = palette[label]
+            ax1.axhline(value, ls='--', color=color, zorder=-1)
 
         ax1.set_ylim((0, 100))
 
@@ -317,6 +322,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
+        print("  > Palette path: {}".format(self.palette_path))
         print("  > EQTL path directory: {}".format(self.input_directory))
         print("  > Output directory: {}".format(self.outdir))
         print("")

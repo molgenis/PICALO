@@ -1,7 +1,7 @@
 """
 File:         force_normaliser.py
 Created:      2021/03/02
-Last Changed: 2020/07/28
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -45,10 +45,10 @@ class ForceNormaliser:
 
         # Check which axis to use.
         axis = None
-        if data.shape[0] == len(self.samples):
+        if data.shape[0] == np.size(self.samples):
             # normalise per column
             axis = 0
-        elif data.shape[1] == len(self.samples):
+        elif data.shape[1] == np.size(self.samples):
             # normalise per row
             axis = 1
         else:

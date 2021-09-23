@@ -1,7 +1,7 @@
 """
 File:         data.py
 Created:      2020/11/16
-Last Changed: 2021/09/20
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -52,7 +52,6 @@ class Data:
         self.tcov_inter_df = None
         self.covs_df = None
         self.std_df = None
-        self.dataset_df = None
 
     def get_eqtl_df(self, skiprows=None, nrows=None):
         if self.eqtl_df is None:
@@ -134,21 +133,6 @@ class Data:
                                          log=self.log)
 
         return self.std_df
-
-    def get_dataset_df(self):
-        if self.dataset_df is None:
-            std_df = self.get_std_df()
-            dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
-            dataset_sample_counts.sort(key=lambda x: -x[1])
-            datasets = [csc[0] for csc in dataset_sample_counts]
-
-            dataset_df = pd.DataFrame(0, index=std_df.iloc[:, 0], columns=datasets)
-            for dataset in datasets:
-                dataset_df.loc[(std_df.iloc[:, 1] == dataset).values, dataset] = 1
-            dataset_df.index.name = "-"
-            self.dataset_df = dataset_df
-
-        return self.dataset_df
 
     @staticmethod
     def reverse_merge_dict(dict):

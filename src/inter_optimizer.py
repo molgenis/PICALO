@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/09/17
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -161,7 +161,7 @@ class InteractionOptimizer:
 
             # Save results.
             save_dataframe(df=results_df,
-                           outpath=os.path.join(outdir, "results_iteration{}_df.txt.gz".format(iteration)),
+                           outpath=os.path.join(outdir, "results_iteration{}.txt.gz".format(iteration)),
                            header=True,
                            index=False,
                            log=self.log)
@@ -171,7 +171,7 @@ class InteractionOptimizer:
                 self.log.error("\t\t  No significant ieQTLs found\n")
                 break
 
-            self.log.debug("\t\t  Calculating the total log likelihood before optimization")
+            self.log.info("\t\t  Calculating the total log likelihood before optimization")
 
             # Calculate the combined log likelihood of the new interaction
             # vector.
@@ -195,7 +195,7 @@ class InteractionOptimizer:
             #         visualiser.plot(ieqtl, out_path=outdir, iteration=iteration, ocf=None)
             #         visualiser.plot(ieqtl, out_path=outdir, iteration=iteration, ocf=optimized_pic_a)
 
-            self.log.debug("\t\t  Calculating the total log likelihood after optimization")
+            self.log.info("\t\t  Calculating the total log likelihood after optimization")
 
             # Calculate the combined log likelihood of the new interaction
             # vector.
@@ -207,8 +207,8 @@ class InteractionOptimizer:
             sw_sum_abs_norm_delta_ll = sum_abs_norm_delta_ll
             if iteration > 0:
                 sw_sum_abs_norm_delta_ll = np.mean(sum_abs_norm_delta_ll_a[max(iteration - self.sliding_window_size, 0):(iteration + 1)])
-            self.log.debug("\t\t\tSum absolute normalized \u0394 log likelihood: {:.2e}".format(sum_abs_norm_delta_ll))
-            self.log.debug("\t\t\tSliding window sum absolute normalized \u0394 log likelihood: {:.2e}".format(sw_sum_abs_norm_delta_ll))
+            self.log.info("\t\t\tSum absolute normalized \u0394 log likelihood: {:.2e}".format(sum_abs_norm_delta_ll))
+            self.log.info("\t\t\tSliding window sum absolute normalized \u0394 log likelihood: {:.2e}".format(sw_sum_abs_norm_delta_ll))
 
             # Compare the included ieQTLs with the previous iteration.
             included_ieqtl_ids = {ieqtl.get_ieqtl_id() for ieqtl in ieqtls}
@@ -218,8 +218,7 @@ class InteractionOptimizer:
                 overlap = prev_included_ieqtls[1].intersection(included_ieqtl_ids)
                 n_overlap = len(overlap)
                 pct_overlap = (100 / prev_included_ieqtls[0]) * n_overlap
-
-                self.log.debug("\t\t\tOverlap in included ieQTL(s): {:,} [{:.2f}%]".format(n_overlap, pct_overlap))
+                self.log.info("\t\t\tOverlap in included ieQTL(s): {:,} [{:.2f}%]".format(n_overlap, pct_overlap))
 
             # Store the stats.
             info_m[iteration, :] = np.array([len(ieqtls),
@@ -255,7 +254,7 @@ class InteractionOptimizer:
                                     index=["start"] + ["iteration{}".format(i) for i in range(n_iterations_performed)],
                                     columns=self.samples)
         save_dataframe(df=iteration_df,
-                       outpath=os.path.join(outdir, "iteration_df.txt.gz"),
+                       outpath=os.path.join(outdir, "iteration.txt.gz"),
                        header=True,
                        index=True,
                        log=self.log)
@@ -267,7 +266,7 @@ class InteractionOptimizer:
                                         "Sliding Window Mean Sum Abs Normalized Delta Log Likelihood"])
         info_df.insert(0, "covariate", cov)
         save_dataframe(df=info_df,
-                       outpath=os.path.join(outdir, "info_df.txt.gz"),
+                       outpath=os.path.join(outdir, "info.txt.gz"),
                        header=True,
                        index=True,
                        log=self.log)

@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/09/20
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
-import cProfile
 import os
 
 # Third party imports.
@@ -42,12 +41,11 @@ from src.utilities import save_dataframe
 class Main:
     def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
                  tech_covariate_path, tech_covariate_with_inter_path,
-                 covariate_path, sample_dataset_path, min_sample_size,
+                 covariate_path, sample_dataset_path,
                  eqtl_alpha, ieqtl_alpha, call_rate, hw_pval, maf, mgs, tol,
                  sliding_window_size, n_components,  max_iter, verbose, outdir):
         # Safe arguments.
         self.genotype_na = genotype_na
-        self.min_sample_size = min_sample_size
         self.eqtl_alpha = eqtl_alpha
         self.ieqtl_alpha = ieqtl_alpha
         self.call_rate = call_rate
@@ -58,6 +56,9 @@ class Main:
         self.sliding_window_size = sliding_window_size
         self.n_components = n_components
         self.max_iter = max_iter
+
+        # Other global variables.
+        self.min_dataset_sample_size = 30
 
         # Define the current directory.
         current_dir = str(Path(__file__).parent.parent)
@@ -86,7 +87,7 @@ class Main:
         self.data.print_arguments()
 
     def start(self):
-        self.log.info("Starting program.")
+        self.log.info("Starting program")
         self.print_arguments()
 
         ########################################################################
@@ -101,7 +102,7 @@ class Main:
         eqtl_fdr_n_skipped = np.size(eqtl_fdr_keep_mask) - np.sum(eqtl_fdr_keep_mask)
         if eqtl_fdr_n_skipped > 0:
             self.log.warning("\t{:,} eQTLs have been skipped due to "
-                             "FDR cut-off.".format(eqtl_fdr_n_skipped))
+                             "FDR cut-off".format(eqtl_fdr_n_skipped))
         self.log.info("")
 
         ########################################################################
@@ -113,31 +114,28 @@ class Main:
         geno_df = self.data.get_geno_df(skiprows=skiprows, nrows=max(eqtl_signif_df.index)+1)
         std_df = self.data.get_std_df()
 
-        # Check if samples match up.
-        if geno_df.columns.tolist() != std_df.iloc[:, 0].values.tolist():
-            self.log.error("The expression file indices do not match the "
-                           "eQTL file.")
-            exit()
+        # Validate that the input data matches.
+        self.validate_data(std_df=std_df,
+                           geno_df=geno_df)
 
         self.log.info("\tChecking dataset sample sizes")
         # Check if each dataset has the minimal number of samples.
-        exclude_datasets = []
-        exclude_samples = []
-        dataset_sample_sizes = dict(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
-        for dataset, sample_size in dataset_sample_sizes.items():
-            if sample_size < self.min_sample_size:
-                exclude_datasets.append(dataset)
-                exclude_samples.extend(std_df.loc[std_df.iloc[:, 1] == dataset, std_df.columns[0]].values.tolist())
-        if len(exclude_datasets) > 0:
-            self.log.critical("\t  {} dataset(s) encompassing {:,} samples "
-                              "failed the minimal sample size "
-                              "threshold".format(len(exclude_datasets),
-                                                 len(exclude_samples)))
-            self.log.critical("\t  Please remove samples from input data.")
-            exit()
+        dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
+        dataset_sample_counts.sort(key=lambda x: -x[1])
+        max_dataset_length = np.max([len(str(dataset[0])) for dataset in dataset_sample_counts])
+        for dataset, sample_size in dataset_sample_counts:
+            self.log.info("\t  {:{}s}  {:,} samples".format(dataset, max_dataset_length, sample_size))
+        if dataset_sample_counts[-1][1] < self.min_dataset_sample_size:
+            self.log.warning("\t\tOne or more datasets have a smaller sample "
+                             "size than recommended. Consider excluded these")
+        self.log.info("")
+
+        # Construct dataset df.
+        dataset_df = self.construct_dataset_df(std_df=std_df)
 
         self.log.info("\tCalculating genotype call rate per dataset")
-        geno_df, call_rate_df = self.calculate_call_rate(df=geno_df, datasets=std_df.iloc[:, 1])
+        geno_df, call_rate_df = self.calculate_call_rate(geno_df=geno_df,
+                                                         dataset_df=dataset_df)
         call_rate_n_skipped = (call_rate_df.min(axis=1) < self.call_rate).sum()
         if call_rate_n_skipped > 0:
             self.log.warning("\t  {:,} eQTLs have had dataset(s) filled with NaN "
@@ -148,16 +146,10 @@ class Main:
                        header=True,
                        index=True,
                        log=self.log)
-        del call_rate_df
+        self.log.info("")
 
         self.log.info("\tCalculating genotype stats for inclusing criteria")
         geno_stats_df = self.calculate_genotype_stats(df=geno_df)
-
-        save_dataframe(df=geno_stats_df,
-                       outpath=os.path.join(self.outdir, "genotype_stats.txt.gz"),
-                       header=True,
-                       index=True,
-                       log=self.log)
 
         # Checking which eQTLs pass the requirements
         n_keep_mask = (geno_stats_df.loc[:, "N"] >= 6).to_numpy()
@@ -174,6 +166,13 @@ class Main:
             self.log.warning("\t  ----------------------------------------")
             self.log.warning("\t  {:,} eQTL(s) are discarded in total".format(geno_n_skipped))
 
+        save_dataframe(df=geno_stats_df,
+                       outpath=os.path.join(self.outdir, "genotype_stats.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
+        self.log.info("")
+
         # Select rows that meet requirements.
         eqtl_signif_df = eqtl_signif_df.loc[combined_keep_mask, :]
         geno_df = geno_df.loc[combined_keep_mask, :]
@@ -181,51 +180,44 @@ class Main:
         # Combine the skip masks.
         keep_mask = np.copy(eqtl_fdr_keep_mask)
         keep_mask[eqtl_fdr_keep_mask] = combined_keep_mask
-        self.log.info("")
 
-        del geno_stats_df, eqtl_fdr_keep_mask, combined_keep_mask
+        del call_rate_df, geno_stats_df, eqtl_fdr_keep_mask, n_keep_mask, mgs_keep_mask, hwpval_keep_mask, maf_keep_mask, combined_keep_mask
 
         ########################################################################
 
         self.log.info("Loading other data")
-        self.log.info("\tIncluded {:,} eQTLs.".format(np.sum(keep_mask)))
+        self.log.info("\tIncluded {:,} eQTLs".format(np.sum(keep_mask)))
         skiprows = None
         if (eqtl_fdr_n_skipped + geno_n_skipped) > 0:
             skiprows = [x+1 for x in eqtl_df.index[~keep_mask]]
         expr_df = self.data.get_expr_df(skiprows=skiprows, nrows=max(eqtl_signif_df.index)+1)
-        dataset_df = self.data.get_dataset_df()
         covs_df = self.data.get_covs_df()
 
         # Check for nan values.
         if covs_df.isna().values.sum() > 0:
-            self.log.error("\t  Covariate file contains nan values.")
+            self.log.error("\t  Covariate file contains nan values")
             exit()
 
         # Transpose if need be.
-        if covs_df.shape[0] == geno_df.shape[1] and covs_df.shape[0] == expr_df.shape[1]:
-            self.log.warning("\t  Transposing covariate matrix.")
+        if covs_df.shape[0] == geno_df.shape[1]:
+            self.log.warning("\t  Transposing covariate matrix")
             covs_df = covs_df.T
 
-        datasets = dataset_df.columns.tolist()
-        self.log.info("\t  Datasets: {}".format(", ".join(datasets)))
         covariates = covs_df.index.tolist()
         self.log.info("\t  Covariates: {}".format(", ".join(covariates)))
-        self.log.info("")
 
-        ########################################################################
-
-        self.log.info("Validating input.")
-        self.validate_data(eqtl_df=eqtl_signif_df,
+        # Validate that the input data (still) matches.
+        self.validate_data(std_df=std_df,
+                           eqtl_df=eqtl_signif_df,
                            geno_df=geno_df,
                            expr_df=expr_df,
-                           dataset_df=dataset_df,
                            covs_df=covs_df)
-        samples = geno_df.columns.to_numpy()
+        samples = std_df.iloc[:, 0].to_numpy(object)
         self.log.info("")
 
         ########################################################################
 
-        self.log.info("Transform to numpy matrices for speed.")
+        self.log.info("Transform to numpy matrices for speed")
         eqtl_m = eqtl_signif_df[["SNPName", "ProbeName"]].to_numpy(object)
         geno_m = geno_df.to_numpy(np.float64)
         expr_m = expr_df.to_numpy(np.float64)
@@ -236,12 +228,12 @@ class Main:
 
         ########################################################################
 
-        self.log.info("Loading technical covariates.")
+        self.log.info("Loading technical covariates")
         tcov_df = self.data.get_tcov_df()
         get_tcov_inter_df = self.data.get_tcov_inter_df()
 
-        tcov_m, tcov_labels = self.load_tech_cov(df=tcov_df, name="tech. cov. without interaction", samples=samples)
-        tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=get_tcov_inter_df, name="tech. cov. with interaction", samples=samples)
+        tcov_m, tcov_labels = self.load_tech_cov(df=tcov_df, name="tech. cov. without interaction", std_df=std_df)
+        tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=get_tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
         self.log.info("")
 
         # Create the correction matrices.
@@ -257,7 +249,7 @@ class Main:
 
         ########################################################################
 
-        self.log.info("Force normalising covariate matrix.")
+        self.log.info("Force normalising covariate matrix")
         # TODO uncomment this?
         # covs_m = np.vstack((covs_m, tcov_m.T[:10, :]))
         # covariates = covariates + tcov_labels[:10]
@@ -270,7 +262,7 @@ class Main:
 
         ########################################################################
 
-        self.log.info("Starting identifying interaction components.")
+        self.log.info("Starting identifying interaction components")
 
         io = InteractionOptimizer(covariates=covariates,
                                   dataset_m=dataset_m,
@@ -282,14 +274,14 @@ class Main:
                                   sliding_window_size=self.sliding_window_size,
                                   log=self.log)
 
-        pic_m = np.empty((self.n_components, len(samples)), dtype=np.float64)
+        pic_m = np.empty((self.n_components, np.size(samples)), dtype=np.float64)
         n_components_performed = 0
         pic_a = None
         converged = True
         for comp_count in range(self.n_components):
             if not converged:
                 self.log.warning("Last component did not converge, stop "
-                                 "further identification of components.")
+                                 "further identification of components")
                 break
 
             self.log.info("\tIdentifying PIC {}".format(comp_count + 1))
@@ -329,7 +321,6 @@ class Main:
                                                 log=self.log)
 
                 # Optimize the cell fractions in X iterations.
-                self.log.info("")
                 pic_a, converged = io.process(eqtl_m=eqtl_m,
                                               geno_m=geno_m,
                                               expr_m=comp_expr_m,
@@ -353,7 +344,7 @@ class Main:
                                      columns=samples)
 
         save_dataframe(df=components_df,
-                       outpath=os.path.join(self.outdir, "components_df.txt.gz"),
+                       outpath=os.path.join(self.outdir, "components.txt.gz"),
                        header=True,
                        index=True)
 
@@ -376,64 +367,62 @@ class Main:
         #
         # ########################################################################
 
-        self.log.info("Finished.")
+        self.log.info("Finished")
         self.log.info("")
 
-    def validate_data(self, eqtl_df, geno_df, expr_df, dataset_df, covs_df):
-        snp_reference = eqtl_df["SNPName"].copy()
-        snp_reference.rename("-", inplace=True)
+    def validate_data(self, std_df, eqtl_df=None, geno_df=None,
+                      expr_df=None, covs_df=None, tcovs_df=None):
 
-        probe_reference = eqtl_df["ProbeName"].copy()
-        probe_reference.rename("-", inplace=True)
+        # Check the samples.
+        samples = std_df.iloc[:, 0].values.tolist()
+        if geno_df is not None and geno_df.columns.tolist() != samples:
+                self.log.error("\tThe genotype file header does not match "
+                               "the sample-to-dataset link file")
+                exit()
 
-        if not pd.Series(geno_df.index,
-                         index=snp_reference.index,
-                         name="-").equals(snp_reference):
-            self.log.error("The genotype file indices do not match the "
-                           "eQTL file.")
-            exit()
+        if expr_df is not None and expr_df.columns.tolist() != samples:
+                self.log.error("\tThe expression file header does not match "
+                               "the sample-to-dataset link file")
+                exit()
 
-        if not pd.Series(expr_df.index,
-                         index=probe_reference.index,
-                         name="-").equals(probe_reference):
-            self.log.error("The expression file indices do not match the "
-                           "eQTL file.")
-            exit()
+        if covs_df is not None and covs_df.columns.tolist() != samples:
+                self.log.error("\tThe covariates file header does not match "
+                               "the sample-to-dataset link file")
+                exit()
 
-        if not geno_df.columns.equals(expr_df.columns):
-            self.log.error("The genotype file header does not match the "
-                           "expression file header.")
-            exit()
+        if tcovs_df is not None and tcovs_df.index.tolist() != samples:
+                self.log.error("\tThe technical covariates file indices does "
+                               "not match the sample-to-dataset link file")
+                exit()
 
-        if not geno_df.columns.equals(dataset_df.index):
-            self.log.error("The genotype file header does not match the "
-                           "dataset file index.")
-            exit()
+        # Check the eQTLs.
+        if eqtl_df is not None:
+            snp_reference = eqtl_df["SNPName"].values.tolist()
+            probe_reference = eqtl_df["ProbeName"].values.tolist()
 
-        if not geno_df.columns.equals(covs_df.columns):
-            self.log.error("The genotype file header does not match the "
-                           "covariates file header.")
-            exit()
+            if geno_df is not None and geno_df.index.tolist() != snp_reference:
+                self.log.error("The genotype file indices do not match the "
+                               "eQTL file")
+                exit()
 
-    def calculate_call_rate(self, df, datasets):
-        # Convert pandas to numpy array.
-        datasets_a = datasets.to_numpy()
+            if expr_df is not None and expr_df.index.tolist() != probe_reference:
+                self.log.error("The expression file indices do not match the "
+                               "eQTL file")
+                exit()
 
+    def calculate_call_rate(self, geno_df, dataset_df):
         # Calculate the fraction of NaNs per dataset.
-        dataset_counts = list(zip(*np.unique(datasets_a, return_counts=True)))
-        dataset_names = [x[0] for x in dataset_counts]
-        call_rate_df = pd.DataFrame(np.nan, index=df.index, columns=["{} CR".format(dataset) for dataset in dataset_names])
-        for dataset, n_samples in dataset_counts:
-            sample_mask = datasets_a == dataset
-            call_rate_s = (df.loc[:, sample_mask] != self.genotype_na).sum(axis=1) / n_samples
+        call_rate_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["{} CR".format(dataset) for dataset in dataset_df.columns])
+        for dataset, sample_mask in dataset_df.T.iterrows():
+            call_rate_s = (geno_df.loc[:, sample_mask.astype(bool)] != self.genotype_na).astype(int).sum(axis=1) / sample_mask.sum()
             call_rate_df.loc[:, dataset] = call_rate_s
 
             # If the call rate is too high, replace all genotypes of that
             # dataset with missing.
             row_mask = call_rate_s < self.call_rate
-            df.loc[row_mask, sample_mask] = self.genotype_na
+            geno_df.loc[row_mask, sample_mask.astype(bool)] = self.genotype_na
 
-        return df, call_rate_df
+        return geno_df, call_rate_df
 
     def calculate_genotype_stats(self, df):
         rounded_m = df.to_numpy(dtype=np.float64)
@@ -549,34 +538,46 @@ class Main:
 
         return p_hwe
 
-    def load_tech_cov(self, df, name, samples):
+    @staticmethod
+    def construct_dataset_df(std_df):
+        dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
+        dataset_sample_counts.sort(key=lambda x: -x[1])
+        datasets = [csc[0] for csc in dataset_sample_counts]
+
+        dataset_df = pd.DataFrame(0, index=std_df.iloc[:, 0], columns=datasets)
+        for dataset in datasets:
+            dataset_df.loc[(std_df.iloc[:, 1] == dataset).values, dataset] = 1
+        dataset_df.index.name = "-"
+
+        return dataset_df
+
+    def load_tech_cov(self, df, name, std_df):
         if df is None:
             return None, []
 
-        n_samples = len(samples)
+        n_samples = std_df.shape[0]
 
-        self.log.info("\tWorking on technical covariates matrix matrix '{}'.".format(name))
+        self.log.info("\tWorking on technical covariates matrix matrix '{}'".format(name))
 
         # Check for nan values.
         if df.isna().values.sum() > 0:
-            self.log.error("\t  Matrix contains nan values.")
+            self.log.error("\t  Matrix contains nan values")
             exit()
 
         # Put the samples on the rows.
         if df.shape[1] == n_samples:
-            self.log.warning("\t  Transposing matrix.")
+            self.log.warning("\t  Transposing matrix")
             df = df.T
 
         # Check if valid.
-        if not (df.index.to_numpy() == samples).all():
-            self.log.error("\t  The header does not match the expression file header.")
-            exit()
+        self.validate_data(std_df=std_df,
+                           tcovs_df=df)
 
         # Check for variables with zero std.
         variance_mask = df.std(axis=0) != 0
         n_zero_variance = variance_mask.shape[0] - variance_mask.sum()
         if n_zero_variance > 0:
-            self.log.warning("\t  Dropping {} rows with 0 variance .".format(
+            self.log.warning("\t  Dropping {} rows with 0 variance".format(
                 n_zero_variance))
             df = df.loc[:, variance_mask]
 

@@ -3,7 +3,7 @@
 """
 File:         visualise_results.py
 Created:      2021/05/06
-Last Changed: 2021/07/08
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -49,7 +49,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./visualise_results.py -h
+./visualise_results.py -id ../../output/test -p ../../data/MetaBrainColorPalette.json -ep /groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/pre_process_expression_matrix/CortexEUR-cis-NoENA-NoGVEX -mp /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX -o CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX
 """
 
 
@@ -58,6 +58,7 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.input_data_path = getattr(arguments, 'input_data')
+        self.palette_path = getattr(arguments, 'palette')
         self.expression_preprocessing_path = getattr(arguments, 'expression_preprocessing_dir')
         self.matrix_preparation_path = getattr(arguments, 'matrix_preparation_dir')
         self.outname = getattr(arguments, 'outname')
@@ -84,6 +85,13 @@ class main():
                             type=str,
                             required=True,
                             help="The path to Decon-Optimize results.")
+        parser.add_argument("-p",
+                            "--palette",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to a json file with the"
+                                 "dataset to color combinations.")
         parser.add_argument("-ep",
                             "--expression_preprocessing_dir",
                             type=str,
@@ -106,30 +114,30 @@ class main():
         self.print_arguments()
 
         # Plot overview lineplot.
-        command = ['python3', 'overview_lineplot.py', '-i', self.input_data_path]
+        command = ['python3', 'overview_lineplot.py', '-i', self.input_data_path, '-p', self.palette_path]
         self.run_command(command)
 
         # Plot eQTL upsetplot.
-        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.compare_data_path, "combine_eqtlprobes", "eQTLprobes_combined.txt.gz")]
+        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.matrix_preparation_path, "combine_eqtlprobes", "eQTLprobes_combined.txt.gz"), '-p', self.palette_path]
         self.run_command(command)
 
         for i in range(1, 11):
-            comp_iterations_path = os.path.join(self.input_data_path, "PIC{}".format(i), "iteration_df.txt.gz")
+            comp_iterations_path = os.path.join(self.input_data_path, "PIC{}".format(i), "iteration.txt.gz")
 
             if os.path.exists(comp_iterations_path):
                 # Plot scatterplot.
                 command = ['python3', 'create_scatterplot.py', '-d', comp_iterations_path,
-                           "-hr", "0", "-ic", "0", "-a", "1", "-sa", "/groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/data/2020-09-04.brain.phenotypes.withReannotatedDiagnosis.txt.gz", "-sid", "rnaseq_id", "-cid", "MetaBrain_cohort", "-o", self.outname + "_comp{}".format(i)]
+                           "-hr", "0", "-ic", "0", "-a", "1", "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, "-o", self.outname + "_comp{}".format(i)]
                 self.run_command(command)
 
         # Create components_df if not exists.
-        components_path = os.path.join(self.input_data_path, "components_df.txt.gz")
+        components_path = os.path.join(self.input_data_path, "components.txt.gz")
         if not os.path.exists(components_path):
             data = []
             columns = []
             for i in range(1, 11):
                 pic = "PIC{}".format(i)
-                comp_iterations_path = os.path.join(self.input_data_path, pic, "iteration_df.txt.gz")
+                comp_iterations_path = os.path.join(self.input_data_path, pic, "iteration.txt.gz")
                 if os.path.exists(comp_iterations_path):
                     df = self.load_file(comp_iterations_path, header=0, index_col=0)
                     last_iter = df.iloc[[df.shape[0] - 1], :].T
@@ -143,8 +151,7 @@ class main():
 
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
-                   '-sa /groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/data/2021-04-28.brain.phenotypes.CortexEUR.txt.gz',
-                   '-sid', 'rnaseq_id', '-cid', 'MetaBrain_cohort', '-o', self.outname]
+                   "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         if os.path.exists(components_path):
@@ -210,6 +217,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Input data path: {}".format(self.input_data_path))
+        print("  > Palette path: {}".format(self.palette_path))
         print("  > Expression pre-processing data path: {}".format(self.expression_preprocessing_path))
         print("  > Matrix preparation data path: {}".format(self.matrix_preparation_path))
         print("  > Outname {}".format(self.outname))

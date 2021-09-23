@@ -3,7 +3,7 @@
 """
 File:         decon_optimizer.py
 Created:      2020/11/16
-Last Changed: 2021/09/20
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -60,7 +60,6 @@ if __name__ == '__main__':
     TECH_COVARIATE_WITH_INTERACTION_PATH = CLA.get_argument('tech_covariate_with_inter')
     COVARIATE_PATH = CLA.get_argument('covariate')
     SAMPLE_DATASET_PATH = CLA.get_argument('sample_to_dataset')
-    MIN_SAMPLE_SIZE = CLA.get_argument('min_sample_size')
     EQTL_ALPHA = CLA.get_argument('eqtl_alpha')
     IEQTL_ALPHA = CLA.get_argument('ieqtl_alpha')
     CALL_RATE = CLA.get_argument('call_rate')
@@ -83,7 +82,6 @@ if __name__ == '__main__':
                    tech_covariate_with_inter_path=TECH_COVARIATE_WITH_INTERACTION_PATH,
                    covariate_path=COVARIATE_PATH,
                    sample_dataset_path=SAMPLE_DATASET_PATH,
-                   min_sample_size=MIN_SAMPLE_SIZE,
                    eqtl_alpha=EQTL_ALPHA,
                    ieqtl_alpha=IEQTL_ALPHA,
                    call_rate=CALL_RATE,

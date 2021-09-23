@@ -104,7 +104,7 @@ class main():
             component = "component{}".format(i)
             for j in range(100):
                 iteration = "iteration{}".format(j)
-                fpath = os.path.join(self.indir, component, "results_{}_df.txt.gz".format(iteration))
+                fpath = os.path.join(self.indir, component, "results_{}.txt.gz".format(iteration))
                 if os.path.exists(fpath):
                     df = self.load_file(fpath, header=0, index_col=None)
                     snps = list(df.loc[df["FDR"] < 0.05, "SNP"].values)
@@ -128,7 +128,7 @@ class main():
                     save_df.insert(0, "rnaseq_id", save_df.index)
                     print(save_df)
 
-                    outpath = os.path.join(self.outdir, "{}_genotype_info_{}_df.txt.gz".format(component, iteration))
+                    outpath = os.path.join(self.outdir, "{}_genotype_info_{}.txt.gz".format(component, iteration))
                     self.save_file(save_df,
                                    outpath=outpath)
 

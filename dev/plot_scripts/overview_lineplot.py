@@ -3,7 +3,7 @@
 """
 File:         overview_lineplot.py
 Created:      2021/05/20
-Last Changed: 2021/07/08
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,6 +25,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
+import json
 import os
 
 # Third party imports.
@@ -63,31 +64,19 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.input_directory = getattr(arguments, 'indir')
+        self.palette_path = getattr(arguments, 'palette')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
-        self.palette = {
-            "Neuron": "#0072B2",
-            "Oligodendrocyte": "#009E73",
-            "EndothelialCell": "#CC79A7",
-            "Macrophage": "#E69F00",
-            "Astrocyte": "#D55E00",
-            "PCT_INTRONIC_BASES": "#000000",
-            "comp0": "#0072B2",
-            "comp1": "#009E73",
-            "comp2": "#CC79A7",
-            "comp3": "#E69F00",
-            "comp4": "#D55E00",
-            "PIC1": "#0072B2",
-            "PIC2": "#009E73",
-            "PIC3": "#CC79A7",
-            "PIC4": "#E69F00",
-            "PIC5": "#D55E00",
-            "PIC6": "#56B4E9"
-        }
+        # Loading palette.
+        self.palette = None
+        if self.palette_path is not None:
+            with open(self.palette_path) as f:
+                self.palette = json.load(f)
+            f.close()
 
     @staticmethod
     def create_argument_parser():
@@ -106,6 +95,13 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the input directory.")
+        parser.add_argument("-p",
+                            "--palette",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to a json file with the"
+                                 "dataset to color combinations.")
 
         return parser.parse_args()
 
@@ -116,7 +112,7 @@ class main():
         info_dict = {}
         df_m_list = []
         for i in range(1, 11):
-            fpath = os.path.join(self.input_directory, "PIC{}".format(i), "info_df.txt.gz")
+            fpath = os.path.join(self.input_directory, "PIC{}".format(i), "info.txt.gz")
             if os.path.exists(fpath):
                 df = self.load_file(fpath, header=0, index_col=0)
 
@@ -216,6 +212,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
+        print("  > Palette path: {}".format(self.palette_path))
         print("  > Outpath {}".format(self.outdir))
         print("")
 

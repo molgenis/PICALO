@@ -3,7 +3,7 @@
 """
 File:         create_scatterplot.py
 Created:      2021/04/29
-Last Changed: 2021/07/07
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -26,7 +26,7 @@ from __future__ import print_function
 from pathlib import Path
 import argparse
 import math
-import sys
+import json
 import os
 
 # Third party imports.
@@ -70,9 +70,8 @@ class main():
         self.axis = getattr(arguments, 'axis')
         self.log_transform = getattr(arguments, 'log_transform')
         self.plot_index = getattr(arguments, 'plot_index')
-        self.sa_path = getattr(arguments, 'sample_annotation')
-        self.sample_id = getattr(arguments, 'sample_id')
-        self.color_id = getattr(arguments, 'color_id')
+        self.std_path = getattr(arguments, 'sample_to_dataset')
+        self.palette_path = getattr(arguments, 'palette')
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
@@ -80,21 +79,12 @@ class main():
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
-        self.palette = {
-            "MAYO": "#9c9fa0",
-            "CMC HBCC": "#0877b4",
-            "GTEx": "#0fa67d",
-            "ROSMAP": "#6950a1",
-            "Brain GVEx": "#48b2e5",
-            "Target ALS": "#d5c77a",
-            "MSBB": "#5cc5bf",
-            "NABEC": "#6d743a",
-            "LIBD": "#e49d26",
-            "ENA": "#d46727",
-            "GVEX": "#000000",
-            "UCLA ASD": "#f36d2a",
-            "CMC": "#eae453"
-            }
+        # Loading palette.
+        self.palette = None
+        if self.palette_path is not None:
+            with open(self.palette_path) as f:
+                self.palette = json.load(f)
+            f.close()
 
     @staticmethod
     def create_argument_parser():
@@ -136,7 +126,7 @@ class main():
                             action='store_true',
                             help="-log10 transform the values."
                                  " Default: False.")
-        parser.add_argument("-p",
+        parser.add_argument("-pi",
                             "--plot_index",
                             nargs="*",
                             type=str,
@@ -144,33 +134,19 @@ class main():
                             default=None,
                             help="Index label to plot. Default: all overlapping"
                                  "indices.")
-        parser.add_argument("-cid",
-                            "--color_id",
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
                             type=str,
                             required=False,
                             default=None,
-                            choices=["MetaBrain_cohort"],
-                            help="The color column(s) name in the -sa / "
-                                 "--sample_annotation file.")
-
-        required = False
-        if "-cid" in sys.argv or "--color_id" in sys.argv:
-            required = True
-
-        parser.add_argument("-sa",
-                            "--sample_annotation",
+                            help="The path to the sample-dataset link matrix.")
+        parser.add_argument("-p",
+                            "--palette",
                             type=str,
-                            required=required,
+                            required=False,
                             default=None,
-                            help="The path to the sample annotation file.")
-        parser.add_argument("-sid",
-                            "--sample_id",
-                            type=str,
-                            required=required,
-                            default=None,
-                            help="The sample column name in the -sa / "
-                                 "--sample_annotation file.")
-
+                            help="The path to a json file with the"
+                                 "dataset to color combinations.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
@@ -190,18 +166,15 @@ class main():
 
         print("Loading color data.")
         sa_df = None
-        if self.sa_path is not None:
-            sa_df = self.load_file(self.sa_path, header=0, index_col=0, low_memory=False)
-            sa_df = sa_df.loc[:, [self.sample_id, self.color_id]]
-            sa_df.set_index(self.sample_id, inplace=True)
+        if self.std_path is not None:
+            sa_df = self.load_file(self.std_path, header=None, index_col=None)
+            sa_df.set_index(sa_df.columns[0], inplace=True)
+            sa_df.columns = ["dataset"]
 
         # Plotting.
         columns = self.plot_index
         if self.plot_index is None:
             columns = df.columns.tolist()
-
-        print(df)
-        print(columns)
 
         self.plot(df=df, sa_df=sa_df, columns=columns)
 
@@ -231,7 +204,6 @@ class main():
         col_index = 0
         groups_present = set()
         for i in range(ncols * nrows):
-            print(i)
             if nrows == 1:
                 ax = axes[col_index]
             elif ncols == 1:
@@ -257,15 +229,15 @@ class main():
                 hue = None
                 palette = None
                 if sa_df is not None:
-                    hue = self.color_id
+                    hue = sa_df.columns[0]
                     palette = self.palette
                     plot_df = plot_df.merge(sa_df, left_index=True, right_index=True)
 
                 # set order.
                 #plot_df["x"] = df[pi].argsort()
                 counter = 0
-                for group in plot_df[self.color_id].unique():
-                    mask = plot_df[self.color_id] == group
+                for group in plot_df[sa_df.columns[0]].unique():
+                    mask = plot_df[sa_df.columns[0]] == group
                     subset = plot_df.loc[mask, :]
                     plot_df.loc[mask, "x"] = subset["y"].argsort() + counter
                     counter += np.sum(mask)
@@ -277,7 +249,7 @@ class main():
             else:
                 ax.set_axis_off()
 
-                if sa_df is not None and i == (nplots - 1):
+                if sa_df is not None and self.palette is not None and i == (nplots - 1):
                     handles = []
                     for key, value in self.palette.items():
                         if key in groups_present:
@@ -324,9 +296,8 @@ class main():
         print("  > Axis: {}".format(self.axis))
         print("  > -log10 transform: {}".format(self.log_transform))
         print("  > Plot index: {}".format(self.plot_index))
-        print("  > Sample annotation path: {}".format(self.sa_path))
-        print("     > Sample ID: {}".format(self.sample_id))
-        print("     > Color ID: {}".format(self.color_id))
+        print("  > Sample-to-dataset path: {}".format(self.std_path))
+        print("  > Palette path: {}".format(self.palette_path))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
         print("")

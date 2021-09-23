@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2021/09/20
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -96,13 +96,6 @@ class CommandLineArguments:
                             type=str,
                             required=True,
                             help="The path to the sample-dataset link matrix.")
-        parser.add_argument("-mss",
-                            "--min_sample_size",
-                            type=int,
-                            required=False,
-                            default=30,
-                            help="The minimal number of samples per dataset."
-                                 "Default: >= 30.")
         parser.add_argument("-ea",
                             "--eqtl_alpha",
                             type=float,

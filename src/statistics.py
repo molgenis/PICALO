@@ -60,10 +60,10 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
     if X_m is None and X_inter_m is None:
         return y_m
     if X_inter_m is not None and inter_m is None:
-        print("Error in remove_covariates")
+        log.error("Error in remove_covariates")
         exit()
     if inter_m is not None and (y_m.shape != inter_m.shape):
-        print("Error in remove_covariates")
+        log.error("Error in remove_covariates")
         exit()
 
     # Prepare X_m

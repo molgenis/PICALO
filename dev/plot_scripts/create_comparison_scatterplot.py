@@ -3,7 +3,7 @@
 """
 File:         create_comparison_scatterplot.py
 Created:      2021/06/30
-Last Changed: 2021/07/07
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,7 +25,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
-import sys
+import json
 import os
 
 # Third party imports.
@@ -63,9 +63,8 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
-        self.sa_path = getattr(arguments, 'sample_annotation')
-        self.sample_id = getattr(arguments, 'sample_id')
-        self.color_id = getattr(arguments, 'color_id')
+        self.std_path = getattr(arguments, 'sample_to_dataset')
+        self.palette_path = getattr(arguments, 'palette')
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
@@ -73,21 +72,12 @@ class main():
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
-        self.palette = {
-            "MAYO": "#9c9fa0",
-            "CMC HBCC": "#0877b4",
-            "GTEx": "#0fa67d",
-            "ROSMAP": "#6950a1",
-            "Brain GVEx": "#48b2e5",
-            "Target ALS": "#d5c77a",
-            "MSBB": "#5cc5bf",
-            "NABEC": "#6d743a",
-            "LIBD": "#e49d26",
-            "ENA": "#d46727",
-            "GVEX": "#000000",
-            "UCLA ASD": "#f36d2a",
-            "CMC": "#eae453"
-            }
+        # Loading palette.
+        self.palette = None
+        if self.palette_path is not None:
+            with open(self.palette_path) as f:
+                self.palette = json.load(f)
+            f.close()
 
     @staticmethod
     def create_argument_parser():
@@ -106,37 +96,24 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the data matrix.")
-        parser.add_argument("-cid",
-                            "--color_id",
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
                             type=str,
                             required=False,
                             default=None,
-                            choices=["MetaBrain_cohort"],
-                            help="The color column(s) name in the -sa / "
-                                 "--sample_annotation file.")
-
-        required = False
-        if "-cid" in sys.argv or "--color_id" in sys.argv:
-            required = True
-
-        parser.add_argument("-sa",
-                            "--sample_annotation",
+                            help="The path to the sample-dataset link matrix.")
+        parser.add_argument("-p",
+                            "--palette",
                             type=str,
-                            required=required,
+                            required=False,
                             default=None,
-                            help="The path to the sample annotation file.")
-        parser.add_argument("-sid",
-                            "--sample_id",
-                            type=str,
-                            required=required,
-                            default=None,
-                            help="The sample column name in the -sa / "
-                                 "--sample_annotation file.")
-
+                            help="The path to a json file with the"
+                                 "dataset to color combinations.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
-                            required=True,
+                            required=False,
+                            default="comparison_scatterplot",
                             help="The name of the outfile.")
 
         return parser.parse_args()
@@ -152,10 +129,9 @@ class main():
         print("Loading color data.")
         hue = None
         palette = None
-        if self.sa_path is not None:
-            sa_df = self.load_file(self.sa_path, header=0, index_col=0, low_memory=False)
-            sa_df = sa_df.loc[:, [self.sample_id, self.color_id]]
-            sa_df.set_index(self.sample_id, inplace=True)
+        if self.std_path is not None:
+            sa_df = self.load_file(self.std_path, header=None, index_col=None)
+            sa_df.set_index(sa_df.columns[0], inplace=True)
             sa_df.columns = ["hue"]
             df = df.merge(sa_df, left_index=True, right_index=True)
 
@@ -240,9 +216,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Data path: {}".format(self.data_path))
-        print("  > Sample annotation path: {}".format(self.sa_path))
-        print("     > Sample ID: {}".format(self.sample_id))
-        print("     > Color ID: {}".format(self.color_id))
+        print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
         print("")
