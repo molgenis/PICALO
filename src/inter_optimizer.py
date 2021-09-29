@@ -262,8 +262,8 @@ class InteractionOptimizer:
         info_df = pd.DataFrame(info_m[:n_iterations_performed, :],
                                index=["iteration{}".format(i) for i in range(n_iterations_performed)],
                                columns=["N", "N Overlap", "Overlap %",
-                                        "Mean Sum Abs Normalized Delta Log Likelihood",
-                                        "Sliding Window Mean Sum Abs Normalized Delta Log Likelihood"])
+                                        "Sum Abs Normalized Delta Log Likelihood",
+                                        "Sliding Window Sum Abs Normalized Delta Log Likelihood"])
         info_df.insert(0, "covariate", cov)
         save_dataframe(df=info_df,
                        outpath=os.path.join(outdir, "info.txt.gz"),

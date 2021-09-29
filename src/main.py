@@ -156,7 +156,7 @@ class Main:
         mgs_keep_mask = (geno_stats_df.loc[:, "min GS"] >= self.mgs).to_numpy()
         hwpval_keep_mask = (geno_stats_df.loc[:, "HW pval"] >= self.hw_pval).to_numpy()
         maf_keep_mask = (geno_stats_df.loc[:, "MAF"] > self.maf).to_numpy()
-        combined_keep_mask = n_keep_mask & mgs_keep_mask & mgs_keep_mask & hwpval_keep_mask & maf_keep_mask
+        combined_keep_mask = n_keep_mask & mgs_keep_mask & hwpval_keep_mask & maf_keep_mask
         geno_n_skipped = np.size(combined_keep_mask) - np.sum(combined_keep_mask)
         if geno_n_skipped > 0:
             self.log.warning("\t  {:,} eQTL(s) failed the sample size threshold".format(np.size(n_keep_mask) - np.sum(n_keep_mask)))
@@ -415,7 +415,7 @@ class Main:
         call_rate_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["{} CR".format(dataset) for dataset in dataset_df.columns])
         for dataset, sample_mask in dataset_df.T.iterrows():
             call_rate_s = (geno_df.loc[:, sample_mask.astype(bool)] != self.genotype_na).astype(int).sum(axis=1) / sample_mask.sum()
-            call_rate_df.loc[:, dataset] = call_rate_s
+            call_rate_df.loc[:, "{} CR".format(dataset)] = call_rate_s
 
             # If the call rate is too high, replace all genotypes of that
             # dataset with missing.

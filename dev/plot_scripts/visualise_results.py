@@ -183,6 +183,10 @@ class main():
             command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/IHC_counts.txt.gz", "-cn", "IHC", "-o", self.outname + "_vs_IHC"]
             self.run_command(command)
 
+            # Plot correlation_heatmap of components vs single cell counts.
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/single_cell_counts.txt.gz", "-cn", "IHC", "-o", self.outname + "_vs_SCC"]
+            self.run_command(command)
+
             # # Plot correlation_heatmap of components vs MetaBrain PCs.
             # command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-06-step4-remove-residual-covariates/pc1_10_residual.txt", "-cn", "MetaBrain PCA", "-o", self.outname + "_vs_MetaBrainPCs"]
             # self.run_command(command)
