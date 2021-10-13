@@ -3,7 +3,7 @@
 """
 File:         visualise_results.py
 Created:      2021/05/06
-Last Changed: 2021/09/23
+Last Changed: 2021/10/13
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -185,6 +185,10 @@ class main():
 
             # Plot correlation_heatmap of components vs single cell counts.
             command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/single_cell_counts.txt.gz", "-cn", "IHC", "-o", self.outname + "_vs_SCC"]
+            self.run_command(command)
+
+            # Plot correlation_heatmap of components vs MetaBrain phenotype.
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/encode_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "MetaBrain Phenotype", "-o", self.outname + "_vs_MetaBrainPhenotypes"]
             self.run_command(command)
 
             # # Plot correlation_heatmap of components vs MetaBrain PCs.

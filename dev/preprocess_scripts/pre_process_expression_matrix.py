@@ -537,7 +537,7 @@ class main():
         print("  > Technical covariates: {}".format(self.tcov_path))
         print("  > GtE path: {}".format(self.gte_path))
         print("  >   GtE prefix: {}".format(self.gte_prefix))
-        print("  >   Exclude: {}".format(self.gte_prefix))
+        print("  >   Exclude: {}".format(self.gte_exclude))
         print("  > Sample exclude path: {}".format(self.sample_exclude_path))
         print("  > Solo correction: {}".format(self.solo_correction))
         print("  > Plot output directory: {}".format(self.plot_outdir))

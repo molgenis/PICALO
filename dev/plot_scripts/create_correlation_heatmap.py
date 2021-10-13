@@ -3,7 +3,7 @@
 """
 File:         create_correlation_heatmap.py
 Created:      2021/04/26
-Last Changed: 2021/07/07
+Last Changed: 2021/10/13
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -69,6 +69,7 @@ class main():
         self.col_data_path = getattr(arguments, 'col_data')
         self.col_name = " ".join(getattr(arguments, 'col_name'))
         self.method = getattr(arguments, 'method')
+        self.call_rate = getattr(arguments, 'call_rate')
         self.row_cluster = getattr(arguments, 'row_cluster')
         self.col_cluster = getattr(arguments, 'col_cluster')
         self.out_filename = getattr(arguments, 'outfile')
@@ -123,11 +124,16 @@ class main():
                                  "Default: 0")
         parser.add_argument("-m",
                             "--method",
-                            nargs="*",
                             type=str,
                             choices=["Pearson", "Spearman"],
-                            default=["Spearman"],
+                            default="Spearman",
                             help="The correlation method. Default: Spearman.")
+        parser.add_argument("-cr",
+                            "--call_rate",
+                            type=float,
+                            default=0.01,
+                            help="The minimal call rate (not NaN values) for "
+                                 "calculating a correlation.")
         parser.add_argument("-row_cluster",
                             action='store_true',
                             help="Cluster the rows."
@@ -176,23 +182,20 @@ class main():
         row_df = row_df.loc[overlap, :]
         col_df = col_df.loc[overlap, :]
 
-        for method in self.method:
-            print("Method: {}".format(method))
+        print("\tCorrelating.")
+        corr_df, sample_size_df = self.correlate(index_df=row_df, columns_df=col_df, triangle=triangle)
+        print(corr_df)
+        print(sample_size_df)
 
-            print("\tCorrelating.")
-            corr_df = self.correlate(index_df=row_df, columns_df=col_df,
-                                     method=method, triangle=triangle)
-            print(corr_df)
+        print("\tClustering.")
+        if self.row_cluster:
+            corr_df = self.cluster(corr_df, axis=0)
+        if self.col_cluster:
+            corr_df = self.cluster(corr_df, axis=1)
 
-            print("\tClustering.")
-            if self.row_cluster:
-                corr_df = self.cluster(corr_df, axis=0)
-            if self.col_cluster:
-                corr_df = self.cluster(corr_df, axis=1)
-
-            print("\tPlotting.")
-            self.plot_heatmap(corr_df=corr_df, method=method,
-                              xlabel=self.col_name, ylabel=self.row_name)
+        print("\tPlotting.")
+        self.plot_heatmap(corr_df=corr_df, xlabel=self.col_name, ylabel=self.row_name, appendix="correlations")
+        self.plot_heatmap(corr_df=sample_size_df, xlabel=self.col_name, ylabel=self.row_name, appendix="sample_sizes", vmax=len(overlap), as_int=True)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -204,34 +207,30 @@ class main():
                                       df.shape))
         return df
 
-    @staticmethod
-    def correlate(index_df, columns_df, method, triangle=False):
-        out_df = pd.DataFrame(np.nan, index=index_df.columns, columns=columns_df.columns)
+    def correlate(self, index_df, columns_df, triangle=False):
+        corr_df = pd.DataFrame(np.nan, index=index_df.columns, columns=columns_df.columns)
+        sample_size_df = pd.DataFrame(0, index=index_df.columns, columns=columns_df.columns)
 
-        max_abs_corr = -np.inf
-        max_comparison = []
         for i, index_column in enumerate(index_df.columns):
             for j, column_column in enumerate(columns_df.columns):
                 if triangle and i < j:
                     continue
                 corr_data = pd.concat([index_df[index_column], columns_df[column_column]], axis=1)
-                filtered_corr_data = corr_data.dropna()
+                pre_filter_shape = corr_data.shape[0]
+                corr_data.dropna(inplace=True)
+                post_filter_shape = corr_data.shape[0]
 
                 coef = np.nan
-                if method == "Pearson":
-                    coef, _ = stats.pearsonr(filtered_corr_data.iloc[:, 1], filtered_corr_data.iloc[:, 0])
-                elif method == "Spearman":
-                    coef, _ = stats.spearmanr(filtered_corr_data.iloc[:, 1], filtered_corr_data.iloc[:, 0])
+                if (post_filter_shape / pre_filter_shape) > self.call_rate and np.min(corr_data.std(axis=0)) > 0:
+                    if self.method == "Pearson":
+                        coef, _ = stats.pearsonr(corr_data.iloc[:, 1], corr_data.iloc[:, 0])
+                    elif self.method == "Spearman":
+                        coef, _ = stats.spearmanr(corr_data.iloc[:, 1], corr_data.iloc[:, 0])
 
-                if abs(coef) > max_abs_corr:
-                    max_abs_corr = abs(coef)
-                    max_comparison = (index_column, column_column)
+                corr_df.loc[index_column, column_column] = coef
+                sample_size_df.loc[index_column, column_column] = post_filter_shape
 
-                out_df.loc[index_column, column_column] = coef
-
-        print("\t  Highest absolute interaction: {:.2f} [{}, {}]".format(max_abs_corr, max_comparison[0], max_comparison[1]))
-
-        return out_df
+        return corr_df, sample_size_df
 
     @staticmethod
     def cluster(df, axis):
@@ -252,7 +251,7 @@ class main():
 
         return tmp
 
-    def plot_heatmap(self, corr_df, method, xlabel="", ylabel=""):
+    def plot_heatmap(self, corr_df, xlabel="", ylabel="", appendix="", vmin=-1, vmax=1, as_int=False):
         cmap = sns.diverging_palette(246, 24, as_cmap=True)
 
         fig, axes = plt.subplots(nrows=2,
@@ -268,9 +267,13 @@ class main():
             ax = axes[row_index, col_index]
             if row_index == 0 and col_index == 1:
 
-                sns.heatmap(corr_df, cmap=cmap, vmin=-1, vmax=1, center=0,
-                            square=True, annot=corr_df.round(2), fmt='',
-                            cbar=False, annot_kws={"size": 16, "color": "#000000"},
+                annot_df = corr_df.round(2)
+                if as_int:
+                    annot_df = corr_df.astype(int)
+
+                sns.heatmap(corr_df, cmap=cmap, vmin=vmin, vmax=vmax, center=0,
+                            square=True, annot=annot_df, fmt='',
+                            cbar=False, annot_kws={"size": 14, "color": "#000000"},
                             ax=ax)
 
                 plt.setp(ax.set_yticklabels(ax.get_ymajorticklabels(), fontsize=20, rotation=0))
@@ -290,7 +293,7 @@ class main():
                 row_index += 1
 
         # plt.tight_layout()
-        fig.savefig(os.path.join(self.outdir, "{}_corr_heatmap_{}.png".format(self.out_filename, method)))
+        fig.savefig(os.path.join(self.outdir, "{}_corr_heatmap_{}_{}.png".format(self.out_filename, self.method, appendix)))
         plt.close()
 
     def print_arguments(self):
@@ -300,6 +303,7 @@ class main():
         print("  > Col data path: {}".format(self.col_data_path))
         print("  > Col name: {}".format(self.col_name))
         print("  > Correlation method: {}".format(self.method))
+        print("  > Call rate: {}".format(self.call_rate))
         print("  > Row cluster: {}".format(self.row_cluster))
         print("  > Col cluster: {}".format(self.col_cluster))
         print("  > Output filename: {}".format(self.out_filename))
