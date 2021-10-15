@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/09/23
+Last Changed: 2021/10/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -277,9 +277,9 @@ class Main:
         pic_m = np.empty((self.n_components, np.size(samples)), dtype=np.float64)
         n_components_performed = 0
         pic_a = None
-        converged = True
+        stop = False
         for comp_count in range(self.n_components):
-            if not converged:
+            if stop:
                 self.log.warning("Last component did not converge, stop "
                                  "further identification of components")
                 break
@@ -321,13 +321,13 @@ class Main:
                                                 log=self.log)
 
                 # Optimize the cell fractions in X iterations.
-                pic_a, converged = io.process(eqtl_m=eqtl_m,
-                                              geno_m=geno_m,
-                                              expr_m=comp_expr_m,
-                                              covs_m=covs_m,
-                                              corr_m=corr_m,
-                                              corr_inter_m=corr_inter_m,
-                                              outdir=comp_outdir)
+                pic_a, stop = io.process(eqtl_m=eqtl_m,
+                                         geno_m=geno_m,
+                                         expr_m=comp_expr_m,
+                                         covs_m=covs_m,
+                                         corr_m=corr_m,
+                                         corr_inter_m=corr_inter_m,
+                                         outdir=comp_outdir)
 
                 # Save.
                 pic_m[comp_count, :] = pic_a

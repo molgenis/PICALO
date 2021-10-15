@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/09/23
+Last Changed: 2021/10/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -55,7 +55,7 @@ class InteractionOptimizer:
     def process(self, eqtl_m, geno_m, expr_m, covs_m, corr_m, corr_inter_m,
                 outdir):
 
-        converged = False
+        stop = True
         pic_a = None
         cov = None
         results_df = None
@@ -167,7 +167,7 @@ class InteractionOptimizer:
                            log=self.log)
 
             n_ieqtls = len(ieqtls)
-            if n_ieqtls == 0:
+            if n_ieqtls <= 1:
                 self.log.error("\t\t  No significant ieQTLs found\n")
                 break
 
@@ -244,7 +244,7 @@ class InteractionOptimizer:
             if sw_sum_abs_norm_delta_ll < self.tol:
                 self.log.warning("\t\tModel converged")
                 self.log.info("")
-                converged = True
+                stop = False
                 break
 
             del ieqtls, optimized_pic_a
@@ -273,7 +273,7 @@ class InteractionOptimizer:
 
         del iteration_df, iterations_m, info_df, info_m
 
-        return pic_a, converged
+        return pic_a, stop
 
     def get_ieqtls(self, eqtl_m, geno_m, expr_m, cova_a, cov):
         n_eqtls = eqtl_m.shape[0]
