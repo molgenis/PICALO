@@ -193,7 +193,7 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs MetaBrain phenotype.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/encode_phenotype_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "MetaBrain Phenotype", "-o", self.outname + "_vs_MetaBrainPhenotypes"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICA/preprocess_scripts/encode_phenotype_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "MetaBrain Phenotype", "-o", self.outname + "_vs_MetaBrainPhenotypes"]
             self.run_command(command)
 
             # # Plot correlation_heatmap of components vs MetaBrain PCs.

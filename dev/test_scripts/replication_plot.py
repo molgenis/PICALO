@@ -104,13 +104,13 @@ class main():
         for idx in range(5):
             component = "component{}".format(idx)
 
-            comp_eur_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/output_CortexEUR_woENA_woGVEX_PCs/{}/results_{}.txt.gz".format(component, eur_iter_df[component])
+            comp_eur_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICA/output_CortexEUR_woENA_woGVEX_PCs/{}/results_{}.txt.gz".format(component, eur_iter_df[component])
             print("\t{}".format(comp_eur_path))
             if not os.path.exists(comp_eur_path):
                 continue
             comp_eur_df = self.load_file(comp_eur_path, header=0, index_col=None)
 
-            comp_afr_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/MetaBrain_CortexAFR_woENA_PICReplication/{}/results_{}.txt.gz".format(component, afr_iter_fdr[component])
+            comp_afr_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICA/MetaBrain_CortexAFR_woENA_PICReplication/{}/results_{}.txt.gz".format(component, afr_iter_fdr[component])
             print("\t{}".format(comp_afr_path))
             if not os.path.exists(comp_afr_path):
                 continue
@@ -276,7 +276,7 @@ class main():
                 col_index = 0
                 row_index += 1
 
-        fig.savefig(os.path.join(self.outdir, "MetaBrain_DeconOptimizer_replication_EURtoAFR.png"))
+        fig.savefig(os.path.join(self.outdir, "MetaBrain_PICA_replication_EURtoAFR.png"))
         plt.close()
 
     @staticmethod

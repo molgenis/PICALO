@@ -35,7 +35,7 @@ from src.main import Main
 from src.cmd_line_arguments import CommandLineArguments
 
 # Metadata
-__program__ = "Deconvolution Optimizer"
+__program__ = "Principal Interaction Component Analysis"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"

@@ -34,7 +34,7 @@ TODO
 ## Usage  
 
 ```  
-./decon_optimizer.py -h
+./pica.py -h
 ```  
   
 
