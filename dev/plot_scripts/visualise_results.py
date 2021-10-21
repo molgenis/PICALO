@@ -123,7 +123,7 @@ class main():
         self.run_command(command)
 
         # Plot interaction venn diagram.
-        command = ['python3', 'create_venn_diagram.py', '-i', self.input_data_path, '-p', self.palette_path]
+        command = ['python3', 'interaction_overview_plot.py', '-i', self.input_data_path, '-p', self.palette_path]
         self.run_command(command)
 
         for i in range(1, 11):
