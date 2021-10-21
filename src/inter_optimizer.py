@@ -161,7 +161,7 @@ class InteractionOptimizer:
 
             # Save results.
             save_dataframe(df=results_df,
-                           outpath=os.path.join(outdir, "results_iteration{}.txt.gz".format(iteration)),
+                           outpath=os.path.join(outdir, "results_iteration{:{}s}.txt.gz".format(iteration, len(str(self.max_iter)))),
                            header=True,
                            index=False,
                            log=self.log)

@@ -50,6 +50,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./visualise_results.py -h
+
 """
 
 
@@ -121,6 +122,10 @@ class main():
         command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.matrix_preparation_path, "combine_eqtlprobes", "eQTLprobes_combined.txt.gz"), '-p', self.palette_path]
         self.run_command(command)
 
+        # Plot interaction venn diagram.
+        command = ['python3', 'create_venn_diagram.py', '-i', self.input_data_path, '-p', self.palette_path]
+        self.run_command(command)
+
         for i in range(1, 11):
             comp_iterations_path = os.path.join(self.input_data_path, "PIC{}".format(i), "iteration.txt.gz")
 
@@ -188,7 +193,7 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs MetaBrain phenotype.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/encode_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "MetaBrain Phenotype", "-o", self.outname + "_vs_MetaBrainPhenotypes"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/encode_phenotype_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "MetaBrain Phenotype", "-o", self.outname + "_vs_MetaBrainPhenotypes"]
             self.run_command(command)
 
             # # Plot correlation_heatmap of components vs MetaBrain PCs.
