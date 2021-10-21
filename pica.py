@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         decon_optimizer.py
+File:         pica.py
 Created:      2020/11/16
-Last Changed: 2021/09/23
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,7 +23,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 """
 
 """
-./decon_optimizer.py -h
+./pica.py -h
 """
 
 # Standard imports.

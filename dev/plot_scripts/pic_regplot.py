@@ -3,7 +3,7 @@
 """
 File:         pic_regplot.py
 Created:      2021/04/29
-Last Changed: 2021/10/13
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -57,7 +57,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./pic_regplot.py -id ../../output/test -p ../../data/MetaBrainColorPalette.json -cd /groups/umcg-biogen/tmp01/output/2020-11-10-DeconOptimizer/preprocess_scripts/encode_matrix/2020-03-09.brain.phenotypes.txt -c IQ -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX/combine_gte_files/SampleToDataset.txt.gz -o test
+./pic_regplot.py -h
 """
 
 
@@ -103,7 +103,7 @@ class main():
                             "--input_data",
                             type=str,
                             required=True,
-                            help="The path to Decon-Optimize results.")
+                            help="The path to the PICA results.")
         parser.add_argument("-p",
                             "--palette",
                             type=str,

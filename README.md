@@ -1,5 +1,5 @@
-# Decon-Optimizer
-Project repository a novel method called Decon-Optimizer that allows for the identification of interaction components that influence eQTL effect size. This program uses an expectation maximization algorithm to maximize an interaction component. 
+# Principal Interaction Component Analysis (PICA)
+Project repository a novel method called PICA that allows for the identification of interaction components that influence eQTL effect size. This program uses an expectation maximization algorithm to maximize an interaction component. 
 
 ## Introduction
 
@@ -40,9 +40,9 @@ TODO
 
 ## Content
 
- * **[src](src)**: the source code for the Decon-Optimizer program
+ * **[src](src)**: the source code for the PICA program
  * **[dev/preprocess_scripts](dev/preprocess_scripts)**: script used for pre-processing the input data
- * **[dev/plot_scripts](dev/plot_scripts)**: scripts used to visualise the output of Decon-Optimizer
+ * **[dev/plot_scripts](dev/plot_scripts)**: scripts used to visualise the output of PICA
  * **[dev/test_scripts](dev/test_scripts)**: scripts used to test things / visualise stuff / etc.
 
 

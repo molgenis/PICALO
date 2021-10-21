@@ -3,7 +3,7 @@
 """
 File:         calc_genotype_info.py
 Created:      2021/06/14
-Last Changed:
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -99,7 +99,7 @@ class main():
         badly_imputated_indices = [np.round(x, 2) for x in np.hstack((np.arange(0.26, 0.75, 0.01), np.arange(1.26, 1.75, 0.01)))]
 
         print("### Step2 ###")
-        print("Loading Decon-Optimizer results")
+        print("Loading PICA results")
         for i in range(10):
             component = "component{}".format(i)
             for j in range(100):

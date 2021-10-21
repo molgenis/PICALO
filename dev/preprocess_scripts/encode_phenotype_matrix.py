@@ -49,7 +49,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./encode_phenotype_matrix.py -filepath /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-02-03-phenotype-table/2020-03-09.brain.phenotypes.txt -header 0 -index_col 4 -low_memory -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX/combine_gte_files/SampleToDataset.txt.gz
+./encode_phenotype_matrix.py -h
 """
 
 

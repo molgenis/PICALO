@@ -3,7 +3,7 @@
 """
 File:         visualise_results.py
 Created:      2021/05/06
-Last Changed: 2021/10/13
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -85,7 +85,7 @@ class main():
                             "--input_data",
                             type=str,
                             required=True,
-                            help="The path to Decon-Optimize results.")
+                            help="The path to PICA results.")
         parser.add_argument("-p",
                             "--palette",
                             type=str,
