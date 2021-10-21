@@ -1,7 +1,7 @@
 """
 File:         force_normaliser.py
 Created:      2021/03/02
-Last Changed: 2021/10/21
+Last Changed: 2021/09/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -58,7 +58,7 @@ class ForceNormaliser:
         # Force normalise.
         normal = np.empty_like(data, dtype=np.float64)
         for cohort_index in range(self.dataset_m.shape[1]):
-            mask = self.dataset_m[:, cohort_index].to_numpy(dtype=bool)
+            mask = self.dataset_m[:, cohort_index].astype(bool)
             if np.sum(mask) > 0:
                 if axis == 1:
                     normal[:, mask] = self.force_normalise(data[:, mask], axis=axis)
