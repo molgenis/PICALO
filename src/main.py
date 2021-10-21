@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/10/15
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -34,7 +34,7 @@ from src.logger import Logger
 from src.force_normaliser import ForceNormaliser
 from src.objects.data import Data
 from src.inter_optimizer import InteractionOptimizer
-from src.statistics import remove_covariates, fit_and_predict
+from src.statistics import remove_covariates_pcr
 from src.utilities import save_dataframe
 
 
@@ -114,9 +114,14 @@ class Main:
         geno_df = self.data.get_geno_df(skiprows=skiprows, nrows=max(eqtl_signif_df.index)+1)
         std_df = self.data.get_std_df()
 
-        # Validate that the input data matches.
-        self.validate_data(std_df=std_df,
-                           geno_df=geno_df)
+        if std_df is not None:
+            # Validate that the input data matches.
+            self.validate_data(std_df=std_df,
+                               geno_df=geno_df)
+        else:
+            # Create sample-to-dataset file with all the samples having the
+            # same dataset.
+            std_df = pd.DataFrame({"sample": geno_df.columns, "dataset": "None"})
 
         self.log.info("\tChecking dataset sample sizes")
         # Check if each dataset has the minimal number of samples.
@@ -149,16 +154,21 @@ class Main:
         self.log.info("")
 
         self.log.info("\tCalculating genotype stats for inclusing criteria")
-        geno_stats_df = self.calculate_genotype_stats(df=geno_df)
+        cr_keep_mask = ~(geno_df == -1).all(axis=1).to_numpy(dtype=bool)
+        geno_stats_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["N", "NaN", "0", "1", "2", "min GS", "HW pval", "allele1", "allele2", "MA", "MAF"])
+        geno_stats_df["N"] = 0
+        geno_stats_df["Nan"] = geno_df.shape[1]
+        geno_stats_df.loc[cr_keep_mask, :] = self.calculate_genotype_stats(df=geno_df.loc[cr_keep_mask, :])
 
         # Checking which eQTLs pass the requirements
-        n_keep_mask = (geno_stats_df.loc[:, "N"] >= 6).to_numpy()
-        mgs_keep_mask = (geno_stats_df.loc[:, "min GS"] >= self.mgs).to_numpy()
-        hwpval_keep_mask = (geno_stats_df.loc[:, "HW pval"] >= self.hw_pval).to_numpy()
-        maf_keep_mask = (geno_stats_df.loc[:, "MAF"] > self.maf).to_numpy()
-        combined_keep_mask = n_keep_mask & mgs_keep_mask & hwpval_keep_mask & maf_keep_mask
+        n_keep_mask = (geno_stats_df.loc[:, "N"] >= 6).to_numpy(dtype=bool)
+        mgs_keep_mask = (geno_stats_df.loc[:, "min GS"] >= self.mgs).to_numpy(dtype=bool)
+        hwpval_keep_mask = (geno_stats_df.loc[:, "HW pval"] >= self.hw_pval).to_numpy(dtype=bool)
+        maf_keep_mask = (geno_stats_df.loc[:, "MAF"] > self.maf).to_numpy(dtype=bool)
+        combined_keep_mask = cr_keep_mask & n_keep_mask & mgs_keep_mask & hwpval_keep_mask & maf_keep_mask
         geno_n_skipped = np.size(combined_keep_mask) - np.sum(combined_keep_mask)
         if geno_n_skipped > 0:
+            self.log.warning("\t  {:,} eQTL(s) failed the call rate threshold".format(np.size(cr_keep_mask) - np.sum(cr_keep_mask)))
             self.log.warning("\t  {:,} eQTL(s) failed the sample size threshold".format(np.size(n_keep_mask) - np.sum(n_keep_mask)))
             self.log.warning("\t  {:,} eQTL(s) failed the min. genotype group size threshold".format(np.size(mgs_keep_mask) - np.sum(mgs_keep_mask)))
             self.log.warning("\t  {:,} eQTL(s) failed the Hardy-Weinberg p-value threshold".format(np.size(hwpval_keep_mask) - np.sum(hwpval_keep_mask)))
@@ -250,11 +260,6 @@ class Main:
         ########################################################################
 
         self.log.info("Force normalising covariate matrix")
-        # TODO uncomment this?
-        # covs_m = np.vstack((covs_m, tcov_m.T[:10, :]))
-        # covariates = covariates + tcov_labels[:10]
-        covs_m = tcov_m.T[:10, :]
-        covariates = tcov_labels[:10]
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
         covs_m = fn.process(covs_m)
         self.log.info("")
@@ -314,19 +319,17 @@ class Main:
 
                 # Remove tech. covs. + components from expression matrix.
                 self.log.info("\t  Correcting expression matrix")
-                comp_expr_m = remove_covariates(y_m=expr_m,
-                                                X_m=corr_m,
-                                                X_inter_m=corr_inter_m,
-                                                inter_m=geno_m,
-                                                log=self.log)
+                comp_expr_m = remove_covariates_pcr(y_m=expr_m,
+                                                    X_m=corr_m,
+                                                    X_inter_m=corr_inter_m,
+                                                    inter_m=geno_m,
+                                                    log=self.log)
 
                 # Optimize the cell fractions in X iterations.
                 pic_a, stop = io.process(eqtl_m=eqtl_m,
                                          geno_m=geno_m,
                                          expr_m=comp_expr_m,
                                          covs_m=covs_m,
-                                         corr_m=corr_m,
-                                         corr_inter_m=corr_inter_m,
                                          outdir=comp_outdir)
 
                 # Save.
@@ -347,25 +350,6 @@ class Main:
                        outpath=os.path.join(self.outdir, "components.txt.gz"),
                        header=True,
                        index=True)
-
-        # ########################################################################
-        # Model the cell fractions as a linear combination of components.
-        # TODO not working, fix this.
-        #
-        # self.log.info("Modelling optimized covariates")
-        # optimized_m = self.model_optimized_covs(covs_m=covs_m, components_m=pic_m)
-        #
-        # optimized_df = pd.DataFrame(optimized_m,
-        #                             index=samples,
-        #                             columns=covariates)
-        # save_dataframe(df=optimized_df,
-        #                outpath=os.path.join(self.outdir,
-        #                                     "optimized_covariates.txt.gz"),
-        #                header=True,
-        #                index=True)
-        # self.log.info("")
-        #
-        # ########################################################################
 
         self.log.info("Finished")
         self.log.info("")
@@ -414,7 +398,7 @@ class Main:
         # Calculate the fraction of NaNs per dataset.
         call_rate_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["{} CR".format(dataset) for dataset in dataset_df.columns])
         for dataset, sample_mask in dataset_df.T.iterrows():
-            call_rate_s = (geno_df.loc[:, sample_mask.astype(bool)] != self.genotype_na).astype(int).sum(axis=1) / sample_mask.sum()
+            call_rate_s = (geno_df.loc[:, sample_mask.to_numpy(dtype=bool)] != self.genotype_na).astype(int).sum(axis=1) / np.sum(sample_mask)
             call_rate_df.loc[:, "{} CR".format(dataset)] = call_rate_s
 
             # If the call rate is too high, replace all genotypes of that
@@ -462,11 +446,11 @@ class Main:
                                   "2": two_a,
                                   "min GS": sgz,
                                   "HW pval": hwe_pvalues_a,
-                                  "allele 1": allele1_a,
-                                  "allele 2": allele2_a,
+                                  "allele1": allele1_a,
+                                  "allele2": allele2_a,
                                   "MA": ma,
                                   "MAF": maf,
-                                  })
+                                  }, index=df.index)
         del rounded_m, allele_m
 
         return output_df
@@ -590,20 +574,6 @@ class Main:
         self.log.info("\t  Technical covariates [{}]: {}".format(len(covariates), ", ".join(covariates)))
 
         return m, covariates
-
-    @staticmethod
-    def model_optimized_covs(covs_m, components_m):
-        """
-        TODO not working, fix this.
-        """
-        X = np.hstack((np.ones((components_m.shape[1], 1)), components_m.T))
-
-        # Model the cell fractions as linear combinations of components.
-        optimized_m = np.empty_like(covs_m, dtype=np.float64)
-        for cov_index in range(covs_m.shape[1]):
-            optimized_m[cov_index, :] = fit_and_predict(X=X, y=covs_m[cov_index, :])
-
-        return optimized_m
 
     def print_arguments(self):
         self.log.info("Arguments:")

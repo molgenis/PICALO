@@ -1,7 +1,7 @@
 """
 File:         data.py
 Created:      2020/11/16
-Last Changed: 2021/09/23
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -126,7 +126,7 @@ class Data:
         return self.covs_df
 
     def get_std_df(self):
-        if self.std_df is None:
+        if self.std_df is None and self.std_path is not None:
             self.std_df = load_dataframe(self.std_path,
                                          header=0,
                                          index_col=None,

@@ -1,7 +1,7 @@
 """
 File:         visualiser.py
 Created:      2021/04/14
-Last Changed: 2021/05/03
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -33,7 +33,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # Local application imports.
-from src.statistics import calc_vertex_xpos, calc_pearsonr, fit_and_predict
+from src.statistics import calc_vertex_xpos, calc_pearsonr_vector, fit_and_predict
 
 
 class Visualiser:
@@ -48,7 +48,7 @@ class Visualiser:
         y = np.copy(ieqtl.y)
 
         # Calculate the pearson R.
-        pearsonr_start = calc_pearsonr(x=y, y=fit_and_predict(X=X_start, y=y))
+        pearsonr_start = calc_pearsonr_vector(x=y, y=fit_and_predict(X=X_start, y=y))
         r_squared_start = pearsonr_start * pearsonr_start
 
         # Calc the OCF if not given.
@@ -70,7 +70,7 @@ class Visualiser:
         # Calculate the pearson R.
         r_squared_opt = None
         if not solo_optimized:
-            pearsonr_opt = calc_pearsonr(x=y, y=fit_and_predict(X=X_opt, y=y))
+            pearsonr_opt = calc_pearsonr_vector(x=y, y=fit_and_predict(X=X_opt, y=y))
             r_squared_opt = pearsonr_opt * pearsonr_opt
 
         # Construct plot data frames.

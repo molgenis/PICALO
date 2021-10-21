@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2021/09/23
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -94,8 +94,10 @@ class CommandLineArguments:
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
-                            required=True,
-                            help="The path to the sample-dataset link matrix.")
+                            required=False,
+                            default=None,
+                            help="The path to the sample-dataset link matrix."
+                                 "Default: None.")
         parser.add_argument("-ea",
                             "--eqtl_alpha",
                             type=float,
@@ -156,9 +158,9 @@ class CommandLineArguments:
         parser.add_argument("-n_components",
                             type=int,
                             required=False,
-                            default=5,
+                            default=10,
                             help="The number of components to extract. "
-                                 "Default: 5.")
+                                 "Default: 10.")
         parser.add_argument("-max_iter",
                             type=int,
                             required=False,

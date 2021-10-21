@@ -42,6 +42,9 @@ def load_dataframe(inpath, header, index_col, sep="\t", low_memory=True,
 
 
 def save_dataframe(df, outpath, header, index, sep="\t", log=None):
+    if df is None:
+        return
+
     compression = 'infer'
     if outpath.endswith('.gz'):
         compression = 'gzip'

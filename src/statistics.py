@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/09/16
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -54,8 +54,8 @@ def calc_ols_rsquared(m, idx):
     return OLS(m[:, idx], m[:, mask]).fit().rsquared
 
 
-def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
-                      include_intercept=False, include_inter_as_covariate=False,
+def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
+                      include_intercept=True, include_inter_as_covariate=False,
                       log=None):
     if X_m is None and X_inter_m is None:
         return y_m
@@ -74,14 +74,6 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
         # Force 2D matrix.
         if np.ndim(X_m_tmp) == 1:
             X_m_tmp = X_m_tmp[:, np.newaxis]
-
-    # Add the intercept.
-    if include_intercept:
-        intercept = np.ones((X_m_tmp.shape[0], 1))
-        if X_m_tmp is not None:
-            X_m_tmp = np.hstack((intercept, X_m_tmp))
-        else:
-            X_m_tmp = intercept
 
     # Prepare X_inter_m
     X_inter_m_tmp = None
@@ -126,6 +118,19 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
                 X = np.hstack((X, inter_a))
 
         X = summarize_matrix(X)
+
+        pearsonr_m = calc_pearsonr_matrix(X=X)
+        mask = np.ones(pearsonr_m.shape, dtype=bool)
+        np.fill_diagonal(mask, 0)
+        max_pearsonr = np.max(pearsonr_m[mask])
+        if max_pearsonr > 0.8:
+            log.warning("PCR correction matrix has a high correlation of {:.2f}".format(max_pearsonr))
+
+        # Add the intercept.
+        if include_intercept:
+            intercept = np.ones((X.shape[0], 1))
+            X = np.hstack((intercept, X))
+
         y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
 
     return y_m_corrected
@@ -150,41 +155,20 @@ def summarize_matrix(m):
     return np.dot(zscore, eigenvectors[:, mask])
 
 
-def remove_interaction_covariates(y_m, X_m, inter_m,
-                                  include_covariate=False,
-                                  include_intercept=False):
+def calc_pearsonr_matrix(X):
+    zscores = (X - X.mean(axis=0)) / X.std(axis=0)
+    return np.dot(zscores.T, zscores) / zscores.shape[0]
+
+
+def remove_covariates_elementwise(y_m, X_m, a):
     y_m_corrected = np.empty_like(y_m, dtype=np.float64)
 
-    X_m_tmp = np.copy(X_m)
-    if np.ndim(X_m_tmp) == 1:
-        X_m_tmp = X_m_tmp[:, np.newaxis]
+    X = np.empty((X_m.shape[1], 3), dtype=np.float64)
+    X[:, 0] = 1
+    X[:, 2] = a
 
     for i in range(y_m.shape[0]):
-        X = X_m_tmp * inter_m[i, :][:, np.newaxis]
-
-        if include_covariate:
-            X = np.concatenate((X_m_tmp, X), axis=1)
-        if include_intercept:
-            X = np.hstack((np.ones((X.shape[0], 1)), X))
-
-        y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
-
-    return y_m_corrected
-
-
-def remove_covariates_elementwise(y_m, X_m, a=None,
-                                  include_intercept=False):
-    y_m_corrected = np.empty_like(y_m, dtype=np.float64)
-
-    for i in range(y_m.shape[0]):
-
-        X = X_m[i, :][:, np.newaxis]
-        if a is not None:
-            X = np.hstack((X, a[:, np.newaxis]))
-
-        if include_intercept:
-            X = np.hstack((np.ones((X.shape[0], 1)), X))
-
+        X[:, 1] = X_m[i, :]
         y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
 
     return y_m_corrected
@@ -253,7 +237,7 @@ def calc_vertex_xpos(a, b):
     return vertex_xpos.astype(np.float64)
 
 
-def calc_pearsonr(x, y):
+def calc_pearsonr_vector(x, y):
     x_dev = x - np.mean(x)
     y_dev = y - np.mean(y)
     dev_sum = np.sum(x_dev * y_dev)

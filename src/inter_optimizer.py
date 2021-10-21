@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/10/15
+Last Changed: 2021/10/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -32,8 +32,8 @@ from statsmodels.stats import multitest
 # Local application imports.
 from src.force_normaliser import ForceNormaliser
 from src.objects.ieqtl import IeQTL
-from src.statistics import calc_vertex_xpos, remove_covariates, remove_covariates_elementwise
-from src.utilities import load_dataframe, save_dataframe
+from src.statistics import calc_vertex_xpos, remove_covariates_elementwise
+from src.utilities import save_dataframe
 from src.visualiser import Visualiser
 
 
@@ -52,9 +52,7 @@ class InteractionOptimizer:
                                   samples=samples,
                                   log=log)
 
-    def process(self, eqtl_m, geno_m, expr_m, covs_m, corr_m, corr_inter_m,
-                outdir):
-
+    def process(self, eqtl_m, geno_m, expr_m, covs_m, outdir):
         stop = True
         pic_a = None
         cov = None
@@ -87,17 +85,7 @@ class InteractionOptimizer:
                     cova_a = covs_m[cov_index, :]
 
                     # Clean the expression matrix.
-                    # TODO decide if we only remove the interaction vector or
-                    # if we remove all technical stuff including interaction
-                    # vector for every iteration. The latter should be batter
-                    # but is way more slower.
-
                     iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=cova_a)
-                    # iter_expr_m = remove_covariates(y_m=expr_m,
-                    #                                 X_m=np.hstack((corr_m, cova_a[:, np.newaxis])),
-                    #                                 X_inter_m=corr_inter_m,
-                    #                                 inter_m=geno_m,
-                    #                                 include_inter_as_covariate=True)
 
                     # Force normalise the matrix.
                     iter_expr_m = self.fn.process(data=iter_expr_m)
@@ -135,17 +123,7 @@ class InteractionOptimizer:
                 self.log.info("\t\t  Finding ieQTLs")
 
                 # Clean the expression matrix.
-                # TODO decide if we only remove the interaction vector or
-                # if we remove all technical stuff including interaction
-                # vector for every iteration. The latter should be batter
-                # but is way more slower.
-
                 iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=pic_a)
-                # iter_expr_m = remove_covariates(y_m=expr_m,
-                #                                 X_m=np.hstack((corr_m, pic_a[:, np.newaxis])),
-                #                                 X_inter_m=corr_inter_m,
-                #                                 inter_m=geno_m,
-                #                                 include_inter_as_covariate=True)
 
                 # Force normalise the matrix.
                 iter_expr_m = self.fn.process(data=iter_expr_m)
@@ -161,7 +139,7 @@ class InteractionOptimizer:
 
             # Save results.
             save_dataframe(df=results_df,
-                           outpath=os.path.join(outdir, "results_iteration{:{}s}.txt.gz".format(iteration, len(str(self.max_iter)))),
+                           outpath=os.path.join(outdir, "results_iteration{}{}.txt.gz".format("0" * (len(str(self.max_iter)) - len(str(iteration))), iteration)),
                            header=True,
                            index=False,
                            log=self.log)
