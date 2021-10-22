@@ -60,6 +60,7 @@ class InteractionOptimizer:
         prev_included_ieqtls = (0, set())
         n_iterations_performed = 0
         info_m = np.empty((self.max_iter, 5), dtype=np.float64)
+        n_ieqtls_per_sample_m = np.empty((self.max_iter, geno_m.shape[1]), dtype=np.float64)
         sum_abs_norm_delta_ll_a = np.empty(self.max_iter, dtype=np.float64)
         iterations_m = np.empty((self.max_iter + 1, geno_m.shape[1]), dtype=np.float64)
         for iteration in range(n_iterations_performed, self.max_iter):
@@ -158,12 +159,13 @@ class InteractionOptimizer:
             self.log.info("\t\t  Optimizing ieQTLs")
 
             # Optimize the interaction vector.
-            optimized_pic_a = self.optimize_ieqtls(ieqtls)
+            optimized_pic_a, n_ieqtls_per_sample_a = self.optimize_ieqtls(ieqtls)
 
             # Safe that interaction vector.
             if iteration == 0:
                 iterations_m[iteration, :] = pic_a
             iterations_m[iteration + 1, :] = optimized_pic_a
+            n_ieqtls_per_sample_m[iteration, :] = n_ieqtls_per_sample_a
 
             # # Visualise.
             # # TODO remove this temporary code to create interaction plots.
@@ -237,6 +239,15 @@ class InteractionOptimizer:
                        index=True,
                        log=self.log)
 
+        n_ieqtls_per_sample_df = pd.DataFrame(n_ieqtls_per_sample_m[:n_iterations_performed, :],
+                                              index=["iteration{}".format(i) for i in range(n_iterations_performed)],
+                                              columns=self.samples)
+        save_dataframe(df=n_ieqtls_per_sample_df,
+                       outpath=os.path.join(outdir, "n_ieqtls_per_sample.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
+
         info_df = pd.DataFrame(info_m[:n_iterations_performed, :],
                                index=["iteration{}".format(i) for i in range(n_iterations_performed)],
                                columns=["N", "N Overlap", "Overlap %",
@@ -295,16 +306,22 @@ class InteractionOptimizer:
     def optimize_ieqtls(ieqtls):
         coef_a_collection = []
         coef_b_collection = []
+        ieqtl_masks = []
         for i, ieqtl in enumerate(ieqtls):
             coef_a, coef_b = ieqtl.get_mll_coef_representation(full_array=True)
             coef_a_collection.append(coef_a)
             coef_b_collection.append(coef_b)
 
-        coef_a_sum = np.nansum(coef_a_collection, axis=0)
-        coef_b_sum = np.nansum(coef_b_collection, axis=0)
+            mask = ieqtl.get_mask()
+            ieqtl_masks.append(mask)
+
+        coef_a_sum = np.sum(coef_a_collection, axis=0)
+        coef_b_sum = np.sum(coef_b_collection, axis=0)
         optimized_a = calc_vertex_xpos(a=coef_a_sum, b=coef_b_sum)
 
-        return optimized_a
+        n_ieqtls_per_sample_a = np.stack(ieqtl_masks, axis=0).sum(axis=0)
+
+        return optimized_a, n_ieqtls_per_sample_a
 
     @staticmethod
     def calculate_log_likelihood(ieqtls, vector=None):

@@ -1,7 +1,7 @@
 """
 File:         ieqtl.py
 Created:      2021/04/08
-Last Changed: 2021/09/15
+Last Changed: 2021/10/22
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -184,6 +184,9 @@ class IeQTL:
             return full_a, full_b
         else:
             return self.coef_a, self.coef_b
+
+    def get_mask(self):
+        return self.mask
 
     def calc_log_likelihood(self, new_cov=None):
         residuals = self.residuals.copy()
