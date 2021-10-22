@@ -126,6 +126,10 @@ class main():
         command = ['python3', 'interaction_overview_plot.py', '-i', self.input_data_path, '-p', self.palette_path]
         self.run_command(command)
 
+        # Plot #ieQTLs per sample boxplot.
+        command = ['python3', 'no_ieqtls_per_sample_plot.py', '-i', self.input_data_path, '-p', self.palette_path]
+        self.run_command(command)
+
         for i in range(1, 11):
             comp_iterations_path = os.path.join(self.input_data_path, "PIC{}".format(i), "iteration.txt.gz")
 

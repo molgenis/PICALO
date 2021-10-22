@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         plot_genotype.py
-Created:      2021/04/08
-Last Changed: 2021/07/07
+File:         no_ieqtls_per_sample_plot.py
+Created:      2021/10/22
+Last Changed:
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,9 +25,8 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
-import math
-import sys
 import json
+import math
 import os
 
 # Third party imports.
@@ -37,12 +36,12 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+import matplotlib.ticker as ticker
 
 # Local application imports.
 
 # Metadata
-__program__ = "Plot Genotype"
+__program__ = "Number of ieQTLs per Sample Plot"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -56,10 +55,10 @@ __description__ = "{} is a program developed and maintained by {}. " \
                                         __license__)
 
 """
-Syntax: 
-./plot_genotype.py -h
+Syntax:
+./no_ieqtls_per_sample_plot.py -h
 
-./plot_genotype.py -g /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX/create_matrices/genotype_table.txt.gz -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/OLD/ContainsDuplicateSamples/CortexEUR-cis/combine_gte_files/SampleToDataset.txt.gz -p ../../data/MetaBrainColorPalette.json -o test
+./no_ieqtls_per_sample_plot.py -i ../../output/test/ -p ../../data/MetaBrainColorPalette.json
 """
 
 
@@ -67,10 +66,8 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.geno_path = getattr(arguments, 'genotype')
-        self.std_path = getattr(arguments, 'sample_to_dataset')
+        self.input_directory = getattr(arguments, 'indir')
         self.palette_path = getattr(arguments, 'palette')
-        self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
@@ -96,17 +93,11 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit.")
-        parser.add_argument("-g",
-                            "--genotype",
+        parser.add_argument("-i",
+                            "--indir",
                             type=str,
                             required=True,
-                            help="The path to the genotype matrix")
-        parser.add_argument("-std",
-                            "--sample_to_dataset",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The path to the sample-dataset link matrix.")
+                            help="The path to the input directory.")
         parser.add_argument("-p",
                             "--palette",
                             type=str,
@@ -114,61 +105,38 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
-        parser.add_argument("-o",
-                            "--outfile",
-                            type=str,
-                            required=True,
-                            help="The name of the outfile.")
 
         return parser.parse_args()
 
     def start(self):
         self.print_arguments()
 
-        print("Loading genotype data.")
-        geno_df = self.load_file(self.geno_path, header=0, index_col=0)
-        print(geno_df)
+        print("Loading data")
+        pics = []
+        pic_df_m_collection = []
+        for i in range(1, 11):
+            pic = "PIC{}".format(i)
+            data_path = os.path.join(self.input_directory, pic, "n_ieqtls_per_sample.txt.gz")
 
-        print("Counting bins.")
-        counts_m = np.empty((geno_df.shape[1], 7), dtype=np.uint32)
-        indices = np.empty((geno_df.shape[1]), dtype=object)
-        columns = ["zero", "one", "two", "missing", "not imputed", "imputed", "badly imputed"]
-        for i in range(geno_df.shape[1]):
-            genotypes = geno_df.iloc[:, i].to_numpy()
-            n_zero = np.sum(genotypes == 0)
-            n_one = np.sum(genotypes == 1)
-            n_two = np.sum(genotypes == 2)
-            n_missing = np.sum(genotypes == -1)
-            n_not_imputed = n_zero + n_one + n_two + n_missing
-            n_imputed = len(genotypes) - n_not_imputed
-            badly_imputed = np.sum(np.logical_or(np.logical_and(genotypes >= 0.25, genotypes <= 0.75), np.logical_and(genotypes >= 1.25, genotypes <= 1.75)))
-            counts_m[i, :] = np.array([n_zero, n_one, n_two, n_missing, n_not_imputed, n_imputed, badly_imputed])
-            indices[i] = geno_df.columns[i]
-        counts_df = pd.DataFrame(counts_m, index=indices, columns=columns)
-        print(counts_df)
+            if not os.path.exists(data_path):
+                continue
 
-        print("Loading color data.")
-        hue = None
-        if self.std_path is not None:
-            sa_df = self.load_file(self.std_path, header=0, index_col=None)
-            sa_df.set_index(sa_df.columns[0], inplace=True)
-            sa_df.columns = ["hue"]
-            counts_df = counts_df.merge(sa_df, left_index=True, right_index=True, how="left")
+            df = self.load_file(data_path, header=0, index_col=0)
+            df.index = [i+1 for i in range(df.shape[0])]
+            df_m = df.T.melt()
+            df_m["group"] = pic
 
-            hue = "hue"
+            pics.append(pic)
+            pic_df_m_collection.append(df_m)
 
-        print("Post-processing data.")
-        counts_df.reset_index(drop=False, inplace=True)
-        counts_df_m = counts_df.melt(id_vars=["index", "hue"])
-        counts_df_m["x"] = 1
-        print(counts_df_m)
+        combined_df_m = pd.concat(pic_df_m_collection, axis=0)
 
-        self.plot_boxplot(df_m=counts_df_m,
-                          variables=columns,
-                          y="value",
-                          hue=hue,
-                          palette=self.palette,
-                          appendix="_perCohort")
+        print("Plotting.")
+        self.plot_boxplot(df_m=combined_df_m,
+                          xlabel="iteration",
+                          ylabel="#ieQTLs per sample",
+                          order=pics,
+                          palette=self.palette)
 
     def load_file(self, inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
@@ -179,20 +147,16 @@ class main():
                                       df.shape))
         return df
 
-    def plot_boxplot(self, df_m, variables, x="x", y="y", hue=None,
-                     hue_order=None, palette=None, appendix=""):
-        sizes = {}
-        if hue is not None:
-            sizes = dict(zip(*np.unique(df_m[hue], return_counts=True)))
-
-
-        nplots = len(variables) + 1
+    def plot_boxplot(self, df_m, order, x="variable", y="value", panel="group",
+                     xlabel="", ylabel="", palette=None):
+        nplots = len(order) + 1
         ncols = math.ceil(np.sqrt(nplots))
         nrows = math.ceil(nplots / ncols)
 
-        sns.set_style("ticks")
         fig, axes = plt.subplots(nrows=nrows,
                                  ncols=ncols,
+                                 sharex='none',
+                                 sharey='none',
                                  figsize=(12 * ncols, 12 * nrows))
         sns.set(color_codes=True)
 
@@ -207,70 +171,63 @@ class main():
             else:
                 ax = axes[row_index, col_index]
 
-            if i < len(variables):
+            if i < len(order):
                 sns.despine(fig=fig, ax=ax)
 
-                subset = df_m.loc[df_m["variable"] == variables[i], :]
+                subset = df_m.loc[df_m[panel] == order[i], :]
+
+                color = "#808080"
+                if palette is not None and order[i] in palette:
+                    color = palette[order[i]]
 
                 sns.violinplot(x=x,
                                y=y,
-                               hue=hue,
-                               hue_order=hue_order,
-                               cut=0,
                                data=subset,
-                               palette=palette,
+                               color=color,
                                ax=ax)
 
                 plt.setp(ax.collections, alpha=.75)
 
                 sns.boxplot(x=x,
                             y=y,
-                            hue=hue,
-                            hue_order=hue_order,
                             data=subset,
-                            whis=np.inf,
                             color="white",
                             ax=ax)
 
                 plt.setp(ax.artists, edgecolor='k', facecolor='w')
                 plt.setp(ax.lines, color='k')
 
-                ax.get_legend().remove()
-
-                ax.set_title(variables[i],
+                ax.set_title(order[i],
                              fontsize=25,
                              fontweight='bold')
-                ax.set_ylabel("",
+                ax.set_ylabel(ylabel,
                               fontsize=20,
                               fontweight='bold')
-                ax.set_xlabel("",
+                ax.set_xlabel(xlabel,
                               fontsize=20,
                               fontweight='bold')
+
+                start, end = ax.get_xlim()
+                ax.xaxis.set_ticks(np.arange(start + 0.5, end + 0.5, 10))
+                ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.0f'))
 
                 ax.tick_params(axis='both', which='major', labelsize=14)
             else:
                 ax.set_axis_off()
-
-                if palette is not None and i == (nplots - 1):
-                    handles = []
-                    for label, size in sizes.items():
-                        handles.append(mpatches.Patch(color=palette[label], label="{} [n={:.0f}]".format(label, sizes[label] / len(variables))))
-                    ax.legend(handles=handles, loc=4, fontsize=25)
 
             col_index += 1
             if col_index > (ncols - 1):
                 col_index = 0
                 row_index += 1
 
-        fig.savefig(os.path.join(self.outdir, "{}_boxplot{}.png".format(self.out_filename, appendix)))
+        fig.savefig(os.path.join(self.outdir, "no_ieqtls_per_sample_plot.png"))
         plt.close()
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > Genotype path: {}".format(self.geno_path))
-        print("  > Sample-to-dataset path: {}".format(self.std_path))
-        print("  > Output filename: {}".format(self.out_filename))
-        print("  > Outpath {}".format(self.outdir))
+        print("  > Input directory: {}".format(self.input_directory))
+        print("  > Palette path: {}".format(self.palette_path))
+        print("  > Output directory: {}".format(self.outdir))
         print("")
 
 
