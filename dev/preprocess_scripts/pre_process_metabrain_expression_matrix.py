@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         pre_process_expression_matrix.py
+File:         pre_process_metabrain_expression_matrix.py
 Created:      2021/05/25
-Last Changed: 2021/09/22
+Last Changed: 2021/10/22
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,6 +25,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 from functools import reduce
+import json
 import argparse
 import time
 import glob
@@ -44,7 +45,7 @@ import matplotlib.patches as mpatches
 # Local application imports.
 
 # Metadata
-__program__ = "Pre-process Expression Matrix"
+__program__ = "Pre-process MetaBrain Expression Matrix"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -59,7 +60,9 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./pre_process_expression_matrix.py -h
+./pre_process_metabrain_expression_matrix.py -h
+
+./pre_process_metabrain_expression_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz -t /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-05-26-step5-remove-covariates-per-dataset/2020-05-25-covariatefiles/2020-02-17-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.top20correlated-cortex-withMDS.txt.gz -gte /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR -g GTE-EUR- -p ../data/MetaBrainColorPalette.json -of test
 """
 
 
@@ -69,59 +72,29 @@ class main():
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
         self.tcov_path = getattr(arguments, 'technical_covariates')
-        self.solo_correction = getattr(arguments, 'solo_correction')
         self.gte_path = getattr(arguments, 'gene_to_expression')
         self.gte_prefix = getattr(arguments, 'gte_prefix')
         self.gte_exclude = getattr(arguments, 'gte_exclude')
         self.sample_exclude_path = getattr(arguments, 'sample_exclude')
+        self.palette_path = getattr(arguments, 'palette')
         outdir = getattr(arguments, 'outdir')
         outfolder = getattr(arguments, 'outfolder')
 
         # Set variables.
         if outdir is None:
             outdir = str(Path(__file__).parent.parent)
-        self.plot_outdir = os.path.join(outdir, 'pre_process_expression_matrix', outfolder, 'plot')
-        self.file_outdir = os.path.join(outdir, 'pre_process_expression_matrix', outfolder, 'data')
+        self.plot_outdir = os.path.join(outdir, 'pre_process_metabrain_expression_matrix', outfolder, 'plot')
+        self.file_outdir = os.path.join(outdir, 'pre_process_metabrain_expression_matrix', outfolder, 'data')
         for outdir in [self.plot_outdir, self.file_outdir]:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
 
-        self.file_cohort_dict = {
-            "AMPAD-MAYO-V2": "MAYO",
-            "CMC_HBCC_set2": "CMC HBCC",
-            "GTEx": "GTEx",
-            "AMPAD-ROSMAP-V2": "ROSMAP",
-            "BrainGVEX-V2": "Brain GVEx",
-            "TargetALS": "Target ALS",
-            "AMPAD-MSBB-V2": "MSBB",
-            "NABEC-H610": "NABEC",
-            "LIBD_1M": "LIBD",
-            "ENA": "ENA",
-            "LIBD_h650": "LIBD",
-            "GVEX": "GVEX",
-            "NABEC-H550": "NABEC",
-            "CMC_HBCC_set3": "CMC HBCC",
-            "UCLA_ASD": "UCLA ASD",
-            "CMC": "CMC",
-            "CMC_HBCC_set1": "CMC HBCC"
-        }
-
-        self.palette = {
-            "MAYO": "#9c9fa0",
-            "CMC HBCC": "#0877b4",
-            "GTEx": "#0fa67d",
-            "ROSMAP": "#6950a1",
-            "Brain GVEx": "#48b2e5",
-            "Target ALS": "#d5c77a",
-            "MSBB": "#5cc5bf",
-            "NABEC": "#6d743a",
-            "LIBD": "#e49d26",
-            "ENA": "#d46727",
-            "GVEX": "#000000",
-            "UCLA ASD": "#f36d2a",
-            "CMC": "#eae453",
-            "NA": "#808080"
-        }
+        # Loading palette.
+        self.palette = None
+        if self.palette_path is not None:
+            with open(self.palette_path) as f:
+                self.palette = json.load(f)
+            f.close()
 
     @staticmethod
     def create_argument_parser():
@@ -150,7 +123,7 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the gene-expression link files.")
-        parser.add_argument("-p",
+        parser.add_argument("-g",
                             "--gte_prefix",
                             type=str,
                             required=True,
@@ -166,6 +139,13 @@ class main():
                             type=str,
                             default=None,
                             help="The samples to exclude. Default: None.")
+        parser.add_argument("-p",
+                            "--palette",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to a json file with the"
+                                 "dataset to color combinations.")
         parser.add_argument("-od",
                             "--outdir",
                             type=str,
@@ -178,16 +158,6 @@ class main():
                             required=False,
                             default="output",
                             help="The name of the output folder.")
-        parser.add_argument("-sc",
-                            "--solo_correction",
-                            nargs="*",
-                            type=str,
-                            required=False,
-                            default=None,
-                            choices=["TechnicalCovariates", "MDS", "Datasets"],
-                            help="Include a covariate correction with a"
-                                 "subset of the correction matrix. Default:"
-                                 " None.")
 
         return parser.parse_args()
 
@@ -199,22 +169,17 @@ class main():
 
         # Loading samples.
         print("Loading samples.")
-        gte_combined_df = None
+        gte_dfs = []
         dataset_to_sample_dict = {}
         for infile in glob.glob(os.path.join(self.gte_path, "{}*.txt".format(self.gte_prefix))):
-            file = os.path.basename(infile).replace(".txt", "").replace(self.gte_prefix, "")
+            file = os.path.basename(infile).replace(".txt", "")
             if file in self.gte_exclude:
                 continue
             gte_df = self.load_file(infile, header=None, index_col=None)
             gte_df["file"] = file
-            if gte_combined_df is None:
-                gte_combined_df = gte_df
-            else:
-                gte_combined_df = pd.concat([gte_combined_df, gte_df], axis=0, ignore_index=True)
-
+            gte_dfs.append(gte_df)
             dataset_to_sample_dict[file] = set(gte_df.iloc[:, 1].values)
-        gte_combined_df["cohort"] = gte_combined_df.iloc[:, 2].map(self.file_cohort_dict)
-        sample_to_cohort = dict(zip(gte_combined_df.iloc[:, 1], gte_combined_df.iloc[:, 3]))
+        gte_combined_df = pd.concat(gte_dfs, axis=0, ignore_index=True)
         samples = gte_combined_df.iloc[:, 1].values.tolist()
         print("\tN samples: {}".format(len(samples)))
 
@@ -229,12 +194,11 @@ class main():
             print("\tN samples: {}".format(len(samples)))
 
         # Safe sample cohort data frame.
-        sample_cohort_df = gte_combined_df.iloc[:, [1, 3]]
-        sample_cohort_df.columns = ["sample", "cohort"]
-        self.save_file(sample_cohort_df, outpath=os.path.join(self.file_outdir, "SampleToCohorts.txt.gz"), index=False)
         sample_dataset_df = gte_combined_df.iloc[:, [1, 2]]
         sample_dataset_df.columns = ["sample", "dataset"]
+        sample_to_dataset = dict(zip(sample_dataset_df.iloc[:, 0], sample_dataset_df.iloc[:, 1]))
         self.save_file(sample_dataset_df, outpath=os.path.join(self.file_outdir, "SampleToDataset.txt.gz"), index=False)
+        del sample_dataset_df
 
         # Create cohort matrix.
         dataset_sample_counts = list(zip(*np.unique(gte_combined_df["file"], return_counts=True)))
@@ -252,7 +216,7 @@ class main():
 
         # Load data.
         print("Loading data.")
-        df = self.load_file(self.data_path, header=0, index_col=0)
+        df = self.load_file(self.data_path, header=0, index_col=0, nrows=100)
         print(df)
 
         print("Step 1: sample selection.")
@@ -284,13 +248,15 @@ class main():
         self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)))
 
         print("Step 6: PCA analysis.")
-        self.pca(df=df, filename=filename, sample_to_cohort=sample_to_cohort,
+        self.pca(df=df,
+                 filename=filename,
+                 sample_to_dataset=sample_to_dataset,
                  file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
                  plot_appendix="_1")
 
         print("Step 7: Construct technical covariate matrix.")
         tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
-        correction_df, correction_segments = self.prepare_correction_matrix(tcov_df=tcov_df.loc[samples, :], dataset_df=dataset_df)
+        correction_df = self.prepare_correction_matrix(tcov_df=tcov_df.loc[samples, :], dataset_df=dataset_df)
 
         print("\tSaving file.")
         self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix.txt.gz"))
@@ -302,33 +268,13 @@ class main():
         self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
 
         print("Step 9: PCA analysis.")
-        self.pca(df=corrected_df, filename=filename,
-                 sample_to_cohort=sample_to_cohort,
+        self.pca(df=corrected_df,
+                 filename=filename,
+                 sample_to_dataset=sample_to_dataset,
                  file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS",
                  plot_appendix="_2_CovariatesRemovedOLS")
+
         del correction_df, corrected_df
-
-        if self.solo_correction is not None:
-            step = 10
-            for name in ["TechnicalCovariates", "MDS", "Datasets"]:
-                if name in self.solo_correction:
-                    print("Step {}: remove {} components OLS.".format(step, name))
-                    correction_df = correction_segments[name]
-                    self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "{}_matrix.txt.gz".format(name)))
-                    corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
-                    step += 1
-
-                    print("\tSaving file.")
-                    self.save_file(df=corrected_df,
-                                   outpath=os.path.join(self.file_outdir,
-                                                        "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.{}RemovedOLS.txt.gz".format(filename, name)))
-
-                    print("Step {}: PCA analysis.".format(step))
-                    self.pca(df=corrected_df, filename=filename,
-                             sample_to_cohort=sample_to_cohort,
-                             file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.{}RemovedOLS".format(name),
-                             plot_appendix="_2_{}RemovedOLS".format(name))
-                    step += 1
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -376,68 +322,30 @@ class main():
         # Remove columns without variance.
         df = df.loc[:, df.std(axis=0) != 0]
 
-        # Split the technical covariates matrix into technical covariates,
-        # MDS components and cohort dummy variables.
-        tech_cov_mask = np.zeros(df.shape[1], dtype=bool)
-        mds_mask = np.zeros(df.shape[1], dtype=bool)
-        cohort_mask = np.zeros(df.shape[1], dtype=bool)
-        for i, col in enumerate(df.columns):
-            if "MDS" in col:
-                mds_mask[i] = True
-            elif set(df[col].unique()) == {0, 1}:
-                cohort_mask[i] = True
-            else:
-                tech_cov_mask[i] = True
-        print("\tColumn in input file:")
-        print("\t  > N-technical covariates: {}".format(np.sum(tech_cov_mask)))
-        print("\t  > N-MDS components: {}".format(np.sum(mds_mask)))
-        print("\t  > N-cohort dummy variables: {}".format(np.sum(cohort_mask)))
-
-        # Create an intercept data frame.
-        intecept_df = pd.DataFrame(1, index=df.index, columns=["INTERCEPT"])
+        # Remove dataset columns.
+        dataset_mask = np.array([set(df[col].unique()) == {0, 1} for col in df.columns])
+        df = df.loc[:, ~dataset_mask]
 
         # filter the technical covariates on VIF.
-        tech_cov_df = self.remove_multicollinearity(df.loc[:, tech_cov_mask].copy())
+        df = self.remove_multicollinearity(df)
 
-        # split the MDS components per cohort.
-        mds_columns = df.columns[mds_mask]
-        mds_df = pd.DataFrame(0, index=df.index, columns=["{}_{}".format(a, b) for a in dataset_df.columns for b in mds_columns])
-        for cohort in dataset_df.columns:
-            mask = dataset_df.loc[:, cohort] == 1
-            for mds_col in mds_columns:
-                col = "{}_{}".format(cohort, mds_col)
-                mds_df.loc[mask, col] = df.loc[mask, mds_col]
-
-        # replace cohort variables with the complete set defined by the GTE
-        # file. Don't include the cohort with the most samples.
-        tmp_dataset_df = dataset_df.iloc[:, 1:]
-
-        # construct the complete technical covariates matrix. Start with an
-        # intercept. Don't include the cohort with the most samples.
-        correction_df = reduce(lambda left, right: pd.merge(left,
-                                                            right,
-                                                            left_index=True,
-                                                            right_index=True),
-                               [intecept_df, tech_cov_df, mds_df, tmp_dataset_df])
+        # merge the tcov_df with the dataset_df but exclude the dataset with
+        # the highest number of samples.
+        correction_df = df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
+        correction_df.insert(0, "INTERCEPT", 1)
         correction_df.index.name = "-"
 
-        print("\tColumn in technical covariates matrix:")
-        print("\t  > N-intercept: {}".format(intecept_df.shape[1]))
-        print("\t  > N-technical covariates: {}".format(tech_cov_df.shape[1]))
-        print("\t  > N-MDS components: {}".format(mds_df.shape[1]))
-        print("\t  > N-dataset dummy variables: {}".format(tmp_dataset_df.shape[1]))
-
-        return correction_df, {"TechnicalCovariates": tech_cov_df, "MDS": mds_df, "Datasets": tmp_dataset_df}
+        return correction_df
 
     def remove_multicollinearity(self, df, threshold=0.9999):
         indices = np.arange(df.shape[1])
-        max_vif = np.inf
-        while len(indices) > 1 and max_vif > threshold:
-            vif = np.array([self.calc_ols_rsquared(df.iloc[:, indices], ix) for ix in range(len(indices))])
-            max_vif = max(vif)
+        max_r2 = np.inf
+        while len(indices) > 1 and max_r2 > threshold:
+            r2 = np.array([self.calc_ols_rsquared(df.iloc[:, indices], ix) for ix in range(len(indices))])
+            max_r2 = max(r2)
 
-            if max_vif > threshold:
-                max_index = np.where(vif == max_vif)[0][0]
+            if max_r2 > threshold:
+                max_index = np.where(r2 == max_r2)[0][0]
                 indices = np.delete(indices, max_index)
 
         return df.iloc[:, indices]
@@ -464,7 +372,7 @@ class main():
 
         return pd.DataFrame(corrected_m, index=df.index, columns=df.columns)
 
-    def pca(self, df, filename, sample_to_cohort, file_appendix="", plot_appendix=""):
+    def pca(self, df, filename, sample_to_dataset, file_appendix="", plot_appendix=""):
         # samples should be on the columns and genes on the rows.
         zscores = (df - df.mean(axis=0)) / df.std(axis=0)
         pca = PCA(n_components=25)
@@ -477,11 +385,14 @@ class main():
         print("\tSaving file.")
         self.save_file(df=components_df, outpath=os.path.join(self.file_outdir, "{}.{}.PCAOverSamplesEigenvectors.txt.gz".format(filename, file_appendix)))
 
-        print("Plotting PCA")
+        print("\tPlotting PCA")
         plot_df = components_df.T
-        plot_df["cohort"] = plot_df.index.map(sample_to_cohort)
-        plot_df["cohort"] = plot_df["cohort"].fillna('NA')
-        self.plot(df=plot_df, x="Comp1", y="Comp2", hue="cohort", palette=self.palette,
+        plot_df["hue"] = plot_df.index.map(sample_to_dataset)
+        self.plot(df=plot_df,
+                  x="Comp1",
+                  y="Comp2",
+                  hue="hue",
+                  palette=self.palette,
                   xlabel="PC1 [{:.2f}%]".format(expl_variance["PC1"]),
                   ylabel="PC2 [{:.2f}%]".format(expl_variance["PC2"]),
                   title="PCA - eigenvectors",
@@ -539,7 +450,7 @@ class main():
         print("  >   GtE prefix: {}".format(self.gte_prefix))
         print("  >   Exclude: {}".format(self.gte_exclude))
         print("  > Sample exclude path: {}".format(self.sample_exclude_path))
-        print("  > Solo correction: {}".format(self.solo_correction))
+        print("  > Palette path: {}".format(self.palette_path))
         print("  > Plot output directory: {}".format(self.plot_outdir))
         print("  > File output directory: {}".format(self.file_outdir))
         print("")
