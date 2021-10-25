@@ -1,5 +1,5 @@
-# Principal Interaction Component Analysis (PICA)
-Project repository a novel method called PICA that allows for the identification of interaction components that influence eQTL effect size. This program uses an expectation maximization algorithm to maximize an interaction component. 
+# Principal Interaction Component Analysis through Likelihood Optimization (PICALO)
+Project repository a novel method called PICALO that allows for the identification of interaction components that influence eQTL effect size. This program uses an expectation maximization algorithm to maximize an interaction component. 
 
 ## Introduction
 
@@ -34,15 +34,15 @@ TODO
 ## Usage  
 
 ```  
-./pica.py -h
+./picalo.py -h
 ```  
   
 
 ## Content
 
- * **[src](src)**: the source code for the PICA program
+ * **[src](src)**: the source code for the PICALO program
  * **[dev/preprocess_scripts](dev/preprocess_scripts)**: script used for pre-processing the input data
- * **[dev/plot_scripts](dev/plot_scripts)**: scripts used to visualise the output of PICA
+ * **[dev/plot_scripts](dev/plot_scripts)**: scripts used to visualise the output of PICALO
  * **[dev/test_scripts](dev/test_scripts)**: scripts used to test things / visualise stuff / etc.
 
 

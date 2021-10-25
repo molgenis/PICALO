@@ -103,7 +103,7 @@ class main():
                             "--input_data",
                             type=str,
                             required=True,
-                            help="The path to the PICA results.")
+                            help="The path to the PICALO results.")
         parser.add_argument("-p",
                             "--palette",
                             type=str,

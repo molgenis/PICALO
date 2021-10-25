@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-File:         pica.py
+File:         picalo.py
 Created:      2020/11/16
 Last Changed: 2021/10/21
 Author:       M.Vochteloo
@@ -23,7 +23,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 """
 
 """
-./pica.py -h
+./picalo.py -h
 """
 
 # Standard imports.
@@ -35,7 +35,8 @@ from src.main import Main
 from src.cmd_line_arguments import CommandLineArguments
 
 # Metadata
-__program__ = "Principal Interaction Component Analysis"
+__program__ = "Principal Interaction Component Analysis through Likelihood " \
+              "Optimization (PICALO)"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
