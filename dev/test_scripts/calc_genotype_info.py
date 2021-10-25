@@ -99,7 +99,7 @@ class main():
         badly_imputated_indices = [np.round(x, 2) for x in np.hstack((np.arange(0.26, 0.75, 0.01), np.arange(1.26, 1.75, 0.01)))]
 
         print("### Step2 ###")
-        print("Loading PICA results")
+        print("Loading PICALO results")
         for i in range(10):
             component = "PIC{}".format(i)
             for j in range(100):
