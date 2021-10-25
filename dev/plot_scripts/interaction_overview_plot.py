@@ -142,10 +142,14 @@ class main():
         single_interaction_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) == 1, :]
         multiple_interactions_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) > 1, :]
 
-        n_ieqtls_unique_per_pic = single_interaction_df.sum(axis=0)
+        n_ieqtls_unique_per_pic = [(name, value) for name, value in single_interaction_df.sum(axis=0).iteritems()]
+        n_ieqtls_unique_per_pic.sort(key=lambda x: -x[1])
+        pics = [x[0] for x in n_ieqtls_unique_per_pic]
+        n_ieqtls = [x[1] for x in n_ieqtls_unique_per_pic]
+        print(n_ieqtls)
 
         # Construct pie data.
-        data = [no_interaction_df.shape[0]] + [n_ieqtls_unique_per_pic[pic] for pic in pics] + [multiple_interactions_df.shape[0]]
+        data = [no_interaction_df.shape[0]] + n_ieqtls + [multiple_interactions_df.shape[0]]
         labels = ["None"] + pics + ["Multiple"]
         colors = None
         if self.palette is not None:

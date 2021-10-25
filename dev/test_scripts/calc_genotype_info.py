@@ -101,7 +101,7 @@ class main():
         print("### Step2 ###")
         print("Loading PICA results")
         for i in range(10):
-            component = "component{}".format(i)
+            component = "PIC{}".format(i)
             for j in range(100):
                 iteration = "iteration{}".format(j)
                 fpath = os.path.join(self.indir, component, "results_{}.txt.gz".format(iteration))
