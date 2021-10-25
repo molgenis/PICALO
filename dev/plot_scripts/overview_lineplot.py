@@ -3,7 +3,7 @@
 """
 File:         overview_lineplot.py
 Created:      2021/05/20
-Last Changed: 2021/09/23
+Last Changed: 2021/10/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -65,6 +65,7 @@ class main():
         arguments = self.create_argument_parser()
         self.input_directory = getattr(arguments, 'indir')
         self.palette_path = getattr(arguments, 'palette')
+        self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
@@ -102,6 +103,11 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
+        parser.add_argument("-o",
+                            "--outfile",
+                            type=str,
+                            required=True,
+                            help="The name of the outfile.")
 
         return parser.parse_args()
 
@@ -138,7 +144,7 @@ class main():
             self.lineplot(df_m=subset_m, x="index", y="value", hue="component",
                           style=None, palette=self.palette,
                           xlabel="iteration", ylabel=variable,
-                          filename=variable.replace(" ", "_").lower(),
+                          filename=self.out_filename + "_" + variable.replace(" ", "_").lower(),
                           info=info_dict,
                           outdir=self.outdir)
 
@@ -146,7 +152,7 @@ class main():
                 self.lineplot(df_m=subset_m, x="index", y="log10 value", hue="component",
                               style=None, palette=self.palette,
                               xlabel="iteration", ylabel="log10 " + variable,
-                              filename="log10_" + variable.replace(" ", "_").lower(),
+                              filename=self.out_filename + "_log10_" + variable.replace(" ", "_").lower(),
                               info=info_dict,
                               outdir=self.outdir)
 
@@ -214,6 +220,7 @@ class main():
         print("  > Input directory: {}".format(self.input_directory))
         print("  > Palette path: {}".format(self.palette_path))
         print("  > Outpath {}".format(self.outdir))
+        print("  > Output filename: {}".format(self.out_filename))
         print("")
 
 

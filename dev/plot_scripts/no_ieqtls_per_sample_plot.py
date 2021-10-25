@@ -3,7 +3,7 @@
 """
 File:         no_ieqtls_per_sample_plot.py
 Created:      2021/10/22
-Last Changed:
+Last Changed: 2021/10/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -68,6 +68,7 @@ class main():
         arguments = self.create_argument_parser()
         self.input_directory = getattr(arguments, 'indir')
         self.palette_path = getattr(arguments, 'palette')
+        self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
@@ -105,6 +106,11 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
+        parser.add_argument("-o",
+                            "--outfile",
+                            type=str,
+                            required=True,
+                            help="The name of the outfile.")
 
         return parser.parse_args()
 
@@ -220,13 +226,14 @@ class main():
                 col_index = 0
                 row_index += 1
 
-        fig.savefig(os.path.join(self.outdir, "no_ieqtls_per_sample_plot.png"))
+        fig.savefig(os.path.join(self.outdir, "{}_no_ieqtls_per_sample_plot.png".format(self.out_filename)))
         plt.close()
 
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
         print("  > Palette path: {}".format(self.palette_path))
+        print("  > Output filename: {}".format(self.out_filename))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

@@ -3,7 +3,7 @@
 """
 File:         create_upsetplot.py
 Created:      2021/05/10
-Last Changed: 2021/09/23
+Last Changed: 2021/10/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -27,6 +27,7 @@ from pathlib import Path
 import itertools
 import argparse
 import json
+import glob
 import os
 
 # Third party imports.
@@ -68,6 +69,7 @@ class main():
         self.input_directory = getattr(arguments, 'indir')
         self.eqtl_path = getattr(arguments, 'eqtl')
         self.palette_path = getattr(arguments, 'palette')
+        self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
@@ -110,6 +112,11 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
+        parser.add_argument("-o",
+                            "--outfile",
+                            type=str,
+                            required=True,
+                            help="The name of the outfile.")
 
         return parser.parse_args()
 
@@ -131,25 +138,32 @@ class main():
             component_data = {}
             eqtl_level_counts_data = {}
             final_iteration = None
-            for j in range(100):
-                iteration = "iteration{}".format(j)
+            fpaths = glob.glob(os.path.join(self.input_directory, pic, "results_*.txt.gz"))
+            fpaths.sort()
+
+            # fpaths = []
+            # for j in range(100):
+            #     fpath = os.path.join(self.input_directory, pic, "results_iteration{}.txt.gz".format(j))
+            #     if os.path.exists(fpath):
+            #         fpaths.append(fpath)
+
+            for j, fpath in enumerate(fpaths):
                 iter_abbreviation = "iter{}".format(j)
-                fpath = os.path.join(self.input_directory, pic, "results_{}.txt.gz".format(iteration))
-                if os.path.exists(fpath):
-                    df = self.load_file(fpath, header=0, index_col=None)
-                    df.index = df["SNP"] + ":" + df["gene"]
-                    signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
-                    component_data[iter_abbreviation] = signif_ieqtl
-                    final_iteration = iter_abbreviation
 
-                    eqtl_df.loc[:, iter_abbreviation] = 0
-                    eqtl_df.loc[eqtl_df.index.isin(signif_ieqtl), iter_abbreviation] = 1
-                    eqtl_level_counts_data[iter_abbreviation] = dict(zip(*np.unique(eqtl_df.loc[eqtl_df[iter_abbreviation] == 1, "eQTL level"], return_counts=True)))
+                df = self.load_file(fpath, header=0, index_col=None)
+                df.index = df["SNP"] + ":" + df["gene"]
+                signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
+                component_data[iter_abbreviation] = signif_ieqtl
+                final_iteration = iter_abbreviation
 
-                    if eqtl_hlines is None:
-                        overlap_df = eqtl_df.loc[eqtl_df.index.isin(df.index), :]
-                        eqtl_hlines = zip(*np.unique(overlap_df["eQTL level"], return_counts=True))
-                        eqtl_hlines = {a: (b / overlap_df.shape[0]) * 100 for a, b in eqtl_hlines}
+                eqtl_df.loc[:, iter_abbreviation] = 0
+                eqtl_df.loc[eqtl_df.index.isin(signif_ieqtl), iter_abbreviation] = 1
+                eqtl_level_counts_data[iter_abbreviation] = dict(zip(*np.unique(eqtl_df.loc[eqtl_df[iter_abbreviation] == 1, "eQTL level"], return_counts=True)))
+
+                if eqtl_hlines is None:
+                    overlap_df = eqtl_df.loc[eqtl_df.index.isin(df.index), :]
+                    eqtl_hlines = zip(*np.unique(overlap_df["eQTL level"], return_counts=True))
+                    eqtl_hlines = {a: (b / overlap_df.shape[0]) * 100 for a, b in eqtl_hlines}
 
             if final_iteration is not None:
                 final_iter_data["comp{}".format(i)] = component_data[final_iteration]
@@ -162,7 +176,7 @@ class main():
                 level_df_m = level_df.melt(id_vars=["index"])
                 self.plot(df_m=level_df_m, x="variable", y="value", hue="index",
                           ylabel="%", palette=self.palette,
-                          filename=pic, outdir=self.outdir,
+                          filename=self.out_filename + "_" + pic, outdir=self.outdir,
                           hlines=eqtl_hlines)
 
             n_iterations = len(component_data.keys())
@@ -182,7 +196,6 @@ class main():
                 if (i == 0) or (i % modulo == 0) or (iteration == final_iteration):
                     filtered_component_data[iteration] = component_data[iteration]
             del component_data
-            print(filtered_component_data.keys())
 
             if len(filtered_component_data.keys()) > 1:
                 counts = self.count(filtered_component_data)
@@ -191,8 +204,7 @@ class main():
 
                 print("Creating plot.")
                 up.plot(counts, sort_by='cardinality', show_counts=True)
-                plt.savefig(os.path.join(self.outdir,
-                                         "included_ieQTLs_{}_upsetplot.png".format(pic)))
+                plt.savefig(os.path.join(self.outdir, "{}_included_ieQTLs_{}_upsetplot.png".format(self.out_filename, pic)))
                 plt.close()
 
         counts = self.count(final_iter_data)
@@ -201,7 +213,7 @@ class main():
 
         print("Creating plot.")
         up.plot(counts, sort_by='cardinality', show_counts=True)
-        plt.savefig(os.path.join(self.outdir, "included_ieQTLs_finalIter_upsetplot.png"))
+        plt.savefig(os.path.join(self.outdir, "{}_included_ieQTLs_finalIter_upsetplot.png".format(self.out_filename)))
         plt.close()
 
     def load_file(self, inpath, header, index_col, sep="\t", low_memory=True,
@@ -324,6 +336,7 @@ class main():
         print("  > Input directory: {}".format(self.input_directory))
         print("  > Palette path: {}".format(self.palette_path))
         print("  > EQTL path directory: {}".format(self.input_directory))
+        print("  > Output filename: {}".format(self.out_filename))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

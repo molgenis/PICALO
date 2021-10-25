@@ -3,7 +3,7 @@
 """
 File:         interaction_overview_plot.py
 Created:      2021/10/21
-Last Changed:
+Last Changed: 2021/10/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -24,8 +24,8 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
-import itertools
 import argparse
+import glob
 import json
 import os
 
@@ -36,8 +36,6 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import upsetplot as up
-import matplotlib.patches as mpatches
 
 # Local application imports.
 
@@ -69,6 +67,7 @@ class main():
         arguments = self.create_argument_parser()
         self.input_directory = getattr(arguments, 'indir')
         self.palette_path = getattr(arguments, 'palette')
+        self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
@@ -106,24 +105,37 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
+        parser.add_argument("-o",
+                            "--outfile",
+                            type=str,
+                            required=True,
+                            help="The name of the outfile.")
 
         return parser.parse_args()
 
     def start(self):
         self.print_arguments()
 
+        print("Loading data")
         pics = []
         pic_dfs = []
         for i in range(1, 11):
             pic = "PIC{}".format(i)
-            final_iteration_path = None
-            for j in range(100):
-                iter_path = os.path.join(self.input_directory, pic, "results_iteration{}_df.txt.gz".format(j))
-                if os.path.exists(iter_path):
-                    final_iteration_path = iter_path
 
-            if final_iteration_path is None:
+            fpaths = glob.glob(os.path.join(self.input_directory, pic, "results_*.txt.gz"))
+            if len(fpaths) <= 0:
                 continue
+            fpaths.sort()
+            final_iteration_path = fpaths[-1]
+
+            # final_iteration_path = None
+            # for j in range(100):
+            #     iter_path = os.path.join(self.input_directory, pic, "results_iteration{}_df.txt.gz".format(j))
+            #     if os.path.exists(iter_path):
+            #         final_iteration_path = iter_path
+            #
+            # if final_iteration_path is None:
+            #     continue
 
             df = self.load_file(final_iteration_path, header=0, index_col=None)
             df.index = df["SNP"] + ":" + df["gene"]
@@ -184,18 +196,22 @@ class main():
         ax.axis('equal')
 
         for extension in ["png", "pdf"]:
-            fig.savefig(os.path.join(self.outdir, "interaction_piechart.{}".format(extension)))
+            fig.savefig(os.path.join(self.outdir, "{}_interaction_piechart.{}".format(self.out_filename, extension)))
         plt.close()
 
     @staticmethod
     def autopct_func(pct, allvalues):
-        absolute = int(pct / 100. * np.sum(allvalues))
-        return "{:.1f}%\n(N = {:,.0f})".format(pct, absolute)
+        if pct >= 3:
+            absolute = int(pct / 100. * np.sum(allvalues))
+            return "{:.1f}%\n(N = {:,.0f})".format(pct, absolute)
+        else:
+            return ""
 
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
         print("  > Palette path: {}".format(self.palette_path))
+        print("  > Output filename: {}".format(self.out_filename))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

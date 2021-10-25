@@ -50,7 +50,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./visualise_results.py -h
-
 """
 
 
@@ -89,8 +88,7 @@ class main():
         parser.add_argument("-p",
                             "--palette",
                             type=str,
-                            required=False,
-                            default=None,
+                            required=True,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
         parser.add_argument("-ep",
@@ -115,19 +113,19 @@ class main():
         self.print_arguments()
 
         # Plot overview lineplot.
-        command = ['python3', 'overview_lineplot.py', '-i', self.input_data_path, '-p', self.palette_path]
+        command = ['python3', 'overview_lineplot.py', '-i', self.input_data_path, '-p', self.palette_path, "-o", self.outname]
         self.run_command(command)
 
         # Plot eQTL upsetplot.
-        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.matrix_preparation_path, "combine_eqtlprobes", "eQTLprobes_combined.txt.gz"), '-p', self.palette_path]
+        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.matrix_preparation_path, "combine_eqtlprobes", "eQTLprobes_combined.txt.gz"), '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         # Plot interaction venn diagram.
-        command = ['python3', 'interaction_overview_plot.py', '-i', self.input_data_path, '-p', self.palette_path]
+        command = ['python3', 'interaction_overview_plot.py', '-i', self.input_data_path, '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         # Plot #ieQTLs per sample boxplot.
-        command = ['python3', 'no_ieqtls_per_sample_plot.py', '-i', self.input_data_path, '-p', self.palette_path]
+        command = ['python3', 'no_ieqtls_per_sample_plot.py', '-i', self.input_data_path, '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         for i in range(1, 11):
@@ -142,6 +140,7 @@ class main():
         # Create components_df if not exists.
         components_path = os.path.join(self.input_data_path, "components.txt.gz")
         if not os.path.exists(components_path):
+            print("Components file does not exists, loading iteration files")
             data = []
             columns = []
             for i in range(1, 11):
@@ -156,7 +155,7 @@ class main():
             if len(data) > 0:
                 components_df = pd.concat(data, axis=1)
                 components_df.columns = columns
-                self.save_file(components_df, outpath=components_path, header=True, index=True)
+                self.save_file(components_df.T, outpath=components_path, header=True, index=True)
 
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,

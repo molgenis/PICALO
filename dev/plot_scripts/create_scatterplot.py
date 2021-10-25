@@ -204,6 +204,7 @@ class main():
         col_index = 0
         groups_present = set()
         for i in range(ncols * nrows):
+            print(i)
             if nrows == 1:
                 ax = axes[col_index]
             elif ncols == 1:
