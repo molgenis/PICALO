@@ -158,7 +158,6 @@ class main():
         n_ieqtls_unique_per_pic.sort(key=lambda x: -x[1])
         pics = [x[0] for x in n_ieqtls_unique_per_pic]
         n_ieqtls = [x[1] for x in n_ieqtls_unique_per_pic]
-        print(n_ieqtls)
 
         # Construct pie data.
         data = [no_interaction_df.shape[0]] + n_ieqtls + [multiple_interactions_df.shape[0]]
@@ -168,7 +167,11 @@ class main():
             colors = ["#D3D3D3"] + [self.palette[pic] for pic in pics] + ["#808080"]
         explode = [0.] + [0.1 for _ in pics] + [0.1]
 
-        self.plot(data=data, labels=labels, explode=explode, colors=colors)
+        for i in range(len(data)):
+            print("{} (N = {})".format(labels[i], data[i]))
+
+        self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="png")
+        self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="pdf", label_threshold=100)
 
     def load_file(self, inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
@@ -179,14 +182,14 @@ class main():
                                       df.shape))
         return df
 
-    def plot(self, data, labels, explode=None, colors=None):
+    def plot(self, data, labels, explode=None, colors=None, extension='png', label_threshold=0):
         sns.set(rc={'figure.figsize': (12, 9)})
         sns.set_style("ticks")
         fig, ax = plt.subplots()
         sns.despine(fig=fig, ax=ax)
 
         plt.pie(data,
-                autopct=lambda pct: self.autopct_func(pct, data),
+                autopct=lambda pct: self.autopct_func(pct, data, label_threshold),
                 explode=explode,
                 labels=labels,
                 shadow=False,
@@ -195,13 +198,12 @@ class main():
                 wedgeprops={'linewidth': 1})
         ax.axis('equal')
 
-        for extension in ["png", "pdf"]:
-            fig.savefig(os.path.join(self.outdir, "{}_interaction_piechart.{}".format(self.out_filename, extension)))
+        fig.savefig(os.path.join(self.outdir, "{}_interaction_piechart.{}".format(self.out_filename, extension)))
         plt.close()
 
     @staticmethod
-    def autopct_func(pct, allvalues):
-        if pct >= 3:
+    def autopct_func(pct, allvalues, label_threshold):
+        if pct >= label_threshold:
             absolute = int(pct / 100. * np.sum(allvalues))
             return "{:.1f}%\n(N = {:,.0f})".format(pct, absolute)
         else:
