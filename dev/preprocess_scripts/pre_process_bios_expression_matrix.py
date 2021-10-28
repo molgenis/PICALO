@@ -3,7 +3,7 @@
 """
 File:         pre_process_bios_expression_matrix.py
 Created:      2021/10/22
-Last Changed:
+Last Changed: 2021/10/28
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -72,6 +72,7 @@ class main():
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
         self.tcov_path = getattr(arguments, 'technical_covariates')
+        self.mds_path = getattr(arguments, 'mds')
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.palette_path = getattr(arguments, 'palette')
         outdir = getattr(arguments, 'outdir')
@@ -115,6 +116,11 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the technical covariates matrix.")
+        parser.add_argument("-m",
+                            "--mds",
+                            type=str,
+                            required=True,
+                            help="The path to the mds matrix.")
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
@@ -184,7 +190,10 @@ class main():
 
         print("Step 3: Construct technical covariate matrix.")
         tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
-        correction_df = self.prepare_correction_matrix(tcov_df=tcov_df.loc[samples, :], dataset_df=dataset_df)
+        mds_df = self.load_file(self.mds_path, header=0, index_col=0)
+        correction_df = self.prepare_correction_matrix(tcov_df=tcov_df.loc[samples, :],
+                                                       mds_df=mds_df.loc[samples, :],
+                                                       dataset_df=dataset_df)
 
         print("\tSaving file.")
         self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix.txt.gz"))
@@ -244,7 +253,7 @@ class main():
 
         return out_dict
 
-    def prepare_correction_matrix(self, tcov_df, dataset_df):
+    def prepare_correction_matrix(self, tcov_df, mds_df, dataset_df):
         df = tcov_df.copy()
 
         # Remove columns without variance.
@@ -257,9 +266,12 @@ class main():
         # filter the technical covariates on VIF.
         df = self.remove_multicollinearity(df)
 
+        # Merge the tcov_df with the mds_df.
+        correction_df = df.merge(mds_df, left_index=True, right_index=True)
+
         # merge the tcov_df with the dataset_df but exclude the dataset with
         # the highest number of samples.
-        correction_df = df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
+        correction_df = correction_df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
         correction_df.insert(0, "INTERCEPT", 1)
         correction_df.index.name = "-"
 
@@ -374,6 +386,7 @@ class main():
         print("Arguments:")
         print("  > Data: {}".format(self.data_path))
         print("  > Technical covariates: {}".format(self.tcov_path))
+        print("  > MDS: {}".format(self.mds_path))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Palette path: {}".format(self.palette_path))
         print("  > Plot output directory: {}".format(self.plot_outdir))

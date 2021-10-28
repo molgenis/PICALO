@@ -3,7 +3,7 @@
 """
 File:         pre_process_metabrain_expression_matrix.py
 Created:      2021/05/25
-Last Changed: 2021/10/22
+Last Changed: 2021/10/28
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -61,8 +61,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./pre_process_metabrain_expression_matrix.py -h
-
-./pre_process_metabrain_expression_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz -t /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-05-26-step5-remove-covariates-per-dataset/2020-05-25-covariatefiles/2020-02-17-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.top20correlated-cortex-withMDS.txt.gz -gte /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR -g GTE-EUR- -p ../data/MetaBrainColorPalette.json -of test
 """
 
 
@@ -72,6 +70,7 @@ class main():
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
         self.tcov_path = getattr(arguments, 'technical_covariates')
+        self.mds_path = getattr(arguments, 'mds')
         self.gte_path = getattr(arguments, 'gene_to_expression')
         self.gte_prefix = getattr(arguments, 'gte_prefix')
         self.gte_exclude = getattr(arguments, 'gte_exclude')
@@ -118,6 +117,11 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the technical covariates matrix.")
+        parser.add_argument("-m",
+                            "--mds",
+                            type=str,
+                            required=True,
+                            help="The path to the mds matrix.")
         parser.add_argument("-gte",
                             "--gene_to_expression",
                             type=str,
@@ -216,7 +220,7 @@ class main():
 
         # Load data.
         print("Loading data.")
-        df = self.load_file(self.data_path, header=0, index_col=0, nrows=100)
+        df = self.load_file(self.data_path, header=0, index_col=0)
         print(df)
 
         print("Step 1: sample selection.")
@@ -256,7 +260,10 @@ class main():
 
         print("Step 7: Construct technical covariate matrix.")
         tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
-        correction_df = self.prepare_correction_matrix(tcov_df=tcov_df.loc[samples, :], dataset_df=dataset_df)
+        mds_df = self.load_file(self.mds_path, header=0, index_col=0)
+        correction_df = self.prepare_correction_matrix(tcov_df=tcov_df.loc[samples, :],
+                                                       mds_df=mds_df.loc[samples, :],
+                                                       dataset_df=dataset_df)
 
         print("\tSaving file.")
         self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix.txt.gz"))
@@ -316,7 +323,7 @@ class main():
 
         return out_dict
 
-    def prepare_correction_matrix(self, tcov_df, dataset_df):
+    def prepare_correction_matrix(self, tcov_df, mds_df, dataset_df):
         df = tcov_df.copy()
 
         # Remove columns without variance.
@@ -329,9 +336,12 @@ class main():
         # filter the technical covariates on VIF.
         df = self.remove_multicollinearity(df)
 
+        # Merge the tcov_df with the mds_df.
+        correction_df = df.merge(mds_df, left_index=True, right_index=True)
+
         # merge the tcov_df with the dataset_df but exclude the dataset with
         # the highest number of samples.
-        correction_df = df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
+        correction_df = correction_df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
         correction_df.insert(0, "INTERCEPT", 1)
         correction_df.index.name = "-"
 
@@ -446,6 +456,7 @@ class main():
         print("Arguments:")
         print("  > Data: {}".format(self.data_path))
         print("  > Technical covariates: {}".format(self.tcov_path))
+        print("  > MDS: {}".format(self.mds_path))
         print("  > GtE path: {}".format(self.gte_path))
         print("  >   GtE prefix: {}".format(self.gte_prefix))
         print("  >   Exclude: {}".format(self.gte_exclude))
