@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/10/21
+Last Changed: 2021/10/29
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -34,7 +34,6 @@ from src.force_normaliser import ForceNormaliser
 from src.objects.ieqtl import IeQTL
 from src.statistics import calc_vertex_xpos, remove_covariates_elementwise
 from src.utilities import save_dataframe
-from src.visualiser import Visualiser
 
 
 class InteractionOptimizer:
@@ -88,8 +87,10 @@ class InteractionOptimizer:
                     # Clean the expression matrix.
                     iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=cova_a)
 
-                    # Force normalise the matrix.
+                    # Force normalise the expression matrix and the interaction
+                    # vector.
                     iter_expr_m = self.fn.process(data=iter_expr_m)
+                    cova_a = self.fn.process(data=cova_a)
 
                     # Find the significant ieQTLs.
                     cov_hits, cov_ieqtls, cov_results_df = self.get_ieqtls(
@@ -126,8 +127,10 @@ class InteractionOptimizer:
                 # Clean the expression matrix.
                 iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=pic_a)
 
-                # Force normalise the matrix.
+                # Force normalise the expression matrix and the interaction
+                # vector.
                 iter_expr_m = self.fn.process(data=iter_expr_m)
+                cova_a = self.fn.process(data=cova_a)
 
                 n_hits, ieqtls, results_df = self.get_ieqtls(
                     eqtl_m=eqtl_m,
@@ -166,14 +169,6 @@ class InteractionOptimizer:
                 iterations_m[iteration, :] = pic_a
             iterations_m[iteration + 1, :] = optimized_pic_a
             n_ieqtls_per_sample_m[iteration, :] = n_ieqtls_per_sample_a
-
-            # # Visualise.
-            # # TODO remove this temporary code to create interaction plots.
-            # visualiser = Visualiser()
-            # for ieqtl in ieqtls:
-            #     if ieqtl.get_eqtl_id() == "ENSG00000019186.10:20:54173204:rs2248137:C_G":
-            #         visualiser.plot(ieqtl, out_path=outdir, iteration=iteration, ocf=None)
-            #         visualiser.plot(ieqtl, out_path=outdir, iteration=iteration, ocf=optimized_pic_a)
 
             self.log.info("\t\t  Calculating the total log likelihood after optimization")
 
