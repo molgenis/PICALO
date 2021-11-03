@@ -49,7 +49,9 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./pre_process_bios_gte_and_std.py -i /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -e /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -o ../data
+./pre_process_bios_gte_and_std.py -i /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -e /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -o ../BIOS_GTESubset
+
+./pre_process_bios_gte_and_std.py -i /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -e /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -se ../data/BIOS-allchr-mds-BIOS-GTESubset-VariantSubsetFilter_outliers.txt.gz -o ../BIOS_GTESubset_noOutlier
 """
 
 
@@ -60,6 +62,7 @@ class main():
         self.input_directory = getattr(arguments, 'input')
         self.gte_path = getattr(arguments, 'gene_to_expression')
         self.expression_path = getattr(arguments, 'expression')
+        self.se_path = getattr(arguments, 'sample_exclude')
         self.outdir = getattr(arguments, 'output')
 
     @staticmethod
@@ -91,6 +94,12 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the expression matrix.")
+        parser.add_argument("-se",
+                            "--sample_exclude",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the sample exclude file.")
         parser.add_argument("-o",
                             "--output",
                             type=str,
@@ -186,6 +195,21 @@ class main():
 
         ########################################################################
 
+        # Remove other samples.
+        if self.se_path is not None:
+            se_df = self.load_file(self.se_path, header=None, index_col=None)
+            exclude_samples = list(se_df.iloc[:, 0].values)
+
+            # Remove samples from gte file.
+            mask = np.ones(gte_df.shape[0], dtype=bool)
+            for i, (_, (genotype_id, rnaseq_id, _)) in enumerate(gte_df.iterrows()):
+                if genotype_id in exclude_samples or rnaseq_id in exclude_samples:
+                    mask[i] = False
+            print("\tSample exclude path is given, removing {} samples".format(np.size(mask) - np.sum(mask)))
+            gte_df = gte_df.loc[mask, :]
+
+        ########################################################################
+
         # Define our sample list.
         genotype_ids = list(gte_df["genotype_id"])
 
@@ -245,7 +269,9 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
-        print("  > GEE path: {}".format(self.gte_path))
+        print("  > GTE path: {}".format(self.gte_path))
+        print("  > Expression path: {}".format(self.expression_path))
+        print("  > Sample exclude path: {}".format(self.se_path))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 
