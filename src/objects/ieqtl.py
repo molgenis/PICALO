@@ -1,7 +1,7 @@
 """
 File:         ieqtl.py
 Created:      2021/04/08
-Last Changed: 2021/10/22
+Last Changed: 2021/11/01
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -71,6 +71,12 @@ class IeQTL:
         X[:, 3] = X[:, 1] * X[:, 2]
 
         return X
+
+    def get_gene(self):
+        return self.gene
+
+    def get_snp(self):
+        return self.snp
 
     def get_eqtl_id(self):
         return "{}:{}".format(self.gene, self.snp)
@@ -201,7 +207,7 @@ class IeQTL:
 
     def __str__(self):
         return "IeQTL(snp={}, gene={}, cov={}, is_computed={}, " \
-               "is_analyzed={}, n={}, betas={}, rss={}, p_value={}, " \
+               "is_analyzed={}, n={}, betas={}, rss={:.2f}, p_value={:.2e}, " \
                "coef_a={}, coef_b={})".format(self.snp,
                                               self.gene,
                                               self.cov,

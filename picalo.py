@@ -3,7 +3,7 @@
 """
 File:         picalo.py
 Created:      2020/11/16
-Last Changed: 2021/10/21
+Last Changed: 2021/11/02
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -67,10 +67,10 @@ if __name__ == '__main__':
     HW_PVAL = CLA.get_argument('hardy_weinberg_pvalue')
     MAF = CLA.get_argument('minor_allele_frequency')
     MGS = CLA.get_argument('min_group_size')
-    TOL = CLA.get_argument('tol')
-    SLIDING_WINDOW_SIZE = CLA.get_argument('sliding_window_size')
     N_COMPONENTS = CLA.get_argument('n_components')
+    MIN_ITER = CLA.get_argument('min_iter')
     MAX_ITER = CLA.get_argument('max_iter')
+    TOL = CLA.get_argument('tol')
     VERBOSE = CLA.get_argument('verbose')
     OUTDIR = CLA.get_argument('outdir')
 
@@ -89,10 +89,10 @@ if __name__ == '__main__':
                    hw_pval=HW_PVAL,
                    maf=MAF,
                    mgs=MGS,
-                   tol=TOL,
-                   sliding_window_size=SLIDING_WINDOW_SIZE,
                    n_components=N_COMPONENTS,
+                   min_iter=MIN_ITER,
                    max_iter=MAX_ITER,
+                   tol=TOL,
                    verbose=VERBOSE,
                    outdir=OUTDIR
                    )

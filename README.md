@@ -7,25 +7,34 @@ TODO
 
 ## Prerequisites  
 
-This program is developed in Pycharm v2021.1.2 (Professional Edition) and written in Python v3.7.4, performance on other system / version is not guaranteed.
+This program is written in Python v3.7.4. The program requires the following packages to be installed:  
 
-The program requires the following packages to be installed:  
+ * numpy (v1.19.5)
+ * pandas (v1.2.1) 
+ * scipy (v1.6.0)
+ * statsmodels (v0.12.2)
+ * matplotlib (v3.3.4)
+ * seaborn (v0.11.1)
 
- * matplotlib (>= v3.3.4)
- * numpy (>= v1.19.5)
- * pandas (>= v1.2.1) 
- * scipy (>= v1.7.1)
- * seaborn (>= v0.11.1)
- * statsmodels (>= v0.12.2)
-
-See 'Installing' on how to install these packages.
+See 'Installing' on how to install these packages. Note that the performance / reliability of this program on other versions is not guaranteed.
 
 ### Installing  
 
-Install the required packages. The python packager manager (pip) and the requirements file can be used to install all the necessary packages:  
+Install the required packages. Consider using a virtual environment to ensure the right version of packages are used.
 ```  
-pip install -r requirements.txt
+python3 -m venv env
+source env/bin/activate
+```
+
+The python packager manager (pip) and the requirements file can be used to install all the necessary packages. Note that the [requirements.txt](requirements.txt) file includes depedencies with their correct versions. Therefore, include the flag --no-dependencies when installing the packages to prevent unnecessary upgrading. 
 ```  
+pip install -r requirements.txt --no-dependencies
+```
+
+You can exit the virtual environment by typing:
+```  
+deactivate
+```
 
 ## Input data
 

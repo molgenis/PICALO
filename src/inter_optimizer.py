@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/10/29
+Last Changed: 2021/11/02
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -32,20 +32,20 @@ from statsmodels.stats import multitest
 # Local application imports.
 from src.force_normaliser import ForceNormaliser
 from src.objects.ieqtl import IeQTL
-from src.statistics import calc_vertex_xpos, remove_covariates_elementwise
+from src.statistics import calc_vertex_xpos, remove_covariates_elementwise, calc_pearsonr_vector
 from src.utilities import save_dataframe
 
 
 class InteractionOptimizer:
     def __init__(self, covariates, dataset_m, samples, genotype_na,
-                 ieqtl_alpha, max_iter, tol, sliding_window_size, log):
+                 ieqtl_alpha, min_iter, max_iter, tol, log):
         self.covariates = covariates
         self.samples = samples
         self.genotype_na = genotype_na
         self.ieqtl_alpha = ieqtl_alpha
+        self.min_iter = min_iter
         self.max_iter = max_iter
         self.tol = tol
-        self.sliding_window_size = sliding_window_size
         self.log = log
         self.fn = ForceNormaliser(dataset_m=dataset_m,
                                   samples=samples,
@@ -53,14 +53,13 @@ class InteractionOptimizer:
 
     def process(self, eqtl_m, geno_m, expr_m, covs_m, outdir):
         stop = True
-        pic_a = None
+        context_a = None
         cov = None
         results_df = None
         prev_included_ieqtls = (0, set())
         n_iterations_performed = 0
         info_m = np.empty((self.max_iter, 5), dtype=np.float64)
         n_ieqtls_per_sample_m = np.empty((self.max_iter, geno_m.shape[1]), dtype=np.float64)
-        sum_abs_norm_delta_ll_a = np.empty(self.max_iter, dtype=np.float64)
         iterations_m = np.empty((self.max_iter + 1, geno_m.shape[1]), dtype=np.float64)
         for iteration in range(n_iterations_performed, self.max_iter):
             self.log.info("\t\tIteration: {}".format(iteration))
@@ -68,10 +67,10 @@ class InteractionOptimizer:
             start_time = int(time.time())
 
             if np.ndim(covs_m) == 1:
-                pic_a = covs_m
+                context_a = covs_m
 
             # Find the significant ieQTLs.
-            if pic_a is None:
+            if context_a is None:
                 self.log.info("\t\t  Finding covariate with most ieQTLs")
 
                 cov = None
@@ -85,19 +84,21 @@ class InteractionOptimizer:
                     cova_a = covs_m[cov_index, :]
 
                     # Clean the expression matrix.
-                    iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=cova_a)
+                    iter_expr_m = remove_covariates_elementwise(y_m=expr_m,
+                                                                X_m=geno_m,
+                                                                a=cova_a)
 
                     # Force normalise the expression matrix and the interaction
                     # vector.
                     iter_expr_m = self.fn.process(data=iter_expr_m)
-                    cova_a = self.fn.process(data=cova_a)
+                    fn_cova_a = self.fn.process(data=cova_a)
 
                     # Find the significant ieQTLs.
                     cov_hits, cov_ieqtls, cov_results_df = self.get_ieqtls(
                         eqtl_m=eqtl_m,
                         geno_m=geno_m,
                         expr_m=iter_expr_m,
-                        cova_a=cova_a,
+                        context_a=fn_cova_a,
                         cov=self.covariates[cov_index]
                     )
 
@@ -106,10 +107,10 @@ class InteractionOptimizer:
                     hits_per_cov_data.append([self.covariates[cov_index], cov_hits])
 
                     if cov_hits > n_hits:
-                        cov = self.covariates[cov_index]
                         n_hits = cov_hits
+                        cov = self.covariates[cov_index]
                         ieqtls = cov_ieqtls
-                        pic_a = cova_a
+                        context_a = cova_a
                         results_df = cov_results_df
                     else:
                         del cov_ieqtls
@@ -121,25 +122,29 @@ class InteractionOptimizer:
                                header=True,
                                index=False,
                                log=self.log)
+
+                del cova_a, fn_cova_a
             else:
                 self.log.info("\t\t  Finding ieQTLs")
 
                 # Clean the expression matrix.
-                iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=pic_a)
+                iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=context_a)
 
                 # Force normalise the expression matrix and the interaction
                 # vector.
                 iter_expr_m = self.fn.process(data=iter_expr_m)
-                cova_a = self.fn.process(data=cova_a)
+                fn_context_a = self.fn.process(data=context_a)
 
                 n_hits, ieqtls, results_df = self.get_ieqtls(
                     eqtl_m=eqtl_m,
                     geno_m=geno_m,
                     expr_m=iter_expr_m,
-                    cova_a=pic_a,
+                    context_a=fn_context_a,
                     cov=cov)
 
                 self.log.info("\t\t\tCovariate: '{}' has {:,} significant ieQTLs".format(cov, n_hits))
+
+                del fn_context_a
 
             # Save results.
             save_dataframe(df=results_df,
@@ -153,37 +158,28 @@ class InteractionOptimizer:
                 self.log.error("\t\t  No significant ieQTLs found\n")
                 break
 
-            self.log.info("\t\t  Calculating the total log likelihood before optimization")
-
-            # Calculate the combined log likelihood of the new interaction
-            # vector.
-            pre_optimization_ll_a = self.calculate_log_likelihood(ieqtls=ieqtls)
-
             self.log.info("\t\t  Optimizing ieQTLs")
 
             # Optimize the interaction vector.
-            optimized_pic_a, n_ieqtls_per_sample_a = self.optimize_ieqtls(ieqtls)
+            optimized_context_a, n_ieqtls_per_sample_a = self.optimize_ieqtls(ieqtls)
 
             # Safe that interaction vector.
             if iteration == 0:
-                iterations_m[iteration, :] = pic_a
-            iterations_m[iteration + 1, :] = optimized_pic_a
+                iterations_m[iteration, :] = context_a
+            iterations_m[iteration + 1, :] = optimized_context_a
             n_ieqtls_per_sample_m[iteration, :] = n_ieqtls_per_sample_a
 
-            self.log.info("\t\t  Calculating the total log likelihood after optimization")
-
-            # Calculate the combined log likelihood of the new interaction
-            # vector.
-            post_optimization_ll_a = self.calculate_log_likelihood(ieqtls=ieqtls, vector=optimized_pic_a)
+            self.log.info("\t\t  Calculating the total log likelihood before and after optimization")
+            pre_optimization_ll_a = self.calculate_log_likelihood(ieqtls=ieqtls, vector=context_a)
+            post_optimization_ll_a = self.calculate_log_likelihood(ieqtls=ieqtls, vector=optimized_context_a)
 
             # Calculate the change in total log likelihood.
             sum_abs_norm_delta_ll = np.sum(np.abs(post_optimization_ll_a - pre_optimization_ll_a) / np.abs(pre_optimization_ll_a))
-            sum_abs_norm_delta_ll_a[iteration] = sum_abs_norm_delta_ll
-            sw_sum_abs_norm_delta_ll = sum_abs_norm_delta_ll
-            if iteration > 0:
-                sw_sum_abs_norm_delta_ll = np.mean(sum_abs_norm_delta_ll_a[max(iteration - self.sliding_window_size, 0):(iteration + 1)])
             self.log.info("\t\t\tSum absolute normalized \u0394 log likelihood: {:.2e}".format(sum_abs_norm_delta_ll))
-            self.log.info("\t\t\tSliding window sum absolute normalized \u0394 log likelihood: {:.2e}".format(sw_sum_abs_norm_delta_ll))
+
+            # Calculate the pearson correlation with the previous iteration.
+            pearsonr = calc_pearsonr_vector(x=context_a, y=optimized_context_a)
+            self.log.info("\t\t\tPearson r: {:.6f}".format(pearsonr))
 
             # Compare the included ieQTLs with the previous iteration.
             included_ieqtl_ids = {ieqtl.get_ieqtl_id() for ieqtl in ieqtls}
@@ -200,7 +196,7 @@ class InteractionOptimizer:
                                              n_overlap,
                                              pct_overlap,
                                              sum_abs_norm_delta_ll,
-                                             sw_sum_abs_norm_delta_ll])
+                                             pearsonr])
 
             # Print stats.
             rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
@@ -210,19 +206,19 @@ class InteractionOptimizer:
             self.log.info("")
 
             # Overwrite the variables for the next round. This has to be
-            # before the break because we define pic_a as the end result.
-            pic_a = optimized_pic_a
+            # before the break because we define context_a as the end result.
+            context_a = optimized_context_a
             prev_included_ieqtls = (n_ieqtls, included_ieqtl_ids)
             n_iterations_performed += 1
 
             # Check if we converged.
-            if sw_sum_abs_norm_delta_ll < self.tol:
+            if n_iterations_performed >= self.min_iter and (1 - pearsonr) < self.tol:
                 self.log.warning("\t\tModel converged")
                 self.log.info("")
                 stop = False
                 break
 
-            del ieqtls, optimized_pic_a
+            del ieqtls, optimized_context_a
 
         # Save overview files.
         iteration_df = pd.DataFrame(iterations_m[:(n_iterations_performed + 1), :],
@@ -247,7 +243,7 @@ class InteractionOptimizer:
                                index=["iteration{}".format(i) for i in range(n_iterations_performed)],
                                columns=["N", "N Overlap", "Overlap %",
                                         "Sum Abs Normalized Delta Log Likelihood",
-                                        "Sliding Window Sum Abs Normalized Delta Log Likelihood"])
+                                        "Pearson r"])
         info_df.insert(0, "covariate", cov)
         save_dataframe(df=info_df,
                        outpath=os.path.join(outdir, "info.txt.gz"),
@@ -257,9 +253,9 @@ class InteractionOptimizer:
 
         del iteration_df, iterations_m, info_df, info_m
 
-        return pic_a, stop
+        return context_a, stop
 
-    def get_ieqtls(self, eqtl_m, geno_m, expr_m, cova_a, cov):
+    def get_ieqtls(self, eqtl_m, geno_m, expr_m, context_a, cov):
         n_eqtls = eqtl_m.shape[0]
 
         ieqtls = []
@@ -271,7 +267,7 @@ class InteractionOptimizer:
                           gene=gene,
                           cov=cov,
                           genotype=geno_m[row_index, :],
-                          covariate=cova_a,
+                          covariate=context_a,
                           expression=expr_m[row_index, :]
                           )
             ieqtl.compute()

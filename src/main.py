@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/10/21
+Last Changed: 2021/11/03
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -42,8 +42,8 @@ class Main:
     def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
                  tech_covariate_path, tech_covariate_with_inter_path,
                  covariate_path, sample_dataset_path,
-                 eqtl_alpha, ieqtl_alpha, call_rate, hw_pval, maf, mgs, tol,
-                 sliding_window_size, n_components,  max_iter, verbose, outdir):
+                 eqtl_alpha, ieqtl_alpha, call_rate, hw_pval, maf, mgs,
+                 n_components, min_iter, max_iter, tol, verbose, outdir):
         # Safe arguments.
         self.genotype_na = genotype_na
         self.eqtl_alpha = eqtl_alpha
@@ -52,10 +52,10 @@ class Main:
         self.hw_pval = hw_pval
         self.maf = maf
         self.mgs = mgs
-        self.tol = tol
-        self.sliding_window_size = sliding_window_size
         self.n_components = n_components
+        self.min_iter = min_iter
         self.max_iter = max_iter
+        self.tol = tol
 
         # Other global variables.
         self.min_dataset_sample_size = 30
@@ -274,9 +274,9 @@ class Main:
                                   samples=samples,
                                   genotype_na=self.genotype_na,
                                   ieqtl_alpha=self.ieqtl_alpha,
+                                  min_iter=self.min_iter,
                                   max_iter=self.max_iter,
                                   tol=self.tol,
-                                  sliding_window_size=self.sliding_window_size,
                                   log=self.log)
 
         pic_m = np.empty((self.n_components, np.size(samples)), dtype=np.float64)
@@ -310,6 +310,7 @@ class Main:
 
             component_path = os.path.join(comp_outdir, "component.npy")
             if os.path.exists(component_path):
+                print("\t  PIC has already been identified")
                 with open(component_path, 'rb') as f:
                     pic_a = np.load(f)
                 f.close()
@@ -348,6 +349,14 @@ class Main:
 
         save_dataframe(df=components_df,
                        outpath=os.path.join(self.outdir, "components.txt.gz"),
+                       header=True,
+                       index=True)
+
+        pics_df = components_df
+        if stop:
+            pics_df = components_df.iloc[:-1, :]
+        save_dataframe(df=pics_df,
+                       outpath=os.path.join(self.outdir, "PICs.txt.gz"),
                        header=True,
                        index=True)
 
@@ -585,9 +594,9 @@ class Main:
         self.log.info("  > Minimal group size: >{}".format(self.mgs))
         self.log.info("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))
         self.log.info("  > N components: {}".format(self.n_components))
+        self.log.info("  > Min iterations: {}".format(self.min_iter))
         self.log.info("  > Max iterations: {}".format(self.max_iter))
         self.log.info("  > Tolerance: {}".format(self.tol))
-        self.log.info("  > Sliding window size: {}".format(self.sliding_window_size))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")
 

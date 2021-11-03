@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2021/10/21
+Last Changed: 2021/11/01
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -140,33 +140,32 @@ class CommandLineArguments:
                             default=2,
                             help="The minimal number of samples per genotype "
                                  "group. Default: >= 2.")
-        parser.add_argument("-tol",
-                            type=float,
-                            required=False,
-                            default=1e-3,
-                            help="The convergence threshold. The optimization "
-                                 "will stop when the liklihood gain is below "
-                                 "this threshold. Default: 1e-3.")
-        parser.add_argument("-sw",
-                            "--sliding_window_size",
-                            type=int,
-                            required=False,
-                            default=5,
-                            help="The size of the sliding window or which the "
-                                 "average log likelihood is calculated. "
-                                 "Default: = 5.")
         parser.add_argument("-n_components",
                             type=int,
                             required=False,
                             default=10,
                             help="The number of components to extract. "
                                  "Default: 10.")
+        parser.add_argument("-min_iter",
+                            type=int,
+                            required=False,
+                            default=5,
+                            help="The minimum number of optimization "
+                                 "iterations per component. Default: 5.")
         parser.add_argument("-max_iter",
                             type=int,
                             required=False,
                             default=100,
                             help="The maximum number of optimization "
                                  "iterations per component. Default: 100.")
+        parser.add_argument("-tol",
+                            type=float,
+                            required=False,
+                            default=1e-3,
+                            help="The convergence threshold. The optimization "
+                                 "will stop when the 1 - pearson correlation"
+                                 "coefficient is below this threshold. "
+                                 "Default: 1e-3.")
         parser.add_argument("-verbose",
                             action='store_true',
                             help="Enable verbose output. Default: False.")
