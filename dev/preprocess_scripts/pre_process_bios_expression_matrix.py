@@ -3,7 +3,7 @@
 """
 File:         pre_process_bios_expression_matrix.py
 Created:      2021/10/22
-Last Changed: 2021/10/28
+Last Changed: 2021/11/04
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -61,8 +61,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./pre_process_bios_expression_matrix.py -h
-
-./pre_process_bios_expression_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz -t /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-05-26-step5-remove-covariates-per-dataset/2020-05-25-covariatefiles/2020-02-17-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.top20correlated-cortex-withMDS.txt.gz -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/OLD/ContainsDuplicateSamples/CortexEUR-cis/combine_gte_files/SampleToDataset.txt.gz -p ../data/MetaBrainColorPalette.json -of test
 """
 
 
@@ -324,6 +322,7 @@ class main():
 
         print("\tSaving file.")
         self.save_file(df=components_df, outpath=os.path.join(self.file_outdir, "{}.{}.PCAOverSamplesEigenvectors.txt.gz".format(filename, file_appendix)))
+        self.save_file(df=components_df.iloc[:10, :], outpath=os.path.join(self.file_outdir, "{}.{}.PCAOverSamplesEigenvectors.First10PCs.txt.gz".format(filename, file_appendix)))
 
         print("\tPlotting PCA")
         plot_df = components_df.T
