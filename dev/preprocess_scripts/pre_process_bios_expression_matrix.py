@@ -61,6 +61,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./pre_process_bios_expression_matrix.py -h
+
+./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -t /groups/umcg-bios/tmp01/projects/decon_optimizer/data/preperation_files_PICALO/stap1/PICALO-BIOS-withMDSCorrection-noRNAPhenoNA/technische_covariaten_sex_included.txt.gz -m /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/2021-10-28-DataPreprocessing/BIOS_GTESubset_noRNAphenoNA_noOutliers/BIOS_SampleToDataset.txt.gz -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/BIOSColorPalette.json -of BIOS-cis-NoMDSOutlier
 """
 
 
@@ -174,7 +176,7 @@ class main():
 
         # Load data.
         print("Loading expression data.")
-        df = self.load_file(self.data_path, header=0, index_col=0, nrows=100)
+        df = self.load_file(self.data_path, header=0, index_col=0)
         print(df)
 
         print("Step 1: reorder samples.")
