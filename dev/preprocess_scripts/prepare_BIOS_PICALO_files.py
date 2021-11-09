@@ -50,7 +50,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./prepare_BIOS_PICALO_files.py -h
 
-./prepare_BIOS_PICALO_files.py -eq /groups/umcg-bios/tmp01/projects/decon_optimizer/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -ge /groups/umcg-bios/tmp01/projects/PICALO/2021-10-28-DataPreprocessing/BIOS_GTESubset_noRNAphenoNA_noOutliers/GenotypeMatrix.txt.gz -ex /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -pcpc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -tc /groups/umcg-bios/tmp01/projects/decon_optimizer/data/preperation_files_PICALO/stap1/PICALO-BIOS-withMDSCorrection-noRNAPhenoNA/technische_covariaten_sex_included.txt.gz -m /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/2021-10-28-DataPreprocessing/BIOS_GTESubset_noRNAphenoNA_noOutliers/BIOS_GenotypeToExpression.txt.gz -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier
+./prepare_BIOS_PICALO_files.py -eq /groups/umcg-bios/tmp01/projects/decon_optimizer/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -pcpc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -tc /groups/umcg-bios/tmp01/projects/decon_optimizer/data/preperation_files_PICALO/stap1/PICALO-BIOS-withMDSCorrection-noRNAPhenoNA/Covariates.top20correlated-WithSex.txt.gz -m /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/2021-10-28-DataPreprocessing/BIOS_GTESubset_noRNAphenoNA_noOutliers/BIOS_GenotypeToExpression.txt.gz -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment
 """
 
 
@@ -59,7 +59,7 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.eqtl_path = getattr(arguments, 'eqtl')
-        self.geno_path = getattr(arguments, 'genotype')
+        self.geno_folder = getattr(arguments, 'genotype')
         self.expr_path = getattr(arguments, 'expression')
         self.post_corr_pcs_path = getattr(arguments, 'post_corr_pcs')
         self.tcov_path = getattr(arguments, 'technical_covariates')
@@ -93,7 +93,7 @@ class main():
                             "--genotype",
                             type=str,
                             required=True,
-                            help="The path to the genotype matrix")
+                            help="The path to the genotype directory")
         parser.add_argument("-ex",
                             "--expression",
                             type=str,
@@ -135,11 +135,13 @@ class main():
 
         print("Loading sample-to-dataset file")
         gte_df = self.load_file(self.gte_path, header=0, index_col=None)
-        samples = gte_df.iloc[:, 1].tolist()
+        genotype_ids = gte_df.iloc[:, 0].tolist()
+        rnaseq_ids = gte_df.iloc[:, 1].tolist()
 
         std_df = gte_df.loc[:, ["rnaseq_id", "dataset"]]
         std_df.columns = ["sample", "dataset"]
         self.save_file(df=std_df, outpath=os.path.join(self.outdir, "SampleToDataset.txt.gz"), index=False)
+        del std_df
 
         print("Preparing eQTL file.")
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
@@ -155,41 +157,58 @@ class main():
         # top_eqtl_df = self.load_file(os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel.txt.gz"), header=0, index_col=None)
 
         print("Preparing genotype and expression file")
-        geno_df = self.load_file(self.geno_path, header=0, index_col=0)
+        geno_dfs = []
+        allele_dfs = []
+        for i in range(1, 23):
+            geno_df = self.load_file(os.path.join(self.geno_folder, "chr{}".format(i), "GenotypeData.txt.gz"), header=0, index_col=0)
+            geno_dfs.append(geno_df.iloc[:, 2:])
+            allele_dfs.append(geno_df.loc[:, ["Alleles", "AltAllele"]].copy())
+        geno_df = pd.concat(geno_dfs, axis=0)
+        allele_df = pd.concat(allele_dfs, axis=0)
+        geno_df = geno_df.groupby(geno_df.index).first()
+        allele_df = allele_df.groupby(allele_df.index).first()
         print(geno_df)
+        print(allele_df)
 
+        unique_n = len(set(top_eqtl_df["SNPName"]))
         present_snps = set(geno_df.index)
-        found_snps = present_snps.intersection(set(top_eqtl_df["SNP"]))
-        missing_snps = set(top_eqtl_df["SNP"]).symmetric_difference(present_snps)
-        print("\t{} / {} SNPs found in genotype matrix.".format(len(found_snps), top_eqtl_df.shape[0]))
+        missing_snps = list(set([snp for snp in top_eqtl_df["SNPName"] if snp not in present_snps]))
+        print("\t{} / {} SNPs found in genotype matrix.".format(unique_n - len(missing_snps), unique_n))
         if len(missing_snps) > 0:
             geno_df = pd.concat([geno_df, pd.DataFrame(np.nan, index=missing_snps, columns=geno_df.columns)], axis=0)
-        geno_df = geno_df.loc[top_eqtl_df["SNP"], :]
+            allele_df = pd.concat([allele_df, pd.DataFrame(np.nan, index=missing_snps, columns=allele_df.columns)], axis=0)
+        geno_df = geno_df.loc[top_eqtl_df["SNPName"], :]
+        allele_df = allele_df.loc[top_eqtl_df["SNPName"], :]
         print(geno_df)
+        print(allele_df)
 
         expr_df = self.load_file(self.expr_path, header=0, index_col=0)
+        expr_df = expr_df.groupby(expr_df.index).first()
         print(expr_df)
 
+        unique_n = len(set(top_eqtl_df["SNPName"]))
         present_genes = set(expr_df.index)
-        found_genes = present_genes.intersection(set(top_eqtl_df["Gene"]))
-        missing_genes = set(top_eqtl_df["Gene"]).symmetric_difference(present_genes)
-        print("\t{} / {} SNPs found in genotype matrix.".format(len(found_genes), top_eqtl_df.shape[0]))
+        missing_genes = list(set([gene for gene in top_eqtl_df["ProbeName"] if gene not in present_genes]))
+        print("\t{} / {} genes found in expression matrix.".format(unique_n - len(missing_genes), unique_n))
         if len(missing_genes) > 0:
             expr_df = pd.concat([expr_df, pd.DataFrame(np.nan, index=missing_genes, columns=expr_df.columns)], axis=0)
-        expr_df = expr_df.loc[top_eqtl_df["Gene"], :]
+        expr_df = expr_df.loc[top_eqtl_df["ProbeName"], :]
         print(expr_df)
 
         # Filter eQTL file on present data.
         mask = np.zeros(top_eqtl_df.shape[0], dtype=bool)
         for i in range(top_eqtl_df.shape[0]):
-            if top_eqtl_df.iloc[i, 1] in found_snps and top_eqtl_df.iloc[i, 7] in found_genes:
+            if top_eqtl_df.iloc[i, 1] in present_snps and top_eqtl_df.iloc[i, 7] in present_genes:
                 mask[i] = True
         present_top_eqtl_df = top_eqtl_df.loc[mask, :]
-        geno_df = geno_df.loc[mask, :].loc[:, samples]
-        expr_df = expr_df.loc[mask, :].loc[:, samples]
+        geno_df = geno_df.loc[mask, :].loc[:, genotype_ids]
+        geno_df.columns = rnaseq_ids
+        allele_df = allele_df.loc[mask, :]
+        expr_df = expr_df.loc[mask, :].loc[:, rnaseq_ids]
 
         self.save_file(df=present_top_eqtl_df, outpath=os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
         self.save_file(df=geno_df, outpath=os.path.join(self.outdir, "genotype_table.txt.gz"))
+        self.save_file(df=allele_df, outpath=os.path.join(self.outdir, "genotype_alleles_table.txt.gz"))
         self.save_file(df=expr_df, outpath=os.path.join(self.outdir, "expression_table.txt.gz"))
         del top_eqtl_df, present_top_eqtl_df, geno_df, expr_df
 
@@ -197,8 +216,8 @@ class main():
         pcpc_df = self.load_file(self.post_corr_pcs_path, header=0, index_col=0)
         print(pcpc_df)
 
-        self.save_file(df=pcpc_df.iloc[:25, :].loc[:, samples], outpath=os.path.join(self.outdir, "first25PCComponents.txt.gz"))
-        self.save_file(df=pcpc_df.iloc[:10, :].loc[:, samples], outpath=os.path.join(self.outdir, "first10PCComponents.txt.gz"))
+        self.save_file(df=pcpc_df.iloc[:25, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first25PCComponents.txt.gz"))
+        self.save_file(df=pcpc_df.iloc[:10, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first10PCComponents.txt.gz"))
         del pcpc_df
 
         print("Preparing technical covariates")
@@ -208,7 +227,7 @@ class main():
         print(mds_df)
 
         correction_df = tcov_df.merge(mds_df, left_index=True, right_index=True)
-        self.save_file(df=correction_df.loc[samples, :].T, outpath=os.path.join(self.outdir, "technical_and_mds_covariates_table.txt.gz"))
+        self.save_file(df=correction_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "technical_and_mds_covariates_table.txt.gz"))
         del correction_df
 
     @staticmethod
@@ -236,7 +255,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > eQTL: {}".format(self.eqtl_path))
-        print("  > Genotype: {}".format(self.geno_path))
+        print("  > Genotype: {}".format(self.geno_folder))
         print("  > Expression: {}".format(self.expr_path))
         print("  > Post-correction PCs: {}".format(self.post_corr_pcs_path))
         print("  > Technical covariates: {}".format(self.tcov_path))

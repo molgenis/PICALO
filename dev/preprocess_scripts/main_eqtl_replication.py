@@ -57,7 +57,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-./main_eqtl_replication.py -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/genotype_table.txt.gz -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/expression_table_CovariatesRemovedOLS.txt.gz -o eQTLReplication-BIOS-withMDSCorrection-noRNAPhenoNa
+./main_eqtl_replication.py -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_alleles_table.txt.gz -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -o eQTLReplication-BIOS-withMDSCorrection-noRNAPhenoNa-20RnaAlignment
 """
 
 
@@ -67,6 +67,7 @@ class main():
         arguments = self.create_argument_parser()
         self.eqtl_path = getattr(arguments, 'eqtl')
         self.geno_path = getattr(arguments, 'genotype')
+        self.alleles_path = getattr(arguments, 'alleles')
         self.expr_path = getattr(arguments, 'expression')
         self.out_filename = getattr(arguments, 'outfile')
 
@@ -97,6 +98,11 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the genotype matrix")
+        parser.add_argument("-al",
+                            "--alleles",
+                            type=str,
+                            required=True,
+                            help="The path to the alleles matrix")
         parser.add_argument("-ex",
                             "--expression",
                             type=str,
@@ -119,6 +125,7 @@ class main():
         eqtl_df.index = eqtl_df["ProbeName"] + "_" + eqtl_df["SNPName"]
         print(eqtl_df)
         geno_df = self.load_file(self.geno_path, header=0, index_col=0, nrows=nrows)
+        alleles_df = self.load_file(self.alleles_path, header=0, index_col=0, nrows=nrows)
         expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=nrows)
 
         print("Checking matrices")
@@ -150,31 +157,28 @@ class main():
             else:
                 results_m[i, :] = np.array([np.sum(mask), 2] + [np.nan] * 10)
         results_df = pd.DataFrame(results_m, index=eqtl_df.index, columns=["N", "df", "RSS", "beta intercept", "beta genotype", "std intercept", "std genotype", "t-value intercept", "t-value genotype", "f-value", "p-value", "z-score"])
+        results_df["AA"] = alleles_df.loc[:, "AltAllele"].to_numpy()
         self.save_file(df=results_df, outpath=os.path.join(self.outdir, "{}_results_df.txt.gz".format(self.out_filename)))
         results_df = self.load_file(os.path.join(self.outdir, "{}_results_df.txt.gz".format(self.out_filename)), header=0, index_col=0)
         print(results_df)
 
         print("Combining data")
-        eqtl_data_df = eqtl_df.loc[:, ["Pvalue", "Zscore"]].copy()
-        eqtl_data_df.columns = ["eQTL p-value", "eQTL z-score"]
-        plot_df = results_df.loc[:, ["p-value", "z-score"]].merge(eqtl_data_df, left_index=True, right_index=True)
+        eqtl_data_df = eqtl_df.loc[:, ["AssessedAllele", "Pvalue", "Zscore"]].copy()
+        eqtl_data_df.columns = ["eqtl AA", "eQTL p-value", "eQTL z-score"]
+        plot_df = results_df.loc[:, ["AA", "p-value", "t-value genotype"]].merge(eqtl_data_df, left_index=True, right_index=True)
         plot_df.dropna(inplace=True)
 
-        print("Comparing p-values")
-        self.plot_replication(df=plot_df,
-                              x="eQTL p-value",
-                              y="p-value",
-                              xlabel="eQTL file p-value",
-                              ylabel="p-value",
-                              name="{}_pvalue_replication".format(self.out_filename))
+        # flip.
+        plot_df["flip"] = (plot_df["eqtl AA"] == plot_df["AA"]).map({True: 1, False: -1})
+        plot_df["t-value genotype flipped"] = plot_df["t-value genotype"] * plot_df["flip"]
 
-        print("Comparing z-scores")
+        print("Comparing")
         self.plot_replication(df=plot_df,
                               x="eQTL z-score",
-                              y="z-score",
+                              y="t-value genotype flipped",
                               xlabel="eQTL file z-score",
-                              ylabel="z-score",
-                              name="{}_zscore_replication".format(self.out_filename))
+                              ylabel="t-value",
+                              name="{}_zscore_vs_tvalue_replication".format(self.out_filename))
 
     @staticmethod
     def load_file(path, sep="\t", header=0, index_col=0, nrows=None):
@@ -413,6 +417,7 @@ class main():
         print("Arguments:")
         print("  > eQTL file: {}".format(self.eqtl_path))
         print("  > Genotype path: {}".format(self.geno_path))
+        print("  > Alleles path: {}".format(self.alleles_path))
         print("  > Expression path: {}".format(self.expr_path))
         print("  > Output directory: {}".format(self.outdir))
         print("")

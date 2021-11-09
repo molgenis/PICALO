@@ -258,14 +258,12 @@ class Visualiser:
     def inter_plot(fig, ax, df, x="x", y="y", group="group", palette=None,
                    ci=95, fdr=None, rsquared=None, xlabel="", ylabel="",
                    title=""):
-        unique_groups = df[group].unique()
-        if len(set(unique_groups).symmetric_difference({0, 1, 2})) > 0:
+        if len(set(df[group].unique()).symmetric_difference({0, 1, 2})) > 0:
             return
 
         sns.despine(fig=fig, ax=ax)
 
-        label_pos = {0.0: 0.94, 1.0: 0.90, 2.0: 0.86}
-        for i, group_id in enumerate(unique_groups):
+        for i, group_id in enumerate([0, 1, 2]):
             subset = df.loc[df[group] == group_id, :]
             n = subset.shape[0]
 
@@ -287,7 +285,7 @@ class Visualiser:
             # Add the text.
             ax.annotate(
                 '{}: r = {} [n={}]'.format(group_id, coef_str, n),
-                xy=(0.03, label_pos[group_id]),
+                xy=(0.03, 0.94 - (i * 0.04)),
                 xycoords=ax.transAxes,
                 color=palette[group_id],
                 alpha=0.75,
