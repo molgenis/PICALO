@@ -3,7 +3,7 @@
 """
 File:         visualise_interaction_eqtl.py
 Created:      2020/11/09
-Last Changed:
+Last Changed: 2021/11/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -72,7 +72,7 @@ class main():
         self.extensions = getattr(arguments, 'extension')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'visualise_interaction_eqtl')
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-File:         prepare_BIOS_PICALO_files.py
+File:         prepare_bios_picalo_files.py
 Created:      2021/11/08
 Last Changed:
 Author:       M.Vochteloo
@@ -30,6 +30,7 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
+
 # Local application imports.
 
 # Metadata
@@ -48,9 +49,9 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./prepare_BIOS_PICALO_files.py -h
+./prepare_bios_picalo_files.py -h
 
-./prepare_BIOS_PICALO_files.py -eq /groups/umcg-bios/tmp01/projects/decon_optimizer/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -pcpc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -tc /groups/umcg-bios/tmp01/projects/decon_optimizer/data/preperation_files_PICALO/stap1/PICALO-BIOS-withMDSCorrection-noRNAPhenoNA/Covariates.top20correlated-WithSex.txt.gz -m /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/2021-10-28-DataPreprocessing/BIOS_GTESubset_noRNAphenoNA_noOutliers/BIOS_GenotypeToExpression.txt.gz -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment
+./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_noRNAPhenoNA_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier
 """
 
 
@@ -65,10 +66,10 @@ class main():
         self.tcov_path = getattr(arguments, 'technical_covariates')
         self.mds_path = getattr(arguments, 'mds')
         self.gte_path = getattr(arguments, 'genotype_to_expression')
-        self.outdir = getattr(arguments, 'outdir')
+        outdir = getattr(arguments, 'outdir')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_BIOS_PICALO_files', self.outdir)
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bios_picalo_files', outdir)
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

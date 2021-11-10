@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-File:         visualise_results.py
+File:         visualise_results_metabrain.py
 Created:      2021/05/06
 Last Changed: 2021/10/21
 Author:       M.Vochteloo
@@ -34,7 +34,7 @@ import pandas as pd
 # Local application imports.
 
 # Metadata
-__program__ = "Visualise Results"
+__program__ = "Visualise Results MetaBrain"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -49,7 +49,11 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./visualise_results.py -h
+./visualise_results_metabrain.py -h
+
+./visualise_results_metabrain.py -id ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-ContextForceNormal/ -p ../../data/MetaBrainColorPalette.json -ep ../../preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/ -mp /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier -o MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-ContextForceNormal
+
+./visualise_results_metabrain.py -id ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/ -p ../../data/BIOSColorPalette.json -ep ../../preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/ -mp /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5
 """
 
 
@@ -120,7 +124,7 @@ class main():
         command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.matrix_preparation_path, "combine_eqtlprobes", "eQTLprobes_combined.txt.gz"), '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
-        # Plot interaction venn diagram.
+        # Plot interaction overview plot.
         command = ['python3', 'interaction_overview_plot.py', '-i', self.input_data_path, '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
@@ -134,7 +138,7 @@ class main():
             if os.path.exists(comp_iterations_path):
                 # Plot scatterplot.
                 command = ['python3', 'create_scatterplot.py', '-d', comp_iterations_path,
-                           "-hr", "0", "-ic", "0", "-a", "1", "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, "-o", self.outname + "_comp{}".format(i)]
+                           "-hr", "0", "-ic", "0", "-a", "1", "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, "-o", self.outname + "_PIC{}".format(i)]
                 self.run_command(command)
 
         # Create components_df if not exists.
@@ -172,19 +176,19 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs MDS.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.matrix_preparation_path, "create_correction_matrix", "mds_covariates_table.txt.gz"), "-cn", "tech. covs.", "-o", self.outname + "_vs_MDS"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.matrix_preparation_path, "create_correction_matrix", "mds_covariates_table.txt.gz"), "-cn", "MDS", "-o", self.outname + "_vs_MDS"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs decon.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.matrix_preparation_path, "perform_deconvolution", "deconvolution_table.txt.gz"), "-cn", "cell fractions", "-o", self.outname + "_vs_decon"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.matrix_preparation_path, "perform_deconvolution", "deconvolution_table.txt.gz"), "-cn", "decon cell fractions", "-o", self.outname + "_vs_decon"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs PCA without cov correction.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.expression_preprocessing_path, 'data', 'MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.gz'), "-cn", "PCA before cov. corr.", "-o", self.outname + "_vs_pca_before_corr"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.expression_preprocessing_path, 'data', 'MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.gz'), "-cn", "PCA before cov. corr.", "-o", self.outname + "_vs_PCABeforeCovCorrection"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs PCA with cov correction.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.expression_preprocessing_path, "data", "MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz"), "-cn", "PCA", "-o", self.outname + "_vs_pca"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.expression_preprocessing_path, "data", "MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz"), "-cn", "PCA after cov. corr.", "-o", self.outname + "_vs_PCAAfterCovCorrection"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs IHC.
@@ -192,11 +196,11 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs single cell counts.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/single_cell_counts.txt.gz", "-cn", "IHC", "-o", self.outname + "_vs_SCC"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/single_cell_counts.txt.gz", "-cn", "SCC", "-o", self.outname + "_vs_SCC"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs MetaBrain phenotype.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/encode_phenotype_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "MetaBrain Phenotype", "-o", self.outname + "_vs_MetaBrainPhenotypes"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/encode_phenotype_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "phenotypes", "-o", self.outname + "_vs_Phenotypes"]
             self.run_command(command)
 
             # # Plot correlation_heatmap of components vs MetaBrain PCs.

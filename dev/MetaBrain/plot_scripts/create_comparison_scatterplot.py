@@ -55,6 +55,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_comparison_scatterplot.py -h
+
+./create_comparison_scatterplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/SampleToDataset.txt.gz -p ../../data/BIOSColorPalette.json -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5
 """
 
 

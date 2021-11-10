@@ -126,6 +126,12 @@ class main():
         print("Load eQTL data.")
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
         eqtl_df.index = eqtl_df["SNPName"] + ":" + eqtl_df["ProbeName"]
+
+        has_Iteration = True
+        if "Iteration" not in eqtl_df.columns:
+            eqtl_df["Iteration"] = 1
+            has_Iteration = False
+
         eqtl_df = eqtl_df[["Iteration"]].astype(str)
         eqtl_df.columns = ["eQTL level"]
         eqtl_hlines = None
@@ -135,9 +141,10 @@ class main():
             pic = "PIC{}".format(i)
             print(pic)
 
+            final_iteration = None
             component_data = {}
             eqtl_level_counts_data = {}
-            final_iteration = None
+
             fpaths = glob.glob(os.path.join(self.input_directory, pic, "results_*.txt.gz"))
             fpaths.sort()
 
@@ -169,7 +176,7 @@ class main():
                 final_iter_data["comp{}".format(i)] = component_data[final_iteration]
 
             # plot lineplot.
-            if len(eqtl_level_counts_data.keys()) > 0:
+            if has_Iteration and len(eqtl_level_counts_data.keys()) > 0:
                 level_df = pd.DataFrame(eqtl_level_counts_data)
                 level_df = (level_df / level_df.sum(axis=0)) * 100
                 level_df.reset_index(drop=False, inplace=True)

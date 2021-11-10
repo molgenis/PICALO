@@ -35,8 +35,6 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from scipy.spatial.distance import pdist, squareform
-import scipy.cluster.hierarchy as hcl
 
 # Local application imports.
 
@@ -57,6 +55,19 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_correlation_heatmap.py -h
+
+./create_correlation_heatmap.py -rd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF10/components.txt.gz -rn MAF10 -cd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -cn MAF5 Phenotype -o MAF10_vs_MAF5
+
+./create_correlation_heatmap.py -rd ../../output/CortexEUR-cis-NoENA-NoGVEX/components.txt.gz -rn MAF10 -cd ../../output/test/components.txt.gz -cn MAF5 Phenotype -o MAF10_vs_MAF5
+
+./create_correlation_heatmap.py -rd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-ContextForceNormal/components.txt.gz -rn ForceNormal -cd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -cn NoForceNormal -o NoForceNormal_vs_ForceNormal
+
+
+./create_correlation_heatmap.py -rd ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -rn BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5 -cd ../../preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -cn PCA_AfterCorrection -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_vs_PCA_afterCorrection
+
+./create_correlation_heatmap.py -rd ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -rn BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5 -cd ../../preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed..PCAOverSamplesEigenvectors.txt.gz -cn PCA_beforeCorrection -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_vs_PCA_beforeCorrection
+
+./create_correlation_heatmap.py -rd ../../preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractions.txt.gz  -rn CellFractions -cd ../../preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -cn CellFractionPercentages -o CellFractions_vs_CellFractionPercentages -m Spearman
 """
 
 

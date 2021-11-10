@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         pre_process_bios_gtd.py
+File:         filter_gte_file.py
 Created:      2021/10/28
-Last Changed:
+Last Changed: 2021/11/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,6 +23,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
+from pathlib import Path
 import argparse
 import glob
 import os
@@ -34,7 +35,7 @@ import numpy as np
 # Local application imports.
 
 # Metadata
-__program__ = "Pre-Process BIOS GTD"
+__program__ = "Filter GTE file"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -49,9 +50,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./pre_process_bios_gtd.py -i /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-trityper -o ../data
-
-./pre_process_bios_gtd.py -i /groups/umcg-bios/prm02/projects/HRC_imputed_trityper/1000G_harmonized/ -o .
+./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -se ../data/BIOS_noRNAPhenoNA_NoMDSOutlier_SampleExclude.txt.gz -o BIOS_noRNAPhenoNA_NoMDSOutlier 
 """
 
 
@@ -59,8 +58,14 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.input_directory = getattr(arguments, 'input')
-        self.outdir = getattr(arguments, 'output')
+        self.gte_path = getattr(arguments, 'genotype_to_expression')
+        self.se_path = getattr(arguments, 'sample_exclude')
+        outdir = getattr(arguments, 'outdir')
+
+        # Set variables.
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'filter_gte_file', outdir)
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
 
     @staticmethod
     def create_argument_parser():
@@ -75,13 +80,20 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit.")
-        parser.add_argument("-i",
-                            "--input",
+        parser.add_argument("-gte",
+                            "--genotype_to_expression",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the genotype-to-expression"
+                                 " link matrix.")
+        parser.add_argument("-se",
+                            "--sample_exclude",
                             type=str,
                             required=True,
-                            help="The path to the input directory.")
+                            help="The path to the samples to remove.")
         parser.add_argument("-o",
-                            "--output",
+                            "--outdir",
                             type=str,
                             required=True,
                             help="The path to the output directory.")
@@ -91,47 +103,36 @@ class main():
     def start(self):
         self.print_arguments()
 
-        print("Loading individual data")
+        print("Loading data.")
+        gte_df = self.load_file(self.gte_path, header=0, index_col=None)
+        se_df = self.load_file(self.se_path, header=None, index_col=None)
+        remove = se_df.iloc[:, 0].values.tolist()
 
-        # Find the datasets folders (i.e. subdirectories).
-        datasets = [name for name in os.listdir(self.input_directory) if os.path.isdir(os.path.join(self.input_directory, name))]
+        ########################################################################
 
-        # Loop over datasets
-        individual_dfs = []
-        for dataset in datasets:
-            print(dataset)
-            # for chrom_id in range(1, 23, 1):
-            #     print("chr{}".format(chrom_id))
-            #     fpath = os.path.join(self.input_directory, dataset, "chr{}".format(chrom_id), "Individuals.txt")
-            #     if not os.path.exists(fpath):
-            #         print("Not found.")
-            #         continue
-            #     individual_df = self.load_file(fpath, index_col=None, header=None)
-            #     individual_df.columns = ["sample"]
-            #     individual_df["dataset"] = dataset
-            #
-            #     individual_dfs.append(individual_df)
+        print("Removing samples.")
+        gte_df.index = gte_df["rnaseq_id"]
+        subset_gte_df = gte_df.loc[[sample for sample in gte_df.index if sample not in remove], :]
+        del gte_df
 
+        ########################################################################
 
-            fpath = os.path.join(self.input_directory, dataset, "Individuals.txt")
-            if not os.path.exists(fpath):
-                print("Not found.")
-                continue
-            individual_df = self.load_file(fpath, index_col=None, header=None)
-            individual_df.columns = ["sample"]
-            individual_df["dataset"] = dataset
+        print("Saving files.")
+        # Gene-to-expression file.
+        self.save_file(df=subset_gte_df, outpath=os.path.join(self.outdir, "GenotypeToExpression.txt.gz"), index=False)
 
-            individual_dfs.append(individual_df)
+        # Sample-to-dataset file.
+        std_df = subset_gte_df.loc[:, ["rnaseq_id", "dataset"]]
+        std_df.columns = ["sample", "dataset"]
+        self.save_file(df=std_df, outpath=os.path.join(self.outdir, "SampleToDataset.txt.gz"), index=False)
 
-        # Merge the data frames.
-        gtd_df = pd.concat(individual_dfs, axis=0)
-        gtd_df.drop_duplicates(inplace=True)
-        print(gtd_df)
-
-        self.save_file(df=gtd_df, outpath=os.path.join(self.outdir, "BIOS_GenotypeToDataset.txt.gz"), index=False)
+        # Family-genotype file (for MDS analyses).
+        gte_fid_df = subset_gte_df.loc[:, ["genotype_id"]].copy()
+        gte_fid_df.insert(0, "family_id", 0)
+        self.save_file(df=gte_fid_df, outpath=os.path.join(self.outdir, "FamilyToGenotype.txt"), header=False, index=False)
 
     @staticmethod
-    def load_file(inpath, header=0, index_col=0, sep="\t", low_memory=True,
+    def load_file(inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
         if inpath.endswith(".pkl"):
             df = pd.read_pickle(inpath)
@@ -157,7 +158,8 @@ class main():
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > Input directory: {}".format(self.input_directory))
+        print("  > GTE path: {}".format(self.gte_path))
+        print("  > Sample exclude path: {}".format(self.se_path))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-File:         overview_lineplot.py
-Created:      2021/05/20
+File:         interaction_overview_plot.py
+Created:      2021/10/21
 Last Changed: 2021/10/25
 Author:       M.Vochteloo
 
@@ -25,6 +25,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
+import glob
 import json
 import os
 
@@ -35,12 +36,11 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 
 # Local application imports.
 
 # Metadata
-__program__ = "Overview Lineplot"
+__program__ = "Interaction Overview Plot"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -54,8 +54,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
                                         __license__)
 
 """
-Syntax: 
-./overview_lineplot.py -h
+Syntax:
+./interaction_overview_plot.py -h
 """
 
 
@@ -115,49 +115,67 @@ class main():
         self.print_arguments()
 
         print("Loading data")
-        info_dict = {}
-        df_m_list = []
+        pics = []
+        pic_dfs = []
         for i in range(1, 11):
-            fpath = os.path.join(self.input_directory, "PIC{}".format(i), "info.txt.gz")
-            if os.path.exists(fpath):
-                df = self.load_file(fpath, header=0, index_col=0)
+            pic = "PIC{}".format(i)
 
-                info_dict["PIC{}".format(i)] = df.loc["iteration0", "covariate"]
+            fpaths = glob.glob(os.path.join(self.input_directory, pic, "results_*.txt.gz"))
+            if len(fpaths) <= 0:
+                continue
+            fpaths.sort()
+            final_iteration_path = fpaths[-1]
 
-                df["index"] = np.arange(1, (df.shape[0] + 1))
-                df["component"] = "PIC{}".format(i)
-                df_m = df.melt(id_vars=["index", "covariate", "component"])
-                df_m_list.append(df_m)
+            # final_iteration_path = None
+            # for j in range(100):
+            #     iter_path = os.path.join(self.input_directory, pic, "results_iteration{}_df.txt.gz".format(j))
+            #     if os.path.exists(iter_path):
+            #         final_iteration_path = iter_path
+            #
+            # if final_iteration_path is None:
+            #     continue
 
-        print("Merging data")
-        df_m = pd.concat(df_m_list, axis=0)
-        df_m["log10 value"] = np.log10(df_m["value"])
+            df = self.load_file(final_iteration_path, header=0, index_col=None)
+            df.index = df["SNP"] + ":" + df["gene"]
+            signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
 
-        print("Plotting")
-        for variable in df_m["variable"].unique():
-            print("\t{}".format(variable))
+            signif_df = pd.DataFrame(0, index=df.index, columns=[pic])
+            signif_df.loc[signif_ieqtl, pic] = 1
 
-            subset_m = df_m.loc[df_m["variable"] == variable, :]
-            if variable == "Overlap %":
-                subset_m = subset_m.loc[subset_m["index"] != 1, :]
+            pic_dfs.append(signif_df)
+            pics.append(pic)
 
-            self.lineplot(df_m=subset_m, x="index", y="value", hue="component",
-                          style=None, palette=self.palette,
-                          xlabel="iteration", ylabel=variable,
-                          filename=self.out_filename + "_" + variable.replace(" ", "_").lower(),
-                          info=info_dict,
-                          outdir=self.outdir)
+        pic_df = pd.concat(pic_dfs, axis=1)
 
-            if "Likelihood" in variable:
-                self.lineplot(df_m=subset_m, x="index", y="log10 value", hue="component",
-                              style=None, palette=self.palette,
-                              xlabel="iteration", ylabel="log10 " + variable,
-                              filename=self.out_filename + "_log10_" + variable.replace(" ", "_").lower(),
-                              info=info_dict,
-                              outdir=self.outdir)
+        # Split data.
+        no_interaction_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) == 0, :]
+        single_interaction_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) == 1, :]
+        multiple_interactions_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) > 1, :]
 
-    @staticmethod
-    def load_file(inpath, header, index_col, sep="\t", low_memory=True,
+        n_ieqtls_unique_per_pic = [(name, value) for name, value in single_interaction_df.sum(axis=0).iteritems()]
+        n_ieqtls_unique_per_pic.sort(key=lambda x: -x[1])
+        pics = [x[0] for x in n_ieqtls_unique_per_pic]
+        n_ieqtls = [x[1] for x in n_ieqtls_unique_per_pic]
+
+        # Construct pie data.
+        data = [no_interaction_df.shape[0]] + n_ieqtls + [multiple_interactions_df.shape[0]]
+        labels = ["None"] + pics + ["Multiple"]
+        colors = None
+        if self.palette is not None:
+            colors = ["#D3D3D3"] + [self.palette[pic] for pic in pics] + ["#808080"]
+        explode = [0.] + [0.1 for _ in pics] + [0.1]
+
+        data_sum = np.sum(data)
+        for i in range(len(data)):
+            print("{} (N = {}) = {:.2f}%".format(labels[i], data[i], (100 / data_sum) * data[i]))
+
+        total_n_ieqtls = pic_df.shape[0] - no_interaction_df.shape[0]
+        print("Total interactions (N = {}) = {:.2f}%".format(total_n_ieqtls, (100 / pic_df.shape[0]) * total_n_ieqtls))
+
+        self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="png")
+        self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="pdf", label_threshold=100)
+
+    def load_file(self, inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
         df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
                          low_memory=low_memory, nrows=nrows, skiprows=skiprows)
@@ -166,61 +184,39 @@ class main():
                                       df.shape))
         return df
 
-    @staticmethod
-    def lineplot(df_m, x="x", y="y", hue=None, style=None, palette=None, title="",
-                 xlabel="", ylabel="", filename="plot", info=None, outdir=None):
+    def plot(self, data, labels, explode=None, colors=None, extension='png', label_threshold=0):
         sns.set(rc={'figure.figsize': (12, 9)})
         sns.set_style("ticks")
-        fig, (ax1, ax2) = plt.subplots(nrows=1,
-                                       ncols=2,
-                                       gridspec_kw={"width_ratios": [0.99, 0.01]})
-        sns.despine(fig=fig, ax=ax1)
+        fig, ax = plt.subplots()
+        sns.despine(fig=fig, ax=ax)
 
-        g = sns.lineplot(data=df_m,
-                         x=x,
-                         y=y,
-                         units=hue,
-                         hue=hue,
-                         style=style,
-                         palette=palette,
-                         estimator=None,
-                         legend=None,
-                         ax=ax1)
+        plt.pie(data,
+                autopct=lambda pct: self.autopct_func(pct, data, label_threshold),
+                explode=explode,
+                labels=labels,
+                shadow=False,
+                colors=colors,
+                startangle=90,
+                wedgeprops={'linewidth': 1})
+        ax.axis('equal')
 
-        ax1.set_title(title,
-                      fontsize=14,
-                      fontweight='bold')
-        ax1.set_xlabel(xlabel,
-                       fontsize=10,
-                       fontweight='bold')
-        ax1.set_ylabel(ylabel,
-                       fontsize=10,
-                       fontweight='bold')
-
-        if palette is not None:
-            handles = []
-            for key, color in palette.items():
-                if key in df_m[hue].values.tolist():
-                    label = key
-                    if info is not None and key in info:
-                        label = "{} [{}]".format(key, info[key])
-                    handles.append(mpatches.Patch(color=color, label=label))
-            ax2.legend(handles=handles, loc="center")
-        ax2.set_axis_off()
-
-        plt.tight_layout()
-        outpath = "{}.png".format(filename)
-        if outdir is not None:
-            outpath = os.path.join(outdir, outpath)
-        fig.savefig(outpath)
+        fig.savefig(os.path.join(self.outdir, "{}_interaction_piechart.{}".format(self.out_filename, extension)))
         plt.close()
+
+    @staticmethod
+    def autopct_func(pct, allvalues, label_threshold):
+        if pct >= label_threshold:
+            absolute = int(pct / 100. * np.sum(allvalues))
+            return "{:.1f}%\n(N = {:,.0f})".format(pct, absolute)
+        else:
+            return ""
 
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
         print("  > Palette path: {}".format(self.palette_path))
-        print("  > Outpath {}".format(self.outdir))
         print("  > Output filename: {}".format(self.out_filename))
+        print("  > Output directory: {}".format(self.outdir))
         print("")
 
 

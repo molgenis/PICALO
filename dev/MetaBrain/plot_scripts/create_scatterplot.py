@@ -57,6 +57,18 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_scatterplot.py -h
+
+./create_scatterplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/PIC1/iteration.txt.gz -hr 0 -ic 0 -a 1 -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/SampleToDataset.txt.gz -p ../../data/BIOSColorPalette.json -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_PIC1
+
+./create_scatterplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/PIC2/iteration.txt.gz -hr 0 -ic 0 -a 1 -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/SampleToDataset.txt.gz -p ../../data/BIOSColorPalette.json -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_PIC2
+
+./create_scatterplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/PIC3/iteration.txt.gz -hr 0 -ic 0 -a 1 -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/SampleToDataset.txt.gz -p ../../data/BIOSColorPalette.json -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_PIC3
+
+./create_scatterplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/PIC4/iteration.txt.gz -hr 0 -ic 0 -a 1 -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/SampleToDataset.txt.gz -p ../../data/BIOSColorPalette.json -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_PIC4
+
+./create_scatterplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/PIC5/iteration.txt.gz -hr 0 -ic 0 -a 1 -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/SampleToDataset.txt.gz -p ../../data/BIOSColorPalette.json -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_PIC5
+
+./create_scatterplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/PIC6/iteration.txt.gz -hr 0 -ic 0 -a 1 -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/SampleToDataset.txt.gz -p ../../data/BIOSColorPalette.json -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_PIC6
 """
 
 

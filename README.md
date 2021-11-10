@@ -49,10 +49,10 @@ TODO
 
 ## Content
 
- * **[src](src)**: the source code for the PICALO program
- * **[dev/preprocess_scripts](dev/preprocess_scripts)**: script used for pre-processing the input data
- * **[dev/plot_scripts](dev/plot_scripts)**: scripts used to visualise the output of PICALO
- * **[dev/test_scripts](dev/test_scripts)**: scripts used to test things / visualise stuff / etc.
+ * **src**: the source code for the PICALO program
+ * **dev/<Dataset>/preprocess_scripts**: script used for pre-processing the input data
+ * **dev/<Dataset>/plot_scripts**: scripts used to visualise the output of PICALO
+ * **dev/<Dataset>/test_scripts**: scripts used to test things / visualise stuff / etc.
 
 
 ## Author  
