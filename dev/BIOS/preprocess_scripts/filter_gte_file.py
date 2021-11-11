@@ -54,7 +54,9 @@ Syntax:
 
 ./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_MDSOutlierSamples.txt.gz -o BIOS_noRNAPhenoNA_NoMDSOutlier 
 
-./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_MDSOutlierSamples_and_SamplesWithoutSexInfo.txt.gz -o BIOS_NoRNAPhenoNA_NoMDSOutlier_NoSexNA
+./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA
+
+./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_MDSOutlierSamples.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier
 """
 
 
@@ -64,6 +66,7 @@ class main():
         arguments = self.create_argument_parser()
         self.gte_path = getattr(arguments, 'genotype_to_expression')
         self.e_gte_path = getattr(arguments, 'exclude_genotype_to_expression')
+        self.n_samples = getattr(arguments, 'n_samples')
         outdir = getattr(arguments, 'outdir')
 
         # Set variables.
@@ -97,6 +100,12 @@ class main():
                             required=True,
                             help="The path to the samples to remove"
                                  "in GTE format.")
+        parser.add_argument("-ns",
+                            "--n_samples",
+                            type=int,
+                            default=30,
+                            help="The number of required samples per dataet. "
+                                 "Default: 30.")
         parser.add_argument("-o",
                             "--outdir",
                             type=str,
@@ -122,6 +131,20 @@ class main():
         mask = [False if sample in remove_rnaseq_ids else True for sample in gte_df["rnaseq_id"]]
         subset_gte_df = gte_df.loc[mask, :]
         del gte_df
+
+        print("Filtering on dataset sample size")
+        dataset_sizes = subset_gte_df["dataset"].value_counts().to_frame()
+        remove_datasets = []
+        for dataset, row in dataset_sizes.iterrows():
+            if row["dataset"] < self.n_samples:
+                print("Removing {}".format(dataset))
+                remove_datasets.append(dataset)
+
+        if len(remove_datasets) > 0:
+            subset_gte_df = subset_gte_df[~subset_gte_df['dataset'].isin(remove_datasets)]
+
+        dataset_sizes = subset_gte_df["dataset"].value_counts().to_frame()
+        print(dataset_sizes)
 
         ########################################################################
 
@@ -168,6 +191,7 @@ class main():
         print("Arguments:")
         print("  > GTE path: {}".format(self.gte_path))
         print("  > Exclude GTE path: {}".format(self.e_gte_path))
+        print("  > N-samples: {}".format(self.n_samples))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

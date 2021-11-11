@@ -28,6 +28,7 @@ import os
 
 # Third party imports.
 import pandas as pd
+import numpy as np
 
 # Local application imports.
 
@@ -94,14 +95,10 @@ class main():
                     codes, _ = pd.factorize(df[column])
                     encoded_df = pd.Series(codes, index=df.index).to_frame()
                     encoded_df.columns = [column]
+                    encoded_df[encoded_df == -1] = np.nan
                     encoded_dfs.append(encoded_df)
                 else:
                     other_columns.append(column)
-
-        other_df = df.loc[:, other_columns]
-        encoded_df = pd.concat(encoded_dfs, axis=1)
-        other_df = other_df.merge(encoded_df, left_index=True, right_index=True)
-        self.save_file(df=other_df, outpath=os.path.join(self.outdir, "BIOS_phenotypes.txt.gz"))
 
         rna_alignment_df = df.loc[:, rna_alignment_columns]
         self.save_file(df=rna_alignment_df, outpath=os.path.join(self.outdir, "BIOS_RNA_AlignmentMetrics.txt.gz"))
@@ -127,14 +124,8 @@ class main():
                                           "star.rate_mismatch_per_base",
                                           "star.pct_unique_mapped",
                                           "fastqc_raw.R1_raw_GC_mean"]]
-        self.save_file(df=incl_rna_alignmnt_df,
-                       outpath=os.path.join(self.outdir,
-                                            "BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz"))
-
-        expr_tcov_df = incl_rna_alignmnt_df.merge(other_df[["Sex"]], left_index=True, right_index=True)
-        expr_tcov_df.dropna(axis=0, how="all", inplace=True)
-        self.save_file(df=expr_tcov_df, outpath=os.path.join(self.outdir, "BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz"))
-        del expr_tcov_df, incl_rna_alignmnt_df
+        self.save_file(df=incl_rna_alignmnt_df, outpath=os.path.join(self.outdir, "BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz"))
+        del incl_rna_alignmnt_df
 
         cf_perc_df = df.loc[:, cf_perc_columns]
         cf_perc_df.dropna(axis=0, how="all", inplace=True)
@@ -148,6 +139,16 @@ class main():
         self.save_file(df=cf_df, outpath=os.path.join(self.outdir, "BIOS_CellFractions.txt.gz"))
         del cf_df
 
+        other_df = df.loc[:, other_columns]
+        encoded_df = pd.concat(encoded_dfs, axis=1)
+        other_df = other_df.merge(encoded_df, left_index=True, right_index=True)
+        self.save_file(df=other_df, outpath=os.path.join(self.outdir, "BIOS_phenotypes.txt.gz"))
+        del other_df
+
+        sex_df = encoded_df.loc[:, ["Sex"]]
+        sex_df.dropna(inplace=True)
+        self.save_file(df=sex_df, outpath=os.path.join(self.outdir, "BIOS_sex.txt.gz"))
+        del sex_df, encoded_df
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,

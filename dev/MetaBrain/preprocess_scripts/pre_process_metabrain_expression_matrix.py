@@ -68,7 +68,7 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
-        self.tcov_path = getattr(arguments, 'technical_covariates')
+        self.rna_alignment_path = getattr(arguments, 'rna_alignment')
         self.mds_path = getattr(arguments, 'mds')
         self.gte_path = getattr(arguments, 'gene_to_expression')
         self.gte_prefix = getattr(arguments, 'gte_prefix')
@@ -111,11 +111,12 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the data matrix.")
-        parser.add_argument("-t",
-                            "--technical_covariates",
+        parser.add_argument("-ra",
+                            "--rna_alignment",
                             type=str,
                             required=True,
-                            help="The path to the technical covariates matrix.")
+                            help="The path to the RNAseq alignment metrics"
+                                 " matrix.")
         parser.add_argument("-m",
                             "--mds",
                             type=str,
@@ -257,15 +258,15 @@ class main():
                     file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
                     plot_appendix="_1")
 
-        print("Step 7: Construct technical covariate matrix.")
-        tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
+        print("Step 7: Construct correction matrix 1.")
+        ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
         mds_df = self.load_file(self.mds_path, header=0, index_col=0)
-        correction_df = self.prepare_correction_matrix(tcov_df=tcov_df.loc[samples, :],
+        correction_df = self.prepare_correction_matrix(ram_df=ram_df.loc[samples, :],
                                                        mds_df=mds_df.loc[samples, :],
                                                        dataset_df=dataset_df)
 
         print("\tSaving file.")
-        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix.txt.gz"))
+        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix1.txt.gz"))
 
         print("Step 8: remove technical covariates OLS.")
         corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
@@ -280,11 +281,11 @@ class main():
                          file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS",
                          plot_appendix="_2_CovariatesRemovedOLS")
 
-        print("Step 10: Construct correction matrix.")
+        print("Step 10: Construct correction matrix 2.")
         correction_df = correction_df.merge(pc_df.T, left_index=True, right_index=True)
 
         print("\tSaving file.")
-        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix.txt.gz"))
+        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix2.txt.gz"))
 
         print("Step 11: remove expression PCs and technical covariates OLS.")
         twice_corrected_df = self.calculate_residuals(df=corrected_df, correction_df=correction_df)
@@ -342,25 +343,21 @@ class main():
 
         return out_dict
 
-    def prepare_correction_matrix(self, tcov_df, mds_df, dataset_df):
-        df = tcov_df.copy()
+    def prepare_correction_matrix(self, ram_df, mds_df, dataset_df):
+        # Remove columns without variance and filter the RNAseq alignment
+        # metrics on VIF.
+        ram_df_subset_df = ram_df.copy()
+        ram_df_subset_df = self.remove_multicollinearity(ram_df_subset_df.loc[:, ram_df_subset_df.std(axis=0) != 0])
 
-        # Remove columns without variance.
-        df = df.loc[:, df.std(axis=0) != 0]
+        # Merge the RNAseq alignment metrics with the the genotype MDS
+        # components.
+        correction_df = ram_df_subset_df.merge(mds_df, left_index=True, right_index=True)
 
-        # Remove dataset columns.
-        dataset_mask = np.array([set(df[col].unique()) == {0, 1} for col in df.columns])
-        df = df.loc[:, ~dataset_mask]
-
-        # filter the technical covariates on VIF.
-        df = self.remove_multicollinearity(df)
-
-        # Merge the tcov_df with the mds_df.
-        correction_df = df.merge(mds_df, left_index=True, right_index=True)
-
-        # merge the tcov_df with the dataset_df but exclude the dataset with
-        # the highest number of samples.
+        # Add the dataset dummies but exclude the dataset with the highest
+        # number of samples.
         correction_df = correction_df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
+
+        # Add intercept.
         correction_df.insert(0, "INTERCEPT", 1)
         correction_df.index.name = "-"
 
@@ -476,7 +473,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Data: {}".format(self.data_path))
-        print("  > Technical covariates: {}".format(self.tcov_path))
+        print("  > RNAseq alignemnt metrics: {}".format(self.rna_alignment_path))
         print("  > MDS: {}".format(self.mds_path))
         print("  > GtE path: {}".format(self.gte_path))
         print("  >   GtE prefix: {}".format(self.gte_prefix))
