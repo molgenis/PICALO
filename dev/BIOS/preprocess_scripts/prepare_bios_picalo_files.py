@@ -3,7 +3,7 @@
 """
 File:         prepare_bios_picalo_files.py
 Created:      2021/11/08
-Last Changed:
+Last Changed: 2021/11/11
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -53,7 +53,7 @@ Syntax:
 
 ./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/EQTLGen_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_noRNAPhenoNA_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-eQTLGen-cis-noRNAPhenoNA-NoMDSOutlier
 
-./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-NoMDSOutlier-NoRNAPhenoNA-NoSexNA/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoMDSOutlier_NoSexNA/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoMDSOutlier-NoRNAPhenoNA-NoSexNA
+./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics
 """
 
 
@@ -64,9 +64,10 @@ class main():
         self.eqtl_path = getattr(arguments, 'eqtl')
         self.geno_folder = getattr(arguments, 'genotype')
         self.expr_path = getattr(arguments, 'expression')
-        self.post_corr_pcs_path = getattr(arguments, 'post_corr_pcs')
-        self.tcov_path = getattr(arguments, 'technical_covariates')
+        self.rna_alignment_path = getattr(arguments, 'rna_alignment')
+        self.sex_path = getattr(arguments, 'sex')
         self.mds_path = getattr(arguments, 'mds')
+        self.post_corr_pcs_path = getattr(arguments, 'post_corr_pcs')
         self.gte_path = getattr(arguments, 'genotype_to_expression')
         outdir = getattr(arguments, 'outdir')
 
@@ -102,22 +103,28 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the deconvolution matrix")
+        parser.add_argument("-ra",
+                            "--rna_alignment",
+                            type=str,
+                            required=True,
+                            help="The path to the RNAseq alignment metrics"
+                                 " matrix.")
+        parser.add_argument("-s",
+                            "--sex",
+                            type=str,
+                            required=True,
+                            help="The path to the sex matrix.")
+        parser.add_argument("-m",
+                            "--mds",
+                            type=str,
+                            required=True,
+                            help="The path to the mds matrix.")
         parser.add_argument("-pcpc",
                             "--post_corr_pcs",
                             type=str,
                             required=True,
                             help="The path to the post covariate"
                                  "correction expression PCs matrix")
-        parser.add_argument("-tc",
-                            "--technical_covariates",
-                            type=str,
-                            required=True,
-                            help="The path to the technical covariates matrix.")
-        parser.add_argument("-m",
-                            "--mds",
-                            type=str,
-                            required=True,
-                            help="The path to the mds matrix.")
         parser.add_argument("-gte",
                             "--genotype_to_expression",
                             type=str,
@@ -143,7 +150,7 @@ class main():
 
         std_df = gte_df.loc[:, ["rnaseq_id", "dataset"]]
         std_df.columns = ["sample", "dataset"]
-        self.save_file(df=std_df, outpath=os.path.join(self.outdir, "SampleToDataset.txt.gz"), index=False)
+        self.save_file(df=std_df, outpath=os.path.join(self.outdir, "sample_to_dataset.txt.gz"), index=False)
         del std_df
 
         print("Loading eQTL file.")
@@ -190,8 +197,8 @@ class main():
 
         # Filter eQTL file on present data.
         mask = np.zeros(eqtl_df.shape[0], dtype=bool)
-        for i in range(eqtl_df.shape[0]):
-            if eqtl_df.iloc[i, 1] in present_snps and eqtl_df.iloc[i, 7] in present_genes:
+        for i, (_, row) in enumerate(eqtl_df.iterrows()):
+            if row["SNPName"] in present_snps and row["ProbeName"] in present_genes:
                 mask[i] = True
         present_eqtl_df = eqtl_df.loc[mask, :]
         geno_df = geno_df.loc[mask, :].loc[:, genotype_ids]
@@ -209,18 +216,18 @@ class main():
         pcpc_df = self.load_file(self.post_corr_pcs_path, header=0, index_col=0)
         print(pcpc_df)
 
-        self.save_file(df=pcpc_df.iloc[:25, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first25PCComponents.txt.gz"))
-        self.save_file(df=pcpc_df.iloc[:10, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first10PCComponents.txt.gz"))
+        self.save_file(df=pcpc_df.iloc[:25, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first25ExpressionPCs.txt.gz"))
+        self.save_file(df=pcpc_df.iloc[:10, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first10ExpressionPCs.txt.gz"))
         del pcpc_df
 
         print("Preparing technical covariates")
-        tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
+        ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
+        sex_df = self.load_file(self.sex_path, header=0, index_col=0)
         mds_df = self.load_file(self.mds_path, header=0, index_col=0)
-        print(tcov_df)
-        print(mds_df)
 
-        correction_df = tcov_df.merge(mds_df, left_index=True, right_index=True)
-        self.save_file(df=correction_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "technical_and_mds_covariates_table.txt.gz"))
+        correction_df = ram_df.merge(sex_df, left_index=True, right_index=True)
+        correction_df = correction_df.merge(mds_df, left_index=True, right_index=True)
+        self.save_file(df=correction_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "rnaseq_alignment_metrics_sex_and_mds_table.txt.gz"))
         del correction_df
 
     @staticmethod
@@ -250,9 +257,10 @@ class main():
         print("  > eQTL: {}".format(self.eqtl_path))
         print("  > Genotype: {}".format(self.geno_folder))
         print("  > Expression: {}".format(self.expr_path))
+        print("  > RNAseq alignment metrics: {}".format(self.rna_alignment_path))
+        print("  > Sex: {}".format(self.sex_path))
+        print("  > Genotype MDS: {}".format(self.mds_path))
         print("  > Post-correction PCs: {}".format(self.post_corr_pcs_path))
-        print("  > Technical covariates: {}".format(self.tcov_path))
-        print("  > Genotype MDS components: {}".format(self.mds_path))
         print("  > Genotype-to-expression path: {}".format(self.gte_path))
         print("  > Output directory: {}".format(self.outdir))
         print("")
