@@ -3,7 +3,7 @@
 """
 File:         pre_process_bios_expression_matrix.py
 Created:      2021/10/22
-Last Changed: 2021/11/04
+Last Changed: 2021/11/11
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -24,11 +24,9 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
-from functools import reduce
 import json
 import argparse
 import time
-import glob
 import os
 
 # Third party imports.
@@ -63,6 +61,8 @@ Syntax:
 ./pre_process_bios_expression_matrix.py -h
 
 ./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -t /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_noRNAPhenoNA_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS-cis-NoMDSOutlier-noRNAPhenoNA
+
+./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -t /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoMDSOutlier_NoSexNA/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS-cis-NoMDSOutlier-NoRNAPhenoNA-NoSexNA
 """
 
 
@@ -183,10 +183,10 @@ class main():
         df = df.loc[:, samples]
 
         print("Step 2: PCA analysis.")
-        self.pca(df=df,
-                 filename=filename,
-                 sample_to_dataset=sample_to_dataset,
-                 plot_appendix="_1")
+        _ = self.pca(df=df,
+                     filename=filename,
+                     sample_to_dataset=sample_to_dataset,
+                     plot_appendix="_1")
 
         print("Step 3: Construct technical covariate matrix.")
         tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
@@ -205,13 +205,30 @@ class main():
         self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.CovariatesRemovedOLS.txt.gz".format(filename)))
 
         print("Step 5: PCA analysis.")
-        self.pca(df=corrected_df,
-                 filename=filename,
-                 sample_to_dataset=sample_to_dataset,
-                 file_appendix="CovariatesRemovedOLS",
-                 plot_appendix="_2_CovariatesRemovedOLS")
+        pc_df = self.pca(df=corrected_df,
+                         filename=filename,
+                         sample_to_dataset=sample_to_dataset,
+                         file_appendix="CovariatesRemovedOLS",
+                         plot_appendix="_2_CovariatesRemovedOLS")
 
-        del correction_df, corrected_df
+        print("Step 6: Construct correction matrix.")
+        correction_df = correction_df.merge(pc_df.T, left_index=True, right_index=True)
+
+        print("\tSaving file.")
+        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "{}.CovariatesRemovedOLS.25ExpressionPCsRemovedOLS.txt.gz".format(filename)))
+
+        print("Step 7: remove expression PCs and technical covariates OLS.")
+        twice_corrected_df = self.calculate_residuals(df=corrected_df, correction_df=correction_df)
+        del corrected_df
+
+        print("Step 8: PCA analysis.")
+        _ = self.pca(df=twice_corrected_df,
+                     filename=filename,
+                     sample_to_dataset=sample_to_dataset,
+                     file_appendix="CovariatesRemovedOLS.25ExpressionPCsRemovedOLS",
+                     plot_appendix="_3_CovariatesRemovedOLS_25ExpressionPCsRemovedOLS")
+
+        del correction_df, twice_corrected_df
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -324,7 +341,6 @@ class main():
 
         print("\tSaving file.")
         self.save_file(df=components_df, outpath=os.path.join(self.file_outdir, "{}.{}.PCAOverSamplesEigenvectors.txt.gz".format(filename, file_appendix)))
-        self.save_file(df=components_df.iloc[:10, :], outpath=os.path.join(self.file_outdir, "{}.{}.PCAOverSamplesEigenvectors.First10PCs.txt.gz".format(filename, file_appendix)))
 
         print("\tPlotting PCA")
         plot_df = components_df.T
@@ -338,6 +354,8 @@ class main():
                   ylabel="PC2 [{:.2f}%]".format(expl_variance["PC2"]),
                   title="PCA - eigenvectors",
                   filename="eigenvectors_plot{}".format(plot_appendix))
+
+        return components_df
 
     def plot(self, df, x="x", y="y", hue=None, palette=None, xlabel=None,
              ylabel=None, title="", filename="PCA_plot"):

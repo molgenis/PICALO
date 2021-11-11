@@ -3,7 +3,7 @@
 """
 File:         prepare_bios_phenotype_matrix.py
 Created:      2021/11/10
-Last Changed:
+Last Changed: 2021/11/11
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -28,7 +28,6 @@ import os
 
 # Third party imports.
 import pandas as pd
-import numpy as np
 
 # Local application imports.
 
@@ -99,6 +98,11 @@ class main():
                 else:
                     other_columns.append(column)
 
+        other_df = df.loc[:, other_columns]
+        encoded_df = pd.concat(encoded_dfs, axis=1)
+        other_df = other_df.merge(encoded_df, left_index=True, right_index=True)
+        self.save_file(df=other_df, outpath=os.path.join(self.outdir, "BIOS_phenotypes.txt.gz"))
+
         rna_alignment_df = df.loc[:, rna_alignment_columns]
         self.save_file(df=rna_alignment_df, outpath=os.path.join(self.outdir, "BIOS_RNA_AlignmentMetrics.txt.gz"))
         del rna_alignment_df
@@ -126,31 +130,11 @@ class main():
         self.save_file(df=incl_rna_alignmnt_df,
                        outpath=os.path.join(self.outdir,
                                             "BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz"))
-        del incl_rna_alignmnt_df
 
-        expr_tcov_df = df.loc[:, ["fastqc_clean.R1_clean_GC_mean",
-                                  "fastqc_raw.R1_raw_GC_mean",
-                                  "fastqc_clean.R2_clean_GC_mean",
-                                  "fastqc_clean.R1_clean_GC_std",
-                                  "fastqc_clean.R2_clean_GC_std",
-                                  "fastqc_raw.R2_raw_GC_mean",
-                                  "fastqc_raw.R1_raw_GC_std",
-                                  "prime_bias.MEDIAN_5PRIME_BIAS",
-                                  "fastqc_raw.R2_raw_GC_std",
-                                  "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS",
-                                  "star.pct_mapped_many",
-                                  "star.pct_mapped_multiple",
-                                  "star.rate_insertion_per_base",
-                                  "star.avg_insertion_length",
-                                  "star.avg_deletion_length",
-                                  "bam.genome_insert_std",
-                                  "star.num_mapped_many",
-                                  "star.rate_mismatch_per_base",
-                                  "star.pct_unique_mapped",
-                                  "fastqc_raw.R1_raw_GC_mean",
-                                  "Sex"]]
+        expr_tcov_df = incl_rna_alignmnt_df.merge(other_df[["Sex"]], left_index=True, right_index=True)
+        expr_tcov_df.dropna(axis=0, how="all", inplace=True)
         self.save_file(df=expr_tcov_df, outpath=os.path.join(self.outdir, "BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz"))
-        del expr_tcov_df
+        del expr_tcov_df, incl_rna_alignmnt_df
 
         cf_perc_df = df.loc[:, cf_perc_columns]
         cf_perc_df.dropna(axis=0, how="all", inplace=True)
@@ -163,11 +147,6 @@ class main():
         cf_df = cf_df.reindex(sorted(cf_df.columns), axis=1)
         self.save_file(df=cf_df, outpath=os.path.join(self.outdir, "BIOS_CellFractions.txt.gz"))
         del cf_df
-
-        other_df = df.loc[:, other_columns]
-        encoded_df = pd.concat(encoded_dfs, axis=1)
-        other_df = other_df.merge(encoded_df, left_index=True, right_index=True)
-        self.save_file(df=other_df, outpath=os.path.join(self.outdir, "BIOS_phenotypes.txt.gz"))
 
 
     @staticmethod

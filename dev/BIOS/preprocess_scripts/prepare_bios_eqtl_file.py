@@ -51,9 +51,9 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./prepare_bios_eqtl_file.py -h
 
-./prepare_bios_eqtl_file.py -e /groups/umcg-bios/tmp01/projects/PICALO/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz
+./prepare_bios_eqtl_file.py -e /groups/umcg-bios/tmp01/projects/PICALO/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p EQTLGen_
 
-./prepare_bios_eqtl_file.py -e prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz
+./prepare_bios_eqtl_file.py -e /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p BIOS_
 """
 
 
@@ -63,9 +63,12 @@ class main():
         arguments = self.create_argument_parser()
         self.eqtl_path = getattr(arguments, 'eqtl')
         self.snps_path = getattr(arguments, 'snps')
+        self.n_iterations = getattr(arguments, 'n_iterations')
+        self.n_datasets = getattr(arguments, 'n_datasets')
+        self.prefix = getattr(arguments, 'prefix')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bios_eqtl_file_test')
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bios_eqtl_file')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -94,6 +97,23 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the genotype directory")
+        parser.add_argument("-ni",
+                            "--n_iterations",
+                            type=int,
+                            default=4,
+                            help="The number of eQTL iterations to include. "
+                                 "Default: 4.")
+        parser.add_argument("-nd",
+                            "--n_datasets",
+                            type=int,
+                            default=2,
+                            help="The number of required datasets per SNP. "
+                                 "Default: 2.")
+        parser.add_argument("-p",
+                            "--prefix",
+                            type=str,
+                            required=True,
+                            help="Prefix for the output file.")
 
         return parser.parse_args()
 
@@ -107,34 +127,69 @@ class main():
         print(snps_df)
 
         print("Preprocessing data")
-        trans_dict = {"SNP": "SNPName", "Gene": "ProbeName"}
+        # Translating column names.
+        trans_dict = {"P-value": "PValue",
+                      "SNP": "SNPName",
+                      "SNP Chr": "SNPChr",
+                      "SNP Chr Position": "SNPChrPos",
+                      "Gene": "ProbeName",
+                      "Gene Chr": "ProbeChr",
+                      "Gene Chr position": "ProbeCenterChrPos",
+                      "GeneId": "ProbeName",
+                      "GeneChr": "ProbeChr",
+                      "GeneCenterChrPos": "ProbeCenterChrPos",
+                      "SNP Alleles": "SNPType",
+                      "Assesed Allele": "AlleleAssessed",
+                      "Z-score": "OverallZScore",
+                      "Gene name": "HGNCName",
+                      "eQTLLevelNumber": "Iteration"
+                      }
         eqtl_df.columns = [trans_dict[x] if x in trans_dict else x for x in eqtl_df.columns]
 
+        # Remove interaction columns.
+        drop_columns = []
+        for i in range(20):
+            column = "M{}".format(i)
+            if column in eqtl_df.columns:
+                drop_columns.append(column)
+        eqtl_df.drop(drop_columns, axis=1, inplace=True)
+        print(eqtl_df)
+
+        # Adding iteration column if not there.
+        if "Iteration" not in eqtl_df.columns:
+            eqtl_df["Iteration"] = 1
+
+        # Removing rows with a too high iteration.
+        eqtl_df = eqtl_df.loc[eqtl_df["Iteration"] <= self.n_iterations, :]
+
+        # Calculating the number of samples and datasets per SNP.
         snps_df["N datasets"] = snps_df.sum(axis=1).to_frame()
         snps_df["N samples"] = np.dot(snps_df.loc[:, self.dataset_order].to_numpy(), self.dataset_sizes)
         snps_df.index.name = None
         print(snps_df)
         present_snps = set(snps_df.index)
 
-        # print("Parsing eQTL file.")
-        # mask = np.zeros(eqtl_df.shape[0], dtype=bool)
-        # found_genes = set()
-        # for i, (_, row) in enumerate(eqtl_df.iterrows()):
-        #     if (i == 0) or (i % 1000000 == 0):
-        #         print("\tprocessed {} lines".format(i))
-        #
-        #     if row["ProbeName"] not in found_genes and row["SNPName"] in present_snps:
-        #         mask[i] = True
-        #         found_genes.add(row["ProbeName"])
-        #
-        # top_eqtl_df = eqtl_df.loc[mask, :]
-        top_eqtl_df = eqtl_df
+        print("Parsing eQTL file.")
+        mask = np.zeros(eqtl_df.shape[0], dtype=bool)
+        found_genes = set()
+        for i, (_, row) in enumerate(eqtl_df.iterrows()):
+            if (i == 0) or (i % 1000000 == 0):
+                print("\tprocessed {} lines".format(i))
+
+            if "," not in row["ProbeName"] and row["ProbeName"] not in found_genes and row["SNPName"] in present_snps:
+                mask[i] = True
+                found_genes.add(row["ProbeName"])
+
+        top_eqtl_df = eqtl_df.loc[mask, :]
         top_eqtl_df = top_eqtl_df.merge(snps_df, left_on="SNPName", right_index=True, how="left")
         top_eqtl_df["index"] = top_eqtl_df.index
-        print(top_eqtl_df)
+
+        # Filter on having enough datasets.
+        top_eqtl_df = top_eqtl_df.loc[top_eqtl_df["N datasets"] >= 2, :]
 
         print("Saving file.")
-        self.save_file(df=top_eqtl_df, outpath=os.path.join(self.outdir, "BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz"), index=False)
+        print(top_eqtl_df)
+        self.save_file(df=top_eqtl_df, outpath=os.path.join(self.outdir, "{}eQTLProbesFDR0.05-ProbeLevel.txt.gz".format(self.prefix)), index=False)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -162,6 +217,9 @@ class main():
         print("Arguments:")
         print("  > eQTL: {}".format(self.eqtl_path))
         print("  > SNPs: {}".format(self.snps_path))
+        print("  > Prefix: {}".format(self.prefix))
+        print("  > N-iterations: {}".format(self.n_iterations))
+        print("  > N-datasets: {}".format(self.n_iterations))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

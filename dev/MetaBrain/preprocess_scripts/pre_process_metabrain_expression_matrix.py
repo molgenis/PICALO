@@ -3,7 +3,7 @@
 """
 File:         pre_process_metabrain_expression_matrix.py
 Created:      2021/05/25
-Last Changed: 2021/10/28
+Last Changed: 2021/11/11
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -24,7 +24,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
-from functools import reduce
 import json
 import argparse
 import time
@@ -252,11 +251,11 @@ class main():
         self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)))
 
         print("Step 6: PCA analysis.")
-        self.pca(df=df,
-                 filename=filename,
-                 sample_to_dataset=sample_to_dataset,
-                 file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
-                 plot_appendix="_1")
+        _, self.pca(df=df,
+                    filename=filename,
+                    sample_to_dataset=sample_to_dataset,
+                    file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
+                    plot_appendix="_1")
 
         print("Step 7: Construct technical covariate matrix.")
         tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
@@ -275,11 +274,31 @@ class main():
         self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
 
         print("Step 9: PCA analysis.")
-        self.pca(df=corrected_df,
-                 filename=filename,
-                 sample_to_dataset=sample_to_dataset,
-                 file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS",
-                 plot_appendix="_2_CovariatesRemovedOLS")
+        pc_df = self.pca(df=corrected_df,
+                         filename=filename,
+                         sample_to_dataset=sample_to_dataset,
+                         file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS",
+                         plot_appendix="_2_CovariatesRemovedOLS")
+
+        print("Step 10: Construct correction matrix.")
+        correction_df = correction_df.merge(pc_df.T, left_index=True, right_index=True)
+
+        print("\tSaving file.")
+        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix.txt.gz"))
+
+        print("Step 11: remove expression PCs and technical covariates OLS.")
+        twice_corrected_df = self.calculate_residuals(df=corrected_df, correction_df=correction_df)
+        del corrected_df
+
+        print("\tSaving file.")
+        self.save_file(df=twice_corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.25ExpressionPCsRemovedOLS.txt.gz".format(filename)))
+
+        print("Step 12: PCA analysis.")
+        _ = self.pca(df=twice_corrected_df,
+                     filename=filename,
+                     sample_to_dataset=sample_to_dataset,
+                     file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.25ExpressionPCsRemovedOLS",
+                     plot_appendix="_3_CovariatesRemovedOLS_25ExpressionPCsRemovedOLS")
 
         del correction_df, corrected_df
 
@@ -407,6 +426,8 @@ class main():
                   ylabel="PC2 [{:.2f}%]".format(expl_variance["PC2"]),
                   title="PCA - eigenvectors",
                   filename="eigenvectors_plot{}".format(plot_appendix))
+
+        return components_df
 
     def plot(self, df, x="x", y="y", hue=None, palette=None, xlabel=None,
              ylabel=None, title="", filename="PCA_plot"):
