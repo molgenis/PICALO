@@ -473,7 +473,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Data: {}".format(self.data_path))
-        print("  > RNAseq alignemnt metrics: {}".format(self.rna_alignment_path))
+        print("  > RNAseq alignment metrics: {}".format(self.rna_alignment_path))
         print("  > MDS: {}".format(self.mds_path))
         print("  > GtE path: {}".format(self.gte_path))
         print("  >   GtE prefix: {}".format(self.gte_prefix))

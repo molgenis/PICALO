@@ -412,7 +412,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Data: {}".format(self.data_path))
-        print("  > RNAseq alignemnt metrics: {}".format(self.rna_alignment_path))
+        print("  > RNAseq alignment metrics: {}".format(self.rna_alignment_path))
         print("  > Sex: {}".format(self.sex_path))
         print("  > MDS: {}".format(self.mds_path))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
