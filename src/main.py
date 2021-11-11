@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/03
+Last Changed: 2021/11/11
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -157,7 +157,7 @@ class Main:
         cr_keep_mask = ~(geno_df == -1).all(axis=1).to_numpy(dtype=bool)
         geno_stats_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["N", "NaN", "0", "1", "2", "min GS", "HW pval", "allele1", "allele2", "MA", "MAF"])
         geno_stats_df["N"] = 0
-        geno_stats_df["Nan"] = geno_df.shape[1]
+        geno_stats_df["NaN"] = geno_df.shape[1]
         geno_stats_df.loc[cr_keep_mask, :] = self.calculate_genotype_stats(df=geno_df.loc[cr_keep_mask, :])
 
         # Checking which eQTLs pass the requirements
@@ -176,13 +176,6 @@ class Main:
             self.log.warning("\t  ----------------------------------------")
             self.log.warning("\t  {:,} eQTL(s) are discarded in total".format(geno_n_skipped))
 
-        save_dataframe(df=geno_stats_df,
-                       outpath=os.path.join(self.outdir, "genotype_stats.txt.gz"),
-                       header=True,
-                       index=True,
-                       log=self.log)
-        self.log.info("")
-
         # Select rows that meet requirements.
         eqtl_signif_df = eqtl_signif_df.loc[combined_keep_mask, :]
         geno_df = geno_df.loc[combined_keep_mask, :]
@@ -190,6 +183,17 @@ class Main:
         # Combine the skip masks.
         keep_mask = np.copy(eqtl_fdr_keep_mask)
         keep_mask[eqtl_fdr_keep_mask] = combined_keep_mask
+
+        # Add mask to genotype stats data frame.
+        geno_stats_df["mask"] = 0
+        geno_stats_df.loc[keep_mask, "mask"] = 1
+
+        save_dataframe(df=geno_stats_df,
+                       outpath=os.path.join(self.outdir, "genotype_stats.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
+        self.log.info("")
 
         del call_rate_df, geno_stats_df, eqtl_fdr_keep_mask, n_keep_mask, mgs_keep_mask, hwpval_keep_mask, maf_keep_mask, combined_keep_mask
 
@@ -458,7 +462,7 @@ class Main:
                                   "allele1": allele1_a,
                                   "allele2": allele2_a,
                                   "MA": ma,
-                                  "MAF": maf,
+                                  "MAF": maf
                                   }, index=df.index)
         del rounded_m, allele_m
 

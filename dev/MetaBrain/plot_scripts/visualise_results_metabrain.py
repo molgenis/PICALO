@@ -3,7 +3,7 @@
 """
 File:         visualise_results_metabrain.py
 Created:      2021/05/06
-Last Changed: 2021/10/21
+Last Changed: 2021/11/11
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -118,6 +118,10 @@ class main():
 
         # Plot overview lineplot.
         command = ['python3', 'overview_lineplot.py', '-i', self.input_data_path, '-p', self.palette_path, "-o", self.outname]
+        self.run_command(command)
+
+        # Plot genotype stats.
+        command = ['python3', 'create_histplot.py', '-d', os.path.join(self.input_data_path, "genotype_stats.txt.gz"), "-o", self.outname]
         self.run_command(command)
 
         # Plot eQTL upsetplot.

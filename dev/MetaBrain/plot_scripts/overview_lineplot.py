@@ -164,7 +164,7 @@ class main():
             self.lineplot(df_m=subset_m, x="index", y="value", hue="component",
                           style=None, palette=self.palette,
                           xlabel="iteration", ylabel=variable,
-                          filename=self.out_filename + "_" + variable.replace(" ", "_").lower(),
+                          filename=self.out_filename + "_lineplot_" + variable.replace(" ", "_").lower(),
                           info=info_dict,
                           outdir=self.outdir)
 
@@ -172,7 +172,7 @@ class main():
                 self.lineplot(df_m=subset_m, x="index", y="log10 value", hue="component",
                               style=None, palette=self.palette,
                               xlabel="iteration", ylabel="log10 " + variable,
-                              filename=self.out_filename + "_log10_" + variable.replace(" ", "_").lower(),
+                              filename=self.out_filename + "_lineplot_log10_" + variable.replace(" ", "_").lower(),
                               info=info_dict,
                               outdir=self.outdir)
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         filter_gte_file.py
-Created:      2021/10/28
-Last Changed: 2021/11/10
+File:         prepare_bios_eqtl_file.py
+Created:      2021/11/11
+Last Changed:
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,17 +25,16 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
-import glob
 import os
 
 # Third party imports.
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # Local application imports.
 
 # Metadata
-__program__ = "Filter GTE file"
+__program__ = "Prepare BIOS eQTL file"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -50,9 +49,11 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo.txt.gz -o BIOS_noRNAPhenoNA
+./prepare_bios_eqtl_file.py -h
 
-./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_MDSOutlierSamples.txt.gz -o BIOS_noRNAPhenoNA_NoMDSOutlier 
+./prepare_bios_eqtl_file.py -e /groups/umcg-bios/tmp01/projects/PICALO/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz
+
+./prepare_bios_eqtl_file.py -e prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz
 """
 
 
@@ -60,20 +61,21 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.gte_path = getattr(arguments, 'genotype_to_expression')
-        self.e_gte_path = getattr(arguments, 'exclude_genotype_to_expression')
-        outdir = getattr(arguments, 'outdir')
+        self.eqtl_path = getattr(arguments, 'eqtl')
+        self.snps_path = getattr(arguments, 'snps')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'filter_gte_file', outdir)
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bios_eqtl_file_test')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
+
+        self.dataset_order = ['RS', 'LL', 'LLS_660Q', 'NTR_AFFY', 'LLS_OmniExpr', 'CODAM', 'PAN', 'NTR_GONL', 'GONL']
+        self.dataset_sizes = np.array([765, 733, 400, 341, 255, 184, 169, 138, 74])
 
     @staticmethod
     def create_argument_parser():
         parser = argparse.ArgumentParser(prog=__program__,
-                                         description=__description__,
-                                         )
+                                         description=__description__)
 
         # Add optional arguments.
         parser.add_argument("-v",
@@ -82,69 +84,63 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit.")
-        parser.add_argument("-gte",
-                            "--genotype_to_expression",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The path to the genotype-to-expression"
-                                 " link matrix.")
         parser.add_argument("-e",
-                            "--exclude_genotype_to_expression",
+                            "--eqtl",
                             type=str,
                             required=True,
-                            help="The path to the samples to remove"
-                                 "in GTE format.")
-        parser.add_argument("-o",
-                            "--outdir",
+                            help="The path to the replication eqtl matrix.")
+        parser.add_argument("-s",
+                            "--snps",
                             type=str,
                             required=True,
-                            help="The path to the output directory.")
+                            help="The path to the genotype directory")
 
         return parser.parse_args()
 
     def start(self):
         self.print_arguments()
 
-        print("Loading data.")
-        gte_df = self.load_file(self.gte_path, header=0, index_col=None)
-        se_df = self.load_file(self.e_gte_path, header=0, index_col=None)
-        print(gte_df)
-        print(se_df)
-        print(se_df["dataset"].value_counts())
+        print("Loading data")
+        eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
+        snps_df = self.load_file(self.snps_path, header=0, index_col=0)
+        print(eqtl_df)
+        print(snps_df)
 
-        ########################################################################
+        print("Preprocessing data")
+        trans_dict = {"SNP": "SNPName", "Gene": "ProbeName"}
+        eqtl_df.columns = [trans_dict[x] if x in trans_dict else x for x in eqtl_df.columns]
 
-        print("Removing samples.")
-        remove_rnaseq_ids = set(se_df["rnaseq_id"])
-        mask = [False if sample in remove_rnaseq_ids else True for sample in gte_df["rnaseq_id"]]
-        subset_gte_df = gte_df.loc[mask, :]
-        del gte_df
+        snps_df["N datasets"] = snps_df.sum(axis=1).to_frame()
+        snps_df["N samples"] = np.dot(snps_df.loc[:, self.dataset_order].to_numpy(), self.dataset_sizes)
+        snps_df.index.name = None
+        print(snps_df)
+        present_snps = set(snps_df.index)
 
-        ########################################################################
+        # print("Parsing eQTL file.")
+        # mask = np.zeros(eqtl_df.shape[0], dtype=bool)
+        # found_genes = set()
+        # for i, (_, row) in enumerate(eqtl_df.iterrows()):
+        #     if (i == 0) or (i % 1000000 == 0):
+        #         print("\tprocessed {} lines".format(i))
+        #
+        #     if row["ProbeName"] not in found_genes and row["SNPName"] in present_snps:
+        #         mask[i] = True
+        #         found_genes.add(row["ProbeName"])
+        #
+        # top_eqtl_df = eqtl_df.loc[mask, :]
+        top_eqtl_df = eqtl_df
+        top_eqtl_df = top_eqtl_df.merge(snps_df, left_on="SNPName", right_index=True, how="left")
+        top_eqtl_df["index"] = top_eqtl_df.index
+        print(top_eqtl_df)
 
-        print("Saving files.")
-        # Gene-to-expression file.
-        self.save_file(df=subset_gte_df, outpath=os.path.join(self.outdir, "GenotypeToExpression.txt.gz"), index=False)
-
-        # Sample-to-dataset file.
-        std_df = subset_gte_df.loc[:, ["rnaseq_id", "dataset"]]
-        std_df.columns = ["sample", "dataset"]
-        self.save_file(df=std_df, outpath=os.path.join(self.outdir, "SampleToDataset.txt.gz"), index=False)
-
-        # Family-genotype file (for MDS analyses).
-        gte_fid_df = subset_gte_df.loc[:, ["genotype_id"]].copy()
-        gte_fid_df.insert(0, "family_id", 0)
-        self.save_file(df=gte_fid_df, outpath=os.path.join(self.outdir, "FamilyToGenotype.txt"), header=False, index=False)
+        print("Saving file.")
+        self.save_file(df=top_eqtl_df, outpath=os.path.join(self.outdir, "BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz"), index=False)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
-        if inpath.endswith(".pkl"):
-            df = pd.read_pickle(inpath)
-        else:
-            df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
-                             low_memory=low_memory, nrows=nrows, skiprows=skiprows)
+        df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
+                         low_memory=low_memory, nrows=nrows, skiprows=skiprows)
         print("\tLoaded dataframe: {} "
               "with shape: {}".format(os.path.basename(inpath),
                                       df.shape))
@@ -164,8 +160,8 @@ class main():
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > GTE path: {}".format(self.gte_path))
-        print("  > Exclude GTE path: {}".format(self.e_gte_path))
+        print("  > eQTL: {}".format(self.eqtl_path))
+        print("  > SNPs: {}".format(self.snps_path))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

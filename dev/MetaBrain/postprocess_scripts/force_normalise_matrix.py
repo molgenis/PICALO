@@ -55,6 +55,8 @@ Syntax:
 ./force_normalise_matrix.py -d ../preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier/combine_gte_files/SampleToDataset.txt.gz -o MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS
 
 ./force_normalise_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier/perform_deconvolution/deconvolution_table_complete.txt.gz -transpose -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier/combine_gte_files/SampleToDataset.txt.gz -o deconvolution_table_complete
+
+./force_normalise_matrix.py -d ../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/SampleToDataset.txt.gz -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment-componentForceNormalise
 """
 
 

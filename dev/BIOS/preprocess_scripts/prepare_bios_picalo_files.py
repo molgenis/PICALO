@@ -144,18 +144,8 @@ class main():
         self.save_file(df=std_df, outpath=os.path.join(self.outdir, "SampleToDataset.txt.gz"), index=False)
         del std_df
 
-        print("Preparing eQTL file.")
+        print("Loading eQTL file.")
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
-        eqtl_df.index = eqtl_df["Gene"]
-        eqtl_df["index"] = np.arange(0, eqtl_df.shape[0])
-        top_eqtl_df = eqtl_df.groupby(eqtl_df.index).first()
-        top_eqtl_df.sort_values(by="index", inplace=True)
-        trans_dict = {"SNP": "SNPName", "Gene": "ProbeName"}
-        top_eqtl_df.columns = [trans_dict[x] if x in trans_dict else x for x in top_eqtl_df.columns]
-        self.save_file(df=top_eqtl_df, outpath=os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel.txt.gz"), index=False)
-        del eqtl_df
-
-        # top_eqtl_df = self.load_file(os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel.txt.gz"), header=0, index_col=None)
 
         print("Preparing genotype and expression file")
         geno_dfs = []
@@ -171,15 +161,15 @@ class main():
         print(geno_df)
         print(allele_df)
 
-        unique_n = len(set(top_eqtl_df["SNPName"]))
+        unique_n = len(set(eqtl_df["SNPName"]))
         present_snps = set(geno_df.index)
-        missing_snps = list(set([snp for snp in top_eqtl_df["SNPName"] if snp not in present_snps]))
+        missing_snps = list(set([snp for snp in eqtl_df["SNPName"] if snp not in present_snps]))
         print("\t{} / {} SNPs found in genotype matrix.".format(unique_n - len(missing_snps), unique_n))
         if len(missing_snps) > 0:
             geno_df = pd.concat([geno_df, pd.DataFrame(np.nan, index=missing_snps, columns=geno_df.columns)], axis=0)
             allele_df = pd.concat([allele_df, pd.DataFrame(np.nan, index=missing_snps, columns=allele_df.columns)], axis=0)
-        geno_df = geno_df.loc[top_eqtl_df["SNPName"], :]
-        allele_df = allele_df.loc[top_eqtl_df["SNPName"], :]
+        geno_df = geno_df.loc[eqtl_df["SNPName"], :]
+        allele_df = allele_df.loc[eqtl_df["SNPName"], :]
         print(geno_df)
         print(allele_df)
 
@@ -187,31 +177,31 @@ class main():
         expr_df = expr_df.groupby(expr_df.index).first()
         print(expr_df)
 
-        unique_n = len(set(top_eqtl_df["SNPName"]))
+        unique_n = len(set(eqtl_df["SNPName"]))
         present_genes = set(expr_df.index)
-        missing_genes = list(set([gene for gene in top_eqtl_df["ProbeName"] if gene not in present_genes]))
+        missing_genes = list(set([gene for gene in eqtl_df["ProbeName"] if gene not in present_genes]))
         print("\t{} / {} genes found in expression matrix.".format(unique_n - len(missing_genes), unique_n))
         if len(missing_genes) > 0:
             expr_df = pd.concat([expr_df, pd.DataFrame(np.nan, index=missing_genes, columns=expr_df.columns)], axis=0)
-        expr_df = expr_df.loc[top_eqtl_df["ProbeName"], :]
+        expr_df = expr_df.loc[eqtl_df["ProbeName"], :]
         print(expr_df)
 
         # Filter eQTL file on present data.
-        mask = np.zeros(top_eqtl_df.shape[0], dtype=bool)
-        for i in range(top_eqtl_df.shape[0]):
-            if top_eqtl_df.iloc[i, 1] in present_snps and top_eqtl_df.iloc[i, 7] in present_genes:
+        mask = np.zeros(eqtl_df.shape[0], dtype=bool)
+        for i in range(eqtl_df.shape[0]):
+            if eqtl_df.iloc[i, 1] in present_snps and eqtl_df.iloc[i, 7] in present_genes:
                 mask[i] = True
-        present_top_eqtl_df = top_eqtl_df.loc[mask, :]
+        present_eqtl_df = eqtl_df.loc[mask, :]
         geno_df = geno_df.loc[mask, :].loc[:, genotype_ids]
         geno_df.columns = rnaseq_ids
         allele_df = allele_df.loc[mask, :]
         expr_df = expr_df.loc[mask, :].loc[:, rnaseq_ids]
 
-        self.save_file(df=present_top_eqtl_df, outpath=os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
+        self.save_file(df=present_eqtl_df, outpath=os.path.join(self.outdir, "BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
         self.save_file(df=geno_df, outpath=os.path.join(self.outdir, "genotype_table.txt.gz"))
         self.save_file(df=allele_df, outpath=os.path.join(self.outdir, "genotype_alleles_table.txt.gz"))
         self.save_file(df=expr_df, outpath=os.path.join(self.outdir, "expression_table.txt.gz"))
-        del top_eqtl_df, present_top_eqtl_df, geno_df, expr_df
+        del eqtl_df, present_eqtl_df, geno_df, expr_df
 
         print("Preparing PCS after tech. cov. correction")
         pcpc_df = self.load_file(self.post_corr_pcs_path, header=0, index_col=0)

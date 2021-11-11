@@ -56,7 +56,9 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-./visualise_interaction_eqtl.py -ge ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -ex ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -i interest.txt -n 6000
+./visualise_interaction_eqtl.py -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -i rs1981760_NOD2_STX3.txt -n 6000
+
+./visualise_interaction_eqtl.py -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -i bios_top_ieqtls_pic1.txt
 """
 
 
@@ -184,8 +186,10 @@ class main():
 
         ########################################################################
 
+        print("Plotting.")
         X = np.ones((geno_df.shape[1], 4), dtype=np.float64)
         for _, (snp_name, probe_name, probe_label, cov_name, cov_label) in interest_df.iterrows():
+            print("\tSNP: {}\tprobe: {} ({})\tcovariate: {} ({})".format(snp_name, probe_name, probe_label, cov_name, cov_label))
             y = expr_df.loc[probe_name, :].to_numpy()
 
             X[:, 1] = geno_df.loc[snp_name, :].to_numpy()
@@ -198,10 +202,9 @@ class main():
             eqtl_stats = self.calculate_eqtl_stats(X=X[mask, :2], y=y[mask])
             ieqtl_stats = self.calculate_interaction_eqtl_stats(X=X[mask, :], y=y[mask])
 
-            df = pd.DataFrame(X[mask, :], columns=["intercept", "genotype", "covariate", "interaction"])
+            df = pd.DataFrame(X[mask, :], columns=["intercept", "genotype", "covariate", "interaction"], index=geno_df.columns)
             df["expression"] = y[mask]
             df["group"] = df["genotype"].round(0)
-            print(df)
 
             # Plot.
             self.create_overview_figure(df=df,
@@ -352,6 +355,14 @@ class main():
                     zorder=-1,
                     ax=ax)
 
+        # for i, sample in enumerate(["AC1C14ACXX-8-8", "AC1C40ACXX-8-8", "AC1C40ACXX-6-4", "AC1C14ACXX-7-22", "AC1C40ACXX-7-18", "AC1C40ACXX-8-6", "AC1C14ACXX-7-13", "AC1C40ACXX-7-22", "AC1C14ACXX-6-4", "AC1C14ACXX-8-6", "AC1C14ACXX-7-18"]):
+        #     ax.annotate(i,
+        #                 xy=(df.loc[sample, x], df.loc[sample, y]),
+        #                 horizontalalignment='left',
+        #                 color='#b22222',
+        #                 fontsize=12,
+        #                 fontweight='bold')
+
         ax.annotate(
             'N = {:,}'.format(df.shape[0]),
             xy=(0.03, 0.94),
@@ -426,6 +437,14 @@ class main():
                             alpha=0.75,
                             fontsize=12,
                             fontweight='bold')
+
+        # for i, sample in enumerate(["AC1C14ACXX-8-8", "AC1C40ACXX-8-8", "AC1C40ACXX-6-4", "AC1C14ACXX-7-22", "AC1C40ACXX-7-18", "AC1C40ACXX-8-6", "AC1C14ACXX-7-13", "AC1C40ACXX-7-22", "AC1C14ACXX-6-4", "AC1C14ACXX-8-6", "AC1C14ACXX-7-18"]):
+        #     ax.annotate(i,
+        #                 xy=(df.loc[sample, x], df.loc[sample, y]),
+        #                 horizontalalignment='center',
+        #                 color='#b22222',
+        #                 fontsize=12,
+        #                 fontweight='bold')
 
         ax.set_title(title,
                      fontsize=16,
