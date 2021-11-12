@@ -3,7 +3,7 @@
 """
 File:         interaction_overview_plot.py
 Created:      2021/10/21
-Last Changed: 2021/10/25
+Last Changed: 2021/11/12
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,7 +25,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
-import glob
 import json
 import os
 
@@ -120,22 +119,9 @@ class main():
         for i in range(1, 11):
             pic = "PIC{}".format(i)
 
-            fpaths = glob.glob(os.path.join(self.input_directory, pic, "results_*.txt.gz"))
-            if len(fpaths) <= 0:
-                continue
-            fpaths.sort()
-            final_iteration_path = fpaths[-1]
+            fpath = os.path.join(self.input_directory, "PIC_interactions", pic + ".txt.gz")
 
-            # final_iteration_path = None
-            # for j in range(100):
-            #     iter_path = os.path.join(self.input_directory, pic, "results_iteration{}_df.txt.gz".format(j))
-            #     if os.path.exists(iter_path):
-            #         final_iteration_path = iter_path
-            #
-            # if final_iteration_path is None:
-            #     continue
-
-            df = self.load_file(final_iteration_path, header=0, index_col=None)
+            df = self.load_file(fpath, header=0, index_col=None)
             df.index = df["SNP"] + ":" + df["gene"]
             signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
 
@@ -148,9 +134,9 @@ class main():
         pic_df = pd.concat(pic_dfs, axis=1)
 
         # Split data.
-        no_interaction_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) == 0, :]
-        single_interaction_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) == 1, :]
-        multiple_interactions_df = pic_df.loc[pic_df.loc[:, pics].sum(axis=1) > 1, :]
+        no_interaction_df = pic_df.loc[pic_df.sum(axis=1) == 0, :]
+        single_interaction_df = pic_df.loc[pic_df.sum(axis=1) == 1, :]
+        multiple_interactions_df = pic_df.loc[pic_df.sum(axis=1) > 1, :]
 
         n_ieqtls_unique_per_pic = [(name, value) for name, value in single_interaction_df.sum(axis=0).iteritems()]
         n_ieqtls_unique_per_pic.sort(key=lambda x: -x[1])
