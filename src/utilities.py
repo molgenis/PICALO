@@ -1,7 +1,7 @@
 """
 File:         utilities.py
 Created:      2021/04/28
-Last Changed:
+Last Changed: 2021/11/12
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,6 +25,11 @@ import os
 
 # Third party imports.
 import pandas as pd
+import numpy as np
+from statsmodels.stats import multitest
+
+# Local application imports.
+from src.objects.ieqtl import IeQTL
 
 
 def load_dataframe(inpath, header, index_col, sep="\t", low_memory=True,
@@ -57,3 +62,42 @@ def save_dataframe(df, outpath, header, index, sep="\t", log=None):
         print(message)
     else:
         log.info(message)
+
+
+def get_ieqtls(eqtl_m, geno_m, expr_m, context_a, cov, alpha):
+    n_eqtls = eqtl_m.shape[0]
+
+    ieqtls = []
+    results = []
+    p_values = np.empty(n_eqtls, dtype=np.float64)
+    for row_index in range(n_eqtls):
+        snp, gene = eqtl_m[row_index, :]
+        ieqtl = IeQTL(snp=snp,
+                      gene=gene,
+                      cov=cov,
+                      genotype=geno_m[row_index, :],
+                      covariate=context_a,
+                      expression=expr_m[row_index, :]
+                      )
+        ieqtl.compute()
+        p_values[row_index] = ieqtl.p_value
+        ieqtls.append(ieqtl)
+        results.append([snp, gene, cov, ieqtl.n] + ieqtl.betas.tolist() + ieqtl.std.tolist() + [ieqtl.p_value])
+
+    # Calculate the FDR.
+    fdr_values = multitest.multipletests(p_values, method='fdr_bh')[1]
+
+    # Calculate the number of significant hits.
+    mask = fdr_values < alpha
+    n_hits = np.sum(mask)
+
+    results_df = pd.DataFrame(results,
+                              columns=["SNP", "gene", "covariate", "N",
+                                       "beta-intercept", "beta-genotype",
+                                       "beta-covariate", "beta-interaction",
+                                       "std-intercept", "std-genotype",
+                                       "std-covariate", "std-interaction",
+                                       "p-value"])
+    results_df["FDR"] = fdr_values
+
+    return n_hits, [ieqtl for ieqtl, include in zip(ieqtls, mask) if include], results_df

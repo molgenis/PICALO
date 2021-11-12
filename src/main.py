@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/11
+Last Changed: 2021/11/12
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -34,8 +34,8 @@ from src.logger import Logger
 from src.force_normaliser import ForceNormaliser
 from src.objects.data import Data
 from src.inter_optimizer import InteractionOptimizer
-from src.statistics import remove_covariates_pcr
-from src.utilities import save_dataframe
+from src.statistics import remove_covariates_pcr, remove_covariates_elementwise
+from src.utilities import save_dataframe, get_ieqtls
 
 
 class Main:
@@ -263,14 +263,6 @@ class Main:
 
         ########################################################################
 
-        self.log.info("Force normalising covariate matrix")
-        fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
-        covs_m = fn.process(covs_m)
-        self.log.info("")
-        del fn
-
-        ########################################################################
-
         self.log.info("Starting identifying interaction components")
 
         io = InteractionOptimizer(covariates=covariates,
@@ -287,6 +279,8 @@ class Main:
         n_components_performed = 0
         pic_a = None
         stop = False
+        pic_corr_m = np.copy(corr_m)
+        pic_corr_inter_m = np.copy(corr_inter_m)
         for comp_count in range(self.n_components):
             if stop:
                 self.log.warning("Last component did not converge, stop "
@@ -302,19 +296,19 @@ class Main:
 
             # Add component to the base matrix.
             if pic_a is not None:
-                if corr_m is not None:
-                    corr_m = np.hstack((corr_m, pic_a[:, np.newaxis]))
+                if pic_corr_m is not None:
+                    pic_corr_m = np.hstack((pic_corr_m, pic_a[:, np.newaxis]))
                 else:
-                    corr_m = pic_a[:, np.newaxis]
+                    pic_corr_m = pic_a[:, np.newaxis]
 
-                if corr_inter_m is not None:
-                    corr_inter_m = np.hstack((corr_inter_m, pic_a[:, np.newaxis]))
+                if pic_corr_inter_m is not None:
+                    pic_corr_inter_m = np.hstack((pic_corr_inter_m, pic_a[:, np.newaxis]))
                 else:
-                    corr_inter_m = pic_a[:, np.newaxis]
+                    pic_corr_inter_m = pic_a[:, np.newaxis]
 
             component_path = os.path.join(comp_outdir, "component.npy")
             if os.path.exists(component_path):
-                print("\t  PIC has already been identified")
+                self.log.info("\t  PIC has already been identified")
                 with open(component_path, 'rb') as f:
                     pic_a = np.load(f)
                 f.close()
@@ -325,8 +319,8 @@ class Main:
                 # Remove tech. covs. + components from expression matrix.
                 self.log.info("\t  Correcting expression matrix")
                 comp_expr_m = remove_covariates_pcr(y_m=expr_m,
-                                                    X_m=corr_m,
-                                                    X_inter_m=corr_inter_m,
+                                                    X_m=pic_corr_m,
+                                                    X_inter_m=pic_corr_inter_m,
                                                     inter_m=geno_m,
                                                     log=self.log)
 
@@ -344,8 +338,8 @@ class Main:
                     np.save(f, pic_a)
                 f.close()
 
-                # Increment counter.
-                n_components_performed += 1
+            # Increment counter.
+            n_components_performed += 1
 
         components_df = pd.DataFrame(pic_m[:n_components_performed, :],
                                      index=["PIC{}".format(i+1) for i in range(n_components_performed)],
@@ -354,7 +348,8 @@ class Main:
         save_dataframe(df=components_df,
                        outpath=os.path.join(self.outdir, "components.txt.gz"),
                        header=True,
-                       index=True)
+                       index=True,
+                       log=self.log)
 
         pics_df = components_df
         if stop:
@@ -362,7 +357,65 @@ class Main:
         save_dataframe(df=pics_df,
                        outpath=os.path.join(self.outdir, "PICs.txt.gz"),
                        header=True,
-                       index=True)
+                       index=True,
+                       log=self.log)
+        del components_df
+
+        ########################################################################
+
+        self.log.info("Map interactions with PICs on original expression data")
+        self.log.info("\t  Correcting expression matrix")
+        # Prepare output directory.
+        pic_ieqtl_outdir = os.path.join(self.outdir, "PIC_interactions")
+        if not os.path.exists(pic_ieqtl_outdir):
+            os.makedirs(pic_ieqtl_outdir)
+
+        # Correct the gene expression matrix.
+        corrected_expr_m = remove_covariates_pcr(y_m=expr_m,
+                                                 X_m=corr_m,
+                                                 X_inter_m=corr_inter_m,
+                                                 inter_m=geno_m,
+                                                 log=self.log)
+
+        fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
+
+        self.log.info("\t  Mapping ieQTLs")
+        for pic_index in range(pics_df.shape[0]):
+            # Extract the PIC we are working on.
+            pic_a = pics_df.iloc[pic_index, :].to_numpy()
+
+            # Clean the expression matrix.
+            pic_expr_m = remove_covariates_elementwise(y_m=corrected_expr_m,
+                                                       X_m=geno_m,
+                                                       a=pic_a)
+
+            # Force normalise the expression matrix.
+            pic_expr_m = fn.process(data=pic_expr_m)
+            fn_pic_a = fn.process(data=pic_a)
+
+            # Find the significant ieQTLs.
+            n_hits, _, results_df = get_ieqtls(
+                eqtl_m=eqtl_m,
+                geno_m=geno_m,
+                expr_m=pic_expr_m,
+                context_a=fn_pic_a,
+                cov=pics_df.index[pic_index],
+                alpha=self.ieqtl_alpha
+            )
+            self.log.info("\t\tPIC{} has {:,} significant ieQTLs".format(pic_index, n_hits))
+
+            # Save results.
+            save_dataframe(df=results_df,
+                           outpath=os.path.join(pic_ieqtl_outdir, "PIC{}.txt.gz".format(pic_index)),
+                           header=True,
+                           index=False,
+                           log=self.log)
+
+            del pic_expr_m, pic_a, results_df
+
+        del corrected_expr_m
+
+        ########################################################################
 
         self.log.info("Finished")
         self.log.info("")

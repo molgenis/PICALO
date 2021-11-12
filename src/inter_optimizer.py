@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/11/02
+Last Changed: 2021/11/12
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -27,13 +27,11 @@ import os
 
 # Third party imports.
 import numpy as np
-from statsmodels.stats import multitest
 
 # Local application imports.
 from src.force_normaliser import ForceNormaliser
-from src.objects.ieqtl import IeQTL
 from src.statistics import calc_vertex_xpos, remove_covariates_elementwise, calc_pearsonr_vector
-from src.utilities import save_dataframe
+from src.utilities import save_dataframe, get_ieqtls
 
 
 class InteractionOptimizer:
@@ -66,8 +64,8 @@ class InteractionOptimizer:
 
             start_time = int(time.time())
 
-            if np.ndim(covs_m) == 1:
-                context_a = covs_m
+            if np.shape(covs_m)[0] == 1:
+                context_a = np.squeeze(covs_m)
 
             # Find the significant ieQTLs.
             if context_a is None:
@@ -94,13 +92,13 @@ class InteractionOptimizer:
                     fn_cova_a = self.fn.process(data=cova_a)
 
                     # Find the significant ieQTLs.
-                    cov_hits, cov_ieqtls, cov_results_df = self.get_ieqtls(
+                    cov_hits, cov_ieqtls, cov_results_df = get_ieqtls(
                         eqtl_m=eqtl_m,
                         geno_m=geno_m,
                         expr_m=iter_expr_m,
                         context_a=fn_cova_a,
-                        cov=self.covariates[cov_index]
-                    )
+                        cov=self.covariates[cov_index],
+                        alpha=self.ieqtl_alpha)
 
                     # Save hits.
                     self.log.info("\t\t\tCovariate: '{}' has {} significant ieQTLs".format(self.covariates[cov_index], cov_hits))
@@ -110,10 +108,12 @@ class InteractionOptimizer:
                         n_hits = cov_hits
                         cov = self.covariates[cov_index]
                         ieqtls = cov_ieqtls
-                        context_a = cova_a
+                        context_a = np.copy(cova_a)
                         results_df = cov_results_df
                     else:
                         del cov_ieqtls
+
+                    del iter_expr_m, fn_cova_a, cova_a
                 self.log.info("\t\t  Covariate '{}' will be used for this component.".format(cov))
 
                 hits_per_cov_df = pd.DataFrame(hits_per_cov_data, columns=["Covariate", "N-ieQTLs"])
@@ -122,29 +122,31 @@ class InteractionOptimizer:
                                header=True,
                                index=False,
                                log=self.log)
-
-                del cova_a, fn_cova_a
+                del hits_per_cov_df
             else:
                 self.log.info("\t\t  Finding ieQTLs")
 
                 # Clean the expression matrix.
-                iter_expr_m = remove_covariates_elementwise(y_m=expr_m, X_m=geno_m, a=context_a)
+                iter_expr_m = remove_covariates_elementwise(y_m=expr_m,
+                                                            X_m=geno_m,
+                                                            a=context_a)
 
                 # Force normalise the expression matrix and the interaction
                 # vector.
                 iter_expr_m = self.fn.process(data=iter_expr_m)
                 fn_context_a = self.fn.process(data=context_a)
 
-                n_hits, ieqtls, results_df = self.get_ieqtls(
+                n_hits, ieqtls, results_df = get_ieqtls(
                     eqtl_m=eqtl_m,
                     geno_m=geno_m,
                     expr_m=iter_expr_m,
                     context_a=fn_context_a,
-                    cov=cov)
+                    cov=cov,
+                    alpha=self.ieqtl_alpha)
 
                 self.log.info("\t\t\tCovariate: '{}' has {:,} significant ieQTLs".format(cov, n_hits))
 
-                del fn_context_a
+                del iter_expr_m, fn_context_a
 
             # Save results.
             save_dataframe(df=results_df,
@@ -251,47 +253,9 @@ class InteractionOptimizer:
                        index=True,
                        log=self.log)
 
-        del iteration_df, iterations_m, info_df, info_m
+        del iteration_df, iterations_m, n_ieqtls_per_sample_df, n_ieqtls_per_sample_m, info_df, info_m
 
         return context_a, stop
-
-    def get_ieqtls(self, eqtl_m, geno_m, expr_m, context_a, cov):
-        n_eqtls = eqtl_m.shape[0]
-
-        ieqtls = []
-        results = []
-        p_values = np.empty(n_eqtls, dtype=np.float64)
-        for row_index in range(n_eqtls):
-            snp, gene = eqtl_m[row_index, :]
-            ieqtl = IeQTL(snp=snp,
-                          gene=gene,
-                          cov=cov,
-                          genotype=geno_m[row_index, :],
-                          covariate=context_a,
-                          expression=expr_m[row_index, :]
-                          )
-            ieqtl.compute()
-            p_values[row_index] = ieqtl.p_value
-            ieqtls.append(ieqtl)
-            results.append([snp, gene, cov, ieqtl.n] + ieqtl.betas.tolist() + ieqtl.std.tolist() + [ieqtl.p_value])
-
-        # Calculate the FDR.
-        fdr_values = multitest.multipletests(p_values, method='fdr_bh')[1]
-
-        # Calculate the number of significant hits.
-        mask = fdr_values < self.ieqtl_alpha
-        n_hits = np.sum(mask)
-
-        results_df = pd.DataFrame(results,
-                                  columns=["SNP", "gene", "covariate", "N",
-                                           "beta-intercept", "beta-genotype",
-                                           "beta-covariate", "beta-interaction",
-                                           "std-intercept", "std-genotype",
-                                           "std-covariate", "std-interaction",
-                                           "p-value"])
-        results_df["FDR"] = fdr_values
-
-        return n_hits, [ieqtl for ieqtl, include in zip(ieqtls, mask) if include], results_df
 
     @staticmethod
     def optimize_ieqtls(ieqtls):
