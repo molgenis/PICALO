@@ -406,7 +406,7 @@ class Main:
 
             # Save results.
             save_dataframe(df=results_df,
-                           outpath=os.path.join(pic_ieqtl_outdir, "PIC{}.txt.gz".format(pic_index)),
+                           outpath=os.path.join(pic_ieqtl_outdir, "PIC{}.txt.gz".format(pic_index + 1)),
                            header=True,
                            index=False,
                            log=self.log)

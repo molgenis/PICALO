@@ -59,6 +59,8 @@ Syntax:
 ./create_regplot.py -xd ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/expression_table_CovariatesRemovedOLS.txt.gz -xi ENSG00000166900 -yd /groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt.gz -yi Neut_Perc -y_transpose -o Neut_Perc_vs_STX3
 
 ./create_regplot.py -xd ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/expression_table.txt.gz -xi ENSG00000166900 -yd /groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt.gz -yi Neut_Perc -y_transpose -o Neut_Perc_vs_STX3
+
+./create_regplot.py -xd  ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1/PIC_interactions/PIC0.txt.gz -x_transpose -xi t-value -xl all_samples -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-NoPIC1Outliers-MAF5-PIC1/PIC_interactions/PIC0.txt.gz -y_transpose -yi t-value -yl no_outliers -o PIC1_all_samples_vs_no_outliers
 """
 
 
@@ -67,11 +69,19 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.x_data_path = getattr(arguments, 'x_data')
-        self.x_index = getattr(arguments, 'x_index')
         self.x_transpose = getattr(arguments, 'x_transpose')
+        self.x_index = getattr(arguments, 'x_index')
+        x_label = getattr(arguments, 'x_label')
+        if x_label is None:
+            x_label = self.x_index
+        self.x_label = x_label
         self.y_data_path = getattr(arguments, 'y_data')
-        self.y_index = getattr(arguments, 'y_index')
         self.y_transpose = getattr(arguments, 'y_transpose')
+        self.y_index = getattr(arguments, 'y_index')
+        y_label = getattr(arguments, 'y_label')
+        if y_label is None:
+            y_label = self.y_index
+        self.y_label = y_label
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
@@ -96,31 +106,41 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the x-axis data matrix.")
-        parser.add_argument("-xi",
-                            "--x_index",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The index name.")
         parser.add_argument("-x_transpose",
                             action='store_true',
                             help="Combine the created files with force."
                                  " Default: False.")
+        parser.add_argument("-xi",
+                            "--x_index",
+                            type=str,
+                            required=True,
+                            help="The index name.")
+        parser.add_argument("-xl",
+                            "--x_label",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The x-axis label.")
         parser.add_argument("-yd",
                             "--y_data",
                             type=str,
                             required=True,
                             help="The path to the y-axis data matrix.")
-        parser.add_argument("-yi",
-                            "--y_index",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The index name.")
         parser.add_argument("-y_transpose",
                             action='store_true',
                             help="Combine the created files with force."
                                  " Default: False.")
+        parser.add_argument("-yi",
+                            "--y_index",
+                            type=str,
+                            required=True,
+                            help="The index name.")
+        parser.add_argument("-yl",
+                            "--y_label",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The y-axis label.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
@@ -133,8 +153,11 @@ class main():
         self.print_arguments()
 
         print("Loading data.")
-        x_df = self.load_file(self.x_data_path, header=0, index_col=0, nrows=6000)
-        y_df = self.load_file(self.y_data_path, header=0, index_col=3)
+        x_df = self.load_file(self.x_data_path, header=0, index_col=None)
+        y_df = self.load_file(self.y_data_path, header=0, index_col=None)
+
+        # x_df["t-value"] = x_df["beta-interaction"].astype(float) / x_df["std-interaction"].astype(float)
+        # y_df["t-value"] = y_df["beta-interaction"].astype(float) / y_df["std-interaction"].astype(float)
 
         print("Pre-process")
         if self.x_transpose:
@@ -142,21 +165,23 @@ class main():
         if self.y_transpose:
             y_df = y_df.T
 
-        x_df = x_df.groupby(x_df.index).first()
-        y_df = y_df.groupby(y_df.index).first()
+        x_subset_df = x_df.loc[[self.x_index], :].T.astype(float)
+        y_subset_df = y_df.loc[[self.y_index], :].T.astype(float)
 
-        print(x_df)
-        print(y_df)
+        print(x_subset_df)
+        print(y_subset_df)
 
         print("Merging.")
-        plot_df = x_df.loc[[self.x_index], :].T.merge(y_df.loc[[self.y_index], :].T, left_index=True, right_index=True)
+        plot_df = x_subset_df.merge(y_subset_df, left_index=True, right_index=True)
         plot_df.columns = ["x", "y"]
         plot_df.dropna(inplace=True)
+        plot_df = plot_df.astype(float)
+        print(plot_df)
 
         print("Plotting.")
         self.single_regplot(df=plot_df,
-                            xlabel=self.x_index,
-                            ylabel=self.y_index,
+                            xlabel=self.x_label,
+                            ylabel=self.y_label,
                             filename=self.out_filename)
 
     @staticmethod
@@ -233,12 +258,14 @@ class main():
         print("Arguments:")
         print("  > X-axis:")
         print("    > Data: {}".format(self.x_data_path))
-        print("    > Index: {}".format(self.x_index))
         print("    > Transpose: {}".format(self.x_transpose))
+        print("    > Index: {}".format(self.x_index))
+        print("    > Label: {}".format(self.x_label))
         print("  > Y-axis:")
         print("    > Data: {}".format(self.y_data_path))
-        print("    > Index: {}".format(self.y_index))
         print("    > Transpose: {}".format(self.y_transpose))
+        print("    > Index: {}".format(self.y_index))
+        print("    > Label: {}".format(self.y_label))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
         print("")
