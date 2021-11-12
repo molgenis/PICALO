@@ -31,6 +31,7 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
+from itertools import compress
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
@@ -55,6 +56,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./interaction_overview_plot.py -h
+
+./interaction_overview_plot.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1 -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o test
 """
 
 
@@ -119,7 +122,9 @@ class main():
         for i in range(1, 11):
             pic = "PIC{}".format(i)
 
-            fpath = os.path.join(self.input_directory, "PIC_interactions", pic + ".txt.gz")
+            fpath = os.path.join(self.input_directory, "PIC_interactions", "{}.txt.gz".format(pic))
+            if not os.path.exists(fpath):
+                continue
 
             df = self.load_file(fpath, header=0, index_col=None)
             df.index = df["SNP"] + ":" + df["gene"]
@@ -157,6 +162,13 @@ class main():
 
         total_n_ieqtls = pic_df.shape[0] - no_interaction_df.shape[0]
         print("Total interactions (N = {}) = {:.2f}%".format(total_n_ieqtls, (100 / pic_df.shape[0]) * total_n_ieqtls))
+
+        # Remove sizes of 0.
+        mask = [False if x == 0 else True for x in data]
+        data = list(compress(data, mask))
+        labels = list(compress(labels, mask))
+        explode = list(compress(explode, mask))
+        colors = list(compress(colors, mask))
 
         self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="png")
         self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="pdf", label_threshold=100)
