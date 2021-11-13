@@ -3,7 +3,7 @@
 """
 File:         create_scatterplot.py
 Created:      2021/04/29
-Last Changed: 2021/09/23
+Last Changed: 2021/11/12
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -179,7 +179,7 @@ class main():
         print("Loading color data.")
         sa_df = None
         if self.std_path is not None:
-            sa_df = self.load_file(self.std_path, header=None, index_col=None)
+            sa_df = self.load_file(self.std_path, header=0, index_col=None)
             sa_df.set_index(sa_df.columns[0], inplace=True)
             sa_df.columns = ["dataset"]
 

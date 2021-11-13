@@ -3,7 +3,7 @@
 """
 File:         create_upsetplot.py
 Created:      2021/05/10
-Last Changed: 2021/10/25
+Last Changed: 2021/11/13
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -26,6 +26,7 @@ from __future__ import print_function
 from pathlib import Path
 import itertools
 import argparse
+import math
 import json
 import glob
 import os
@@ -59,6 +60,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./create_upsetplot.py -h
+
+./create_upsetplot.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5 -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5
 """
 
 
@@ -136,7 +139,6 @@ class main():
         eqtl_df.columns = ["eQTL level"]
         eqtl_hlines = None
 
-        final_iter_data = {}
         for i in range(1, 11):
             pic = "PIC{}".format(i)
             print(pic)
@@ -147,12 +149,6 @@ class main():
 
             fpaths = glob.glob(os.path.join(self.input_directory, pic, "results_*.txt.gz"))
             fpaths.sort()
-
-            # fpaths = []
-            # for j in range(100):
-            #     fpath = os.path.join(self.input_directory, pic, "results_iteration{}.txt.gz".format(j))
-            #     if os.path.exists(fpath):
-            #         fpaths.append(fpath)
 
             for j, fpath in enumerate(fpaths):
                 iter_abbreviation = "iter{}".format(j)
@@ -172,9 +168,6 @@ class main():
                     eqtl_hlines = zip(*np.unique(overlap_df["eQTL level"], return_counts=True))
                     eqtl_hlines = {a: (b / overlap_df.shape[0]) * 100 for a, b in eqtl_hlines}
 
-            if final_iteration is not None:
-                final_iter_data["comp{}".format(i)] = component_data[final_iteration]
-
             # plot lineplot.
             if has_Iteration and len(eqtl_level_counts_data.keys()) > 0:
                 level_df = pd.DataFrame(eqtl_level_counts_data)
@@ -187,15 +180,7 @@ class main():
                           hlines=eqtl_hlines)
 
             n_iterations = len(component_data.keys())
-            modulo = 1
-            if n_iterations <= 25:
-                modulo = 5
-            elif 25 < n_iterations <= 50:
-                modulo = 8
-            elif 50 < n_iterations <= 75:
-                modulo = 10
-            elif n_iterations > 75:
-                modulo = 15
+            modulo = math.floor((n_iterations - 2) / 8)
 
             # filter.
             filtered_component_data = {}
@@ -214,16 +199,33 @@ class main():
                 plt.savefig(os.path.join(self.outdir, "{}_included_ieQTLs_{}_upsetplot.png".format(self.out_filename, pic)))
                 plt.close()
 
-        counts = self.count(final_iter_data)
+        del eqtl_df, filtered_component_data, counts, eqtl_level_counts_data
+
+        pic_data = {}
+        for i in range(1, 25):
+            pic = "PIC{}".format(i)
+
+            fpath = os.path.join(self.input_directory, "PIC_interactions", "{}.txt.gz".format(pic))
+            if not os.path.exists(fpath):
+                continue
+
+            df = self.load_file(fpath, header=0, index_col=None)
+            df.index = df["SNP"] + ":" + df["gene"]
+            signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
+            pic_data[pic] = signif_ieqtl
+
+        # Plot upsetplot of all PICS combined.
+        counts = self.count(pic_data)
         counts = counts[counts > 0]
         print(counts)
 
         print("Creating plot.")
         up.plot(counts, sort_by='cardinality', show_counts=True)
-        plt.savefig(os.path.join(self.outdir, "{}_included_ieQTLs_finalIter_upsetplot.png".format(self.out_filename)))
+        plt.savefig(os.path.join(self.outdir, "{}_PICS_upsetplot.png".format(self.out_filename)))
         plt.close()
 
-    def load_file(self, inpath, header, index_col, sep="\t", low_memory=True,
+    @staticmethod
+    def load_file(inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
         df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
                          low_memory=low_memory, nrows=nrows, skiprows=skiprows)

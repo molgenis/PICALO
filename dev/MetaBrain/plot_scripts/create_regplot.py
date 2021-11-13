@@ -60,7 +60,7 @@ Syntax:
 
 ./create_regplot.py -xd ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/expression_table.txt.gz -xi ENSG00000166900 -yd /groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt.gz -yi Neut_Perc -y_transpose -o Neut_Perc_vs_STX3
 
-./create_regplot.py -xd  ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1/PIC_interactions/PIC0.txt.gz -x_transpose -xi t-value -xl all_samples -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-NoPIC1Outliers-MAF5-PIC1/PIC_interactions/PIC0.txt.gz -y_transpose -yi t-value -yl no_outliers -o PIC1_all_samples_vs_no_outliers
+./create_regplot.py -xd  ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1/PIC_interactions/PIC1.txt.gz -x_transpose -xi t-value -xl all_samples -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-NoPIC1Outliers-MAF5-PIC1/PIC_interactions/PIC1.txt.gz -y_transpose -yi t-value -yl no_outliers -o PIC1_all_samples_vs_no_outliers
 """
 
 
@@ -229,8 +229,15 @@ class main():
         xmargin = (xlim[1] - xlim[0]) * 0.05
         ymargin = (ylim[1] - ylim[0]) * 0.05
 
-        ax.set_xlim(xlim[0] - xmargin, xlim[1] + xmargin)
-        ax.set_ylim(ylim[0] - ymargin, ylim[1] + ymargin)
+        new_xlim = (xlim[0] - xmargin, xlim[1] + xmargin)
+        new_ylim = (ylim[0] - ymargin, ylim[1] + ymargin)
+
+        ax.set_xlim(new_xlim[0], new_xlim[1])
+        ax.set_ylim(new_ylim[0], new_ylim[1])
+
+        min_pos = min(new_xlim[0], new_ylim[0])
+        max_pos = max(new_xlim[1], new_ylim[1])
+        ax.plot([min_pos, max_pos], [min_pos, max_pos], ls='--', color="#000000", zorder=-1)
 
         # Set annotation.
         coef, _ = stats.pearsonr(df[y], df[x])

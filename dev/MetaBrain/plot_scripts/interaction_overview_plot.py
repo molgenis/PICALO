@@ -3,7 +3,7 @@
 """
 File:         interaction_overview_plot.py
 Created:      2021/10/21
-Last Changed: 2021/11/12
+Last Changed: 2021/11/13
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -119,7 +119,7 @@ class main():
         print("Loading data")
         pics = []
         pic_dfs = []
-        for i in range(1, 11):
+        for i in range(1, 25):
             pic = "PIC{}".format(i)
 
             fpath = os.path.join(self.input_directory, "PIC_interactions", "{}.txt.gz".format(pic))

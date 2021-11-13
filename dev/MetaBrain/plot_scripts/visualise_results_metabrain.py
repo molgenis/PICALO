@@ -51,9 +51,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./visualise_results_metabrain.py -h
 
-./visualise_results_metabrain.py -id ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-ContextForceNormal/ -p ../../data/MetaBrainColorPalette.json -ep ../../preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/ -mp /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier -o MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-ContextForceNormal
-
-./visualise_results_metabrain.py -id ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/ -p ../../data/BIOSColorPalette.json -ep ../../preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/ -mp /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5
+./visualise_results_metabrain.py -id ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/ -p ../../data/MetaBrainColorPalette.json -ep ../../preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/ -mp /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier -o MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5
 """
 
 
