@@ -61,6 +61,17 @@ Syntax:
 ./create_regplot.py -xd ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/expression_table.txt.gz -xi ENSG00000166900 -yd /groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt.gz -yi Neut_Perc -y_transpose -o Neut_Perc_vs_STX3
 
 ./create_regplot.py -xd  ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1/PIC_interactions/PIC1.txt.gz -x_transpose -xi t-value -xl all_samples -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-NoPIC1Outliers-MAF5-PIC1/PIC_interactions/PIC1.txt.gz -y_transpose -yi t-value -yl no_outliers -o PIC1_all_samples_vs_no_outliers
+
+./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.CorrelationsWithAverageExpression.txt.gz -yi AvgExprCorrelation -y_transpose -yl AvgExprCorrelation -o BIOS_PIC1_vs_AvgExprCorrelation
+
+./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -yi PIC2 -yl PIC2 -o BIOS_PIC1_vs_PIC2
+
+./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.eQTLgenes.CorrelationsWithAverageExpression.txt.gz -yi AvgExprCorrelation -y_transpose -yl AvgExprCorrelation -o BIOS_PIC1_vs_eQTLGenesAvgExprCorrelation
+
+./create_regplot.py -xd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd ../../data/MetaBrain_MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.CorrelationsWithAverageExpression.txt.gz -y_transpose -yi AvgExprCorrelation -yl AvgExprCorrelation -o MetaBrain_PIC1_vs_AvgExprCorrelation
+
+./create_regplot.py -xd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd ../../data/MetaBrain_MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.eQTLgene.CorrelationsWithAverageExpression.txt.gz -yi AvgExprCorrelation -y_transpose -yl AvgExprCorrelation -o MetaBrain_PIC1_vs_eQTLGenesAvgExprCorrelation
+
 """
 
 
@@ -153,8 +164,8 @@ class main():
         self.print_arguments()
 
         print("Loading data.")
-        x_df = self.load_file(self.x_data_path, header=0, index_col=None)
-        y_df = self.load_file(self.y_data_path, header=0, index_col=None)
+        x_df = self.load_file(self.x_data_path, header=0, index_col=0)
+        y_df = self.load_file(self.y_data_path, header=0, index_col=0)
 
         # x_df["t-value"] = x_df["beta-interaction"].astype(float) / x_df["std-interaction"].astype(float)
         # y_df["t-value"] = y_df["beta-interaction"].astype(float) / y_df["std-interaction"].astype(float)
@@ -164,6 +175,9 @@ class main():
             x_df = x_df.T
         if self.y_transpose:
             y_df = y_df.T
+
+        print(x_df)
+        print(y_df)
 
         x_subset_df = x_df.loc[[self.x_index], :].T.astype(float)
         y_subset_df = y_df.loc[[self.y_index], :].T.astype(float)

@@ -60,6 +60,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./pre_process_metabrain_expression_matrix.py -h
+
+./pre_process_metabrain_expression_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz -t /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-05-26-step5-remove-covariates-per-dataset/2020-05-25-covariatefiles/2020-02-17-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.top20correlated-cortex-withMDS.txt.gz -gte /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR -p GTE-EUR- -e ENA GVEX -of CortexEUR_noENA_noGVEX
 """
 
 
@@ -252,11 +254,11 @@ class main():
         self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)))
 
         print("Step 6: PCA analysis.")
-        _, self.pca(df=df,
-                    filename=filename,
-                    sample_to_dataset=sample_to_dataset,
-                    file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
-                    plot_appendix="_1")
+        _ = self.pca(df=df,
+                     filename=filename,
+                     sample_to_dataset=sample_to_dataset,
+                     file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
+                     plot_appendix="_1")
 
         print("Step 7: Construct correction matrix 1.")
         ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
@@ -280,28 +282,28 @@ class main():
                          sample_to_dataset=sample_to_dataset,
                          file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS",
                          plot_appendix="_2_CovariatesRemovedOLS")
-
-        print("Step 10: Construct correction matrix 2.")
-        correction_df = correction_df.merge(pc_df.T, left_index=True, right_index=True)
-
-        print("\tSaving file.")
-        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix2.txt.gz"))
-
-        print("Step 11: remove expression PCs and technical covariates OLS.")
-        twice_corrected_df = self.calculate_residuals(df=corrected_df, correction_df=correction_df)
-        del corrected_df
-
-        print("\tSaving file.")
-        self.save_file(df=twice_corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.25ExpressionPCsRemovedOLS.txt.gz".format(filename)))
-
-        print("Step 12: PCA analysis.")
-        _ = self.pca(df=twice_corrected_df,
-                     filename=filename,
-                     sample_to_dataset=sample_to_dataset,
-                     file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.25ExpressionPCsRemovedOLS",
-                     plot_appendix="_3_CovariatesRemovedOLS_25ExpressionPCsRemovedOLS")
-
-        del correction_df, corrected_df
+        #
+        # print("Step 10: Construct correction matrix 2.")
+        # correction_df = correction_df.merge(pc_df.T, left_index=True, right_index=True)
+        #
+        # print("\tSaving file.")
+        # self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix2.txt.gz"))
+        #
+        # print("Step 11: remove expression PCs and technical covariates OLS.")
+        # twice_corrected_df = self.calculate_residuals(df=corrected_df, correction_df=correction_df)
+        # del corrected_df
+        #
+        # print("\tSaving file.")
+        # self.save_file(df=twice_corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.25ExpressionPCsRemovedOLS.txt.gz".format(filename)))
+        #
+        # print("Step 12: PCA analysis.")
+        # _ = self.pca(df=twice_corrected_df,
+        #              filename=filename,
+        #              sample_to_dataset=sample_to_dataset,
+        #              file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.{}ExpressionPCsRemovedOLS".format(pc_df.shape[0]),
+        #              plot_appendix="_3_CovariatesRemovedOLS_{}ExpressionPCsRemovedOLS".format(pc_df.shape[0]))
+        #
+        # del correction_df, corrected_df
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -401,7 +403,7 @@ class main():
     def pca(self, df, filename, sample_to_dataset, file_appendix="", plot_appendix=""):
         # samples should be on the columns and genes on the rows.
         zscores = (df - df.mean(axis=0)) / df.std(axis=0)
-        pca = PCA(n_components=25)
+        pca = PCA(n_components=50)
         pca.fit(zscores)
         expl_variance = {"PC{}".format(i+1): pca.explained_variance_ratio_[i] * 100 for i in range(25)}
         components_df = pd.DataFrame(pca.components_)

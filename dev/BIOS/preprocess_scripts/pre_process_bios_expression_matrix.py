@@ -65,6 +65,8 @@ Syntax:
 ./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_20RNAseqAlignemntMetrics
 
 ./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_AllRNAseqAlignemntMetrics
+
+./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics
 """
 
 
@@ -188,16 +190,42 @@ class main():
         df = self.load_file(self.data_path, header=0, index_col=0)
         print(df)
 
-        print("Step 1: reorder samples.")
+        print("Step 1: sample selection.")
+        print("\tUsing {}/{} samples.".format(len(samples), df.shape[1]))
         df = df.loc[:, samples]
 
-        print("Step 2: PCA analysis.")
+        print("Step 2: remove probes with zero variance.")
+        mask = df.std(axis=1) != 0
+        print("\tUsing {}/{} probes.".format(np.sum(mask), np.size(mask)))
+        df = df.loc[mask, :]
+
+        print("Step 3: log2 transform.")
+        min_value = df.min(axis=1).min()
+        if min_value <= 0:
+            df = np.log2(df - min_value + 1)
+        else:
+            df = np.log2(df + 1)
+
+        print("\tSaving file.")
+        self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz".format(filename)))
+
+        print("Step 4: center probes.")
+        df = df.subtract(df.mean(axis=1), axis=0)
+
+        print("Step 5: sample z-transform.")
+        df = (df - df.mean(axis=0)) / df.std(axis=0)
+
+        print("\tSaving file.")
+        self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)))
+
+        print("Step 6: PCA analysis.")
         _ = self.pca(df=df,
                      filename=filename,
                      sample_to_dataset=sample_to_dataset,
+                     file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
                      plot_appendix="_1")
 
-        print("Step 3: Construct correction matrix 1.")
+        print("Step 7: Construct correction matrix 1.")
         ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
         sex_df = self.load_file(self.sex_path, header=0, index_col=0)
         mds_df = self.load_file(self.mds_path, header=0, index_col=0)
@@ -209,37 +237,37 @@ class main():
         print("\tSaving file.")
         self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix1.txt.gz"))
 
-        print("Step 4: remove technical covariates OLS.")
+        print("Step 8: remove technical covariates OLS.")
         corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
 
         print("\tSaving file.")
-        self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.CovariatesRemovedOLS.txt.gz".format(filename)))
+        self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
 
-        print("Step 5: PCA analysis.")
+        print("Step 9: PCA analysis.")
         pc_df = self.pca(df=corrected_df,
                          filename=filename,
                          sample_to_dataset=sample_to_dataset,
-                         file_appendix="CovariatesRemovedOLS",
+                         file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS",
                          plot_appendix="_2_CovariatesRemovedOLS")
 
-        print("Step 6: Construct correction matrix 2.")
-        correction_df = correction_df.merge(pc_df.T, left_index=True, right_index=True)
-
-        print("\tSaving file.")
-        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix2.txt.gz"))
-
-        print("Step 7: remove expression PCs and technical covariates OLS.")
-        twice_corrected_df = self.calculate_residuals(df=corrected_df, correction_df=correction_df)
-        del corrected_df
-
-        print("Step 8: PCA analysis.")
-        _ = self.pca(df=twice_corrected_df,
-                     filename=filename,
-                     sample_to_dataset=sample_to_dataset,
-                     file_appendix="CovariatesRemovedOLS.25ExpressionPCsRemovedOLS",
-                     plot_appendix="_3_CovariatesRemovedOLS_25ExpressionPCsRemovedOLS")
-
-        del correction_df, twice_corrected_df
+        # print("Step 10: Construct correction matrix 2.")
+        # correction_df = correction_df.merge(pc_df.T, left_index=True, right_index=True)
+        #
+        # print("\tSaving file.")
+        # self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix2.txt.gz"))
+        #
+        # print("Step 11: remove expression PCs and technical covariates OLS.")
+        # twice_corrected_df = self.calculate_residuals(df=corrected_df, correction_df=correction_df)
+        # del corrected_df
+        #
+        # print("Step 12: PCA analysis.")
+        # _ = self.pca(df=twice_corrected_df,
+        #              filename=filename,
+        #              sample_to_dataset=sample_to_dataset,
+        #              file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.{}ExpressionPCsRemovedOLS".format(pc_df.shape[0]),
+        #              plot_appendix="_3_CovariatesRemovedOLS_{}ExpressionPCsRemovedOLS".format(pc_df.shape[0]))
+        #
+        # del correction_df, twice_corrected_df
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -340,7 +368,7 @@ class main():
     def pca(self, df, filename, sample_to_dataset, file_appendix="", plot_appendix=""):
         # samples should be on the columns and genes on the rows.
         zscores = (df - df.mean(axis=0)) / df.std(axis=0)
-        pca = PCA(n_components=25)
+        pca = PCA(n_components=50)
         pca.fit(zscores)
         expl_variance = {"PC{}".format(i+1): pca.explained_variance_ratio_[i] * 100 for i in range(25)}
         components_df = pd.DataFrame(pca.components_)

@@ -25,6 +25,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
+import glob
 import json
 import os
 
@@ -58,6 +59,10 @@ Syntax:
 ./interaction_overview_plot.py -h
 
 ./interaction_overview_plot.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1 -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o test
+
+./interaction_overview_plot.py -i ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-PCs -p ../../data/MetaBrainColorPalette.json  -o MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-PCs
+
+./interaction_overview_plot.py -i ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-CF -p ../../data/MetaBrainColorPalette.json  -o MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-CF
 """
 
 
@@ -168,7 +173,8 @@ class main():
         data = list(compress(data, mask))
         labels = list(compress(labels, mask))
         explode = list(compress(explode, mask))
-        colors = list(compress(colors, mask))
+        if colors is not None:
+            colors = list(compress(colors, mask))
 
         self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="png")
         self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="pdf", label_threshold=100)

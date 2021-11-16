@@ -3,7 +3,7 @@
 """
 File:         prepare_bios_phenotype_matrix.py
 Created:      2021/11/10
-Last Changed: 2021/11/11
+Last Changed: 2021/11/16
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -116,14 +116,15 @@ class main():
                                           "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS",
                                           "star.pct_mapped_many",
                                           "star.pct_mapped_multiple",
+                                          "bam.genome_total",
+                                          "star.num_input",
+                                          "bam.genome_mapped",
+                                          "star.num_unique_mapped",
                                           "star.rate_insertion_per_base",
                                           "star.avg_insertion_length",
-                                          "star.avg_deletion_length",
-                                          "bam.genome_insert_std",
                                           "star.num_mapped_many",
-                                          "star.rate_mismatch_per_base",
-                                          "star.pct_unique_mapped",
-                                          "fastqc_raw.R1_raw_GC_mean"]]
+                                          "bam.genome_insert_std",
+                                          ]]
         self.save_file(df=incl_rna_alignmnt_df, outpath=os.path.join(self.outdir, "BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz"))
         del incl_rna_alignmnt_df
 

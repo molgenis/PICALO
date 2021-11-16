@@ -58,6 +58,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./main_eqtl_replication.py -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_alleles_table.txt.gz -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -o eQTLReplication-BIOS-withMDSCorrection-noRNAPhenoNa-20RnaAlignment
+
+./main_eqtl_replication.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/genotype_table.txt.gz -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/genotype_alleles_table.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/expression_table_CovCorrected.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics
 """
 
 
@@ -163,7 +165,8 @@ class main():
         print(results_df)
 
         print("Combining data")
-        eqtl_data_df = eqtl_df.loc[:, ["AssessedAllele", "Pvalue", "Zscore"]].copy()
+        # eqtl_data_df = eqtl_df.loc[:, ["AssessedAllele", "Pvalue", "Zscore"]].copy()
+        eqtl_data_df = eqtl_df.loc[:, ["AlleleAssessed", "PValue", "OverallZScore"]].copy()
         eqtl_data_df.columns = ["eqtl AA", "eQTL p-value", "eQTL z-score"]
         plot_df = results_df.loc[:, ["AA", "p-value", "t-value genotype"]].merge(eqtl_data_df, left_index=True, right_index=True)
         plot_df.dropna(inplace=True)
@@ -189,7 +192,8 @@ class main():
                                       df.shape))
         return df
 
-    def calculate(self, X, y):
+    @staticmethod
+    def calculate(X, y):
         n = X.shape[0]
         df = X.shape[1]
 
