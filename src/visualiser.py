@@ -1,7 +1,7 @@
 """
 File:         visualiser.py
 Created:      2021/04/14
-Last Changed: 2021/11/01
+Last Changed: 2021/11/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -40,7 +40,7 @@ class Visualiser:
     def __init__(self):
         self.palette = {0.0: "#E69F00", 1.0: "#0072B2", 2.0: "#D55E00"}
 
-    def plot_overview(self, ieqtl, out_path, iteration):
+    def plot_overview(self, ieqtl, out_path, label):
         # Initialize the output directory.
         outdir = os.path.join(out_path, "plot")
         if not os.path.exists(outdir):
@@ -51,7 +51,7 @@ class Visualiser:
         y = np.copy(ieqtl.y)
 
         # Calculate the eqtl pearson R.
-        eqtl_pearsonr = calc_pearsonr_vector(x=X[:, 1], y=y)
+        eqtl_pearsonr = calc_pearsonr_vector(x=y, y=fit_and_predict(X=X[:, :2], y=y))
         eqtl_r_squared = eqtl_pearsonr * eqtl_pearsonr
 
         # Calculate the interaction pearson R.
@@ -69,11 +69,12 @@ class Visualiser:
                                     inter_rs=inter_r_squared,
                                     snp=ieqtl.get_snp(),
                                     gene=ieqtl.get_gene(),
-                                    title="{}:{}".format(ieqtl.get_ieqtl_id(), iteration),
+                                    cov=ieqtl.get_cov(),
+                                    title="{}:{}".format(ieqtl.get_ieqtl_id(), label),
                                     outdir=outdir)
 
-    def create_overview_figure(self, df, eqtl_rs, inter_rs, snp, gene, title,
-                               outdir):
+    def create_overview_figure(self, df, eqtl_rs, inter_rs, snp, gene, cov,
+                               title, outdir):
         sns.set_style("ticks")
         fig, (ax1, ax2) = plt.subplots(nrows=1,
                                        ncols=2,
@@ -98,7 +99,7 @@ class Visualiser:
                         y="expression",
                         group="group",
                         palette=self.palette,
-                        xlabel="normalised cell fraction",
+                        xlabel=cov,
                         ylabel="",
                         rsquared=inter_rs,
                         ci=None,
@@ -109,7 +110,7 @@ class Visualiser:
         fig.savefig(os.path.join(outdir,"{}_overview_plot.png".format(title.replace(":", "-"))))
         plt.close()
 
-    def plot_interaction_optimization(self, ieqtl, out_path, iteration,
+    def plot_interaction_optimization(self, ieqtl, out_path, label,
                                       fdr=None, ocf=None):
         # Initialize the output directory.
         outdir = os.path.join(out_path, "plot")
@@ -158,14 +159,16 @@ class Visualiser:
                                         df2=df2,
                                         rs1=r_squared_start,
                                         rs2=r_squared_opt,
+                                        gene=ieqtl.get_gene(),
+                                        cov=ieqtl.get_cov(),
                                         fdr1=fdr,
                                         p2_ci=p2_ci,
-                                        title="{}:{}".format(ieqtl.get_ieqtl_id(), iteration),
+                                        title="{}:{}".format(ieqtl.get_ieqtl_id(), label),
                                         outdir=outdir,
                                         solo_optimized=solo_optimized)
 
-    def create_optimization_figure(self, df1, df2, rs1, rs2, fdr1, p2_ci, title,
-                                   outdir, solo_optimized):
+    def create_optimization_figure(self, df1, df2, rs1, rs2, gene, cov, fdr1,
+                                   p2_ci, title, outdir, solo_optimized):
         sns.set_style("ticks")
         fig, (ax1, ax2) = plt.subplots(nrows=1,
                                        ncols=2,
@@ -179,8 +182,8 @@ class Visualiser:
                         group="group",
                         palette=self.palette,
                         ci=95,
-                        xlabel="normalised cell fraction",
-                        ylabel="gene expression",
+                        xlabel=cov,
+                        ylabel=gene,
                         rsquared=rs1,
                         fdr=fdr1,
                         title="start")
@@ -199,8 +202,8 @@ class Visualiser:
                         group="group",
                         palette=self.palette,
                         ci=p2_ci,
-                        xlabel="optimized cell fraction",
-                        ylabel="",
+                        xlabel="{} [optimized]".format(cov),
+                        ylabel=gene,
                         rsquared=rs2,
                         title=p2_title)
 

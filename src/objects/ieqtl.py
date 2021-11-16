@@ -1,7 +1,7 @@
 """
 File:         ieqtl.py
 Created:      2021/04/08
-Last Changed: 2021/11/01
+Last Changed: 2021/11/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Third party imports.
 import numpy as np
-from scipy import stats
 
 # Local application imports.
 from src.statistics import inverse, fit, predict, calc_residuals, calc_rss, fit_and_predict, calc_std, calc_p_value, calc_regression_log_likelihood
@@ -77,6 +76,9 @@ class IeQTL:
 
     def get_snp(self):
         return self.snp
+
+    def get_cov(self):
+        return self.cov
 
     def get_eqtl_id(self):
         return "{}:{}".format(self.gene, self.snp)

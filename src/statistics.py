@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/10/21
+Last Changed: 2021/11/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -55,8 +55,7 @@ def calc_ols_rsquared(m, idx):
 
 
 def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
-                      include_intercept=True, include_inter_as_covariate=False,
-                      log=None):
+                      include_intercept=True, log=None):
     if X_m is None and X_inter_m is None:
         return y_m
     if X_inter_m is not None and inter_m is None:
@@ -113,9 +112,6 @@ def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
                 X = x_times_inter_m
             else:
                 X = np.concatenate((X, x_times_inter_m), axis=1)
-
-            if include_inter_as_covariate:
-                X = np.hstack((X, inter_a))
 
         X = summarize_matrix(X)
 

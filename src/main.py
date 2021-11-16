@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/12
+Last Changed: 2021/11/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -380,7 +380,7 @@ class Main:
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
 
         self.log.info("\t  Mapping ieQTLs")
-        for pic_index in range(pics_df.shape[0]):
+        for pic_index, pic in enumerate(pics_df.index):
             # Extract the PIC we are working on.
             pic_a = pics_df.iloc[pic_index, :].to_numpy()
 
@@ -406,7 +406,7 @@ class Main:
 
             # Save results.
             save_dataframe(df=results_df,
-                           outpath=os.path.join(pic_ieqtl_outdir, "PIC{}.txt.gz".format(pic_index + 1)),
+                           outpath=os.path.join(pic_ieqtl_outdir, "{}.txt.gz".format(pic)),
                            header=True,
                            index=False,
                            log=self.log)
