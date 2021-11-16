@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/15
+Last Changed: 2021/11/16
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -402,7 +402,7 @@ class Main:
                 cov=pics_df.index[pic_index],
                 alpha=self.ieqtl_alpha
             )
-            self.log.info("\t\tPIC{} has {:,} significant ieQTLs".format(pic_index, n_hits))
+            self.log.info("\t\t{} has {:,} significant ieQTLs".format(pic, n_hits))
 
             # Save results.
             save_dataframe(df=results_df,

@@ -73,6 +73,10 @@ Syntax:
 ./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-11-mds-NoRNAPhenoNA_NoSexNA-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter.mds -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -op BIOS-
 
 ./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-11-mds-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.mds -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -op BIOS-
+
+./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-15-mds-NoRNAPhenoNA-NoSexNA-NoMixups-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.mds -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -op BIOS-
+
+./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-15-mds-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.mds -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -op BIOS-
 """
 
 

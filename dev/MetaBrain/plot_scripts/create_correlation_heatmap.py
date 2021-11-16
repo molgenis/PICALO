@@ -55,23 +55,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_correlation_heatmap.py -h
-
-./create_correlation_heatmap.py -rd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF10/components.txt.gz -rn MAF10 -cd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -cn MAF5 Phenotype -o MAF10_vs_MAF5
-
-./create_correlation_heatmap.py -rd ../../output/CortexEUR-cis-NoENA-NoGVEX/components.txt.gz -rn MAF10 -cd ../../output/test/components.txt.gz -cn MAF5 Phenotype -o MAF10_vs_MAF5
-
-./create_correlation_heatmap.py -rd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-ContextForceNormal/components.txt.gz -rn ForceNormal -cd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -cn NoForceNormal -o NoForceNormal_vs_ForceNormal
-
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -rn BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5 -cd ../../preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -cn PCA_AfterCorrection -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_vs_PCA_afterCorrection
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -rn BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5 -cd ../../preprocess_scripts/pre_process_bios_expression_matrix/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed..PCAOverSamplesEigenvectors.txt.gz -cn PCA_beforeCorrection -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5_vs_PCA_beforeCorrection
-
-./create_correlation_heatmap.py -rd ../../preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractions.txt.gz  -rn CellFractions -cd ../../preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -cn CellFractionPercentages -o CellFractions_vs_CellFractionPercentages -m Spearman
-
-./create_correlation_heatmap.py -rd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -rn PC_after_correction -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics_andSex.txt.gz -cn correction_matrix -o PCs_vs_correction_matrix
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics-MAF5/components.txt.gz -rn BIOS_eQTLs -cd ../../output/BIOS-eQTLGen-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -o BIOS_vs_eQTLGen
 """
 
 

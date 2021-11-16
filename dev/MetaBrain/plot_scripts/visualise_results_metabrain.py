@@ -3,7 +3,7 @@
 """
 File:         visualise_results_metabrain.py
 Created:      2021/05/06
-Last Changed: 2021/11/11
+Last Changed: 2021/11/16
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -205,9 +205,9 @@ class main():
             command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/encode_phenotype_matrix/2020-03-09.brain.phenotypes.txt", "-cn", "phenotypes", "-o", self.outname + "_vs_Phenotypes"]
             self.run_command(command)
 
-            # # Plot correlation_heatmap of components vs MetaBrain PCs.
-            # command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-06-step4-remove-residual-covariates/pc1_10_residual.txt", "-cn", "MetaBrain PCA", "-o", self.outname + "_vs_MetaBrainPCs"]
-            # self.run_command(command)
+            # Plot correlation_heatmap of components vs expression correlations.
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/MetaBrain_CorrelationsWithAverageExpression.txt.gz", "-cn", "AvgExprCorrelation", "-o", self.outname + "_vs_AvgExprCorrelation"]
+            self.run_command(command)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,

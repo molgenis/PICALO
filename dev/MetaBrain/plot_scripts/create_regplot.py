@@ -55,23 +55,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_regplot.py -h
-
-./create_regplot.py -xd ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/expression_table_CovariatesRemovedOLS.txt.gz -xi ENSG00000166900 -yd /groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt.gz -yi Neut_Perc -y_transpose -o Neut_Perc_vs_STX3
-
-./create_regplot.py -xd ../../preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier/expression_table.txt.gz -xi ENSG00000166900 -yd /groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt.gz -yi Neut_Perc -y_transpose -o Neut_Perc_vs_STX3
-
-./create_regplot.py -xd  ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1/PIC_interactions/PIC1.txt.gz -x_transpose -xi t-value -xl all_samples -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-NoPIC1Outliers-MAF5-PIC1/PIC_interactions/PIC1.txt.gz -y_transpose -yi t-value -yl no_outliers -o PIC1_all_samples_vs_no_outliers
-
-./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.CorrelationsWithAverageExpression.txt.gz -yi AvgExprCorrelation -y_transpose -yl AvgExprCorrelation -o BIOS_PIC1_vs_AvgExprCorrelation
-
-./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -yi PIC2 -yl PIC2 -o BIOS_PIC1_vs_PIC2
-
-./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.eQTLgenes.CorrelationsWithAverageExpression.txt.gz -yi AvgExprCorrelation -y_transpose -yl AvgExprCorrelation -o BIOS_PIC1_vs_eQTLGenesAvgExprCorrelation
-
-./create_regplot.py -xd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd ../../data/MetaBrain_MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.CorrelationsWithAverageExpression.txt.gz -y_transpose -yi AvgExprCorrelation -yl AvgExprCorrelation -o MetaBrain_PIC1_vs_AvgExprCorrelation
-
-./create_regplot.py -xd ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/components.txt.gz -xi PIC1 -xl PIC1 -yd ../../data/MetaBrain_MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.eQTLgene.CorrelationsWithAverageExpression.txt.gz -yi AvgExprCorrelation -y_transpose -yl AvgExprCorrelation -o MetaBrain_PIC1_vs_eQTLGenesAvgExprCorrelation
-
 """
 
 
@@ -179,8 +162,8 @@ class main():
         print(x_df)
         print(y_df)
 
-        x_subset_df = x_df.loc[[self.x_index], :].T.astype(float)
-        y_subset_df = y_df.loc[[self.y_index], :].T.astype(float)
+        x_subset_df = x_df.loc[[self.x_index], :].T
+        y_subset_df = y_df.loc[[self.y_index], :].T
 
         print(x_subset_df)
         print(y_subset_df)
@@ -254,17 +237,25 @@ class main():
         ax.plot([min_pos, max_pos], [min_pos, max_pos], ls='--', color="#000000", zorder=-1)
 
         # Set annotation.
-        coef, _ = stats.pearsonr(df[y], df[x])
+        spearman_coef, _ = stats.spearmanr(df[y], df[x])
+        pearson_coef, _ = stats.pearsonr(df[y], df[x])
         ax.annotate(
-            'r = {:.2f}'.format(coef),
-            xy=(0.03, 0.94),
+            'total N = {:,}'.format(df.shape[0]),
+            xy=(0.03, 0.95),
             xycoords=ax.transAxes,
             color="#000000",
             fontsize=14,
             fontweight='bold')
         ax.annotate(
-            'total N = {:,}'.format(df.shape[0]),
+            'Spearman r = {:.2f}'.format(spearman_coef),
             xy=(0.03, 0.90),
+            xycoords=ax.transAxes,
+            color="#000000",
+            fontsize=14,
+            fontweight='bold')
+        ax.annotate(
+            'Pearson r = {:.2f}'.format(pearson_coef),
+            xy=(0.03, 0.86),
             xycoords=ax.transAxes,
             color="#000000",
             fontsize=14,

@@ -54,6 +54,10 @@ Syntax:
 ./correlate_align_metrics_with_genes.py -h
 
 ./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_alignment_metrics.txt.gz -e /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-CorrectForAllMetrics
+
+./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_Round1
+
+./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_Round3
 """
 
 
@@ -127,10 +131,39 @@ class main():
         am_df = self.remove_multicollinearity(am_df.T).T
 
         print("Correcting gene expression data.")
-        # correction_df = am_df.loc[["fastqc_clean.R1_clean_GC_mean", "fastqc_raw.R1_raw_GC_mean", "fastqc_clean.R2_clean_GC_mean", "fastqc_clean.R1_clean_GC_std", "fastqc_clean.R2_clean_GC_std", "fastqc_raw.R2_raw_GC_mean", "fastqc_raw.R1_raw_GC_std", "prime_bias.MEDIAN_5PRIME_BIAS", "fastqc_raw.R2_raw_GC_std", "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS", "star.pct_mapped_many", "star.pct_mapped_multiple", "star.rate_insertion_per_base", "star.avg_insertion_length", "star.avg_deletion_length", "bam.genome_insert_std", "star.num_mapped_many", "star.rate_mismatch_per_base", "star.pct_unique_mapped", "fastqc_raw.R1_raw_GC_mean"], :].T
-        # correction_df = am_df.loc[["fastqc_clean.R1_clean_GC_mean", "fastqc_raw.R1_raw_GC_mean", "fastqc_clean.R2_clean_GC_mean", "fastqc_clean.R1_clean_GC_std", "fastqc_clean.R2_clean_GC_std", "fastqc_raw.R2_raw_GC_mean", "fastqc_raw.R1_raw_GC_std", "prime_bias.MEDIAN_5PRIME_BIAS", "fastqc_raw.R2_raw_GC_std", "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS"], :].T
-        # print(correction_df)
-        # expr_df = self.calculate_residuals(df=expr_df, correction_df=correction_df)
+        correction_df = am_df.loc[["fastqc_clean.R1_clean_GC_mean",
+                                   "fastqc_raw.R1_raw_GC_mean",
+                                   "fastqc_clean.R2_clean_GC_mean",
+                                   "fastqc_clean.R1_clean_GC_std",
+                                   "fastqc_clean.R2_clean_GC_std",
+                                   "fastqc_raw.R2_raw_GC_mean",
+                                   "fastqc_raw.R1_raw_GC_std",
+                                   "prime_bias.MEDIAN_5PRIME_BIAS",
+                                   "fastqc_raw.R2_raw_GC_std",
+                                   "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS",
+                                   "star.pct_mapped_many",
+                                   "star.pct_mapped_multiple",
+                                   "bam.genome_total",
+                                   "star.num_input",
+                                   "bam.genome_mapped",
+                                   "star.num_unique_mapped",
+                                   "star.rate_insertion_per_base",
+                                   "star.avg_insertion_length",
+                                   "star.num_mapped_many",
+                                   "bam.genome_insert_std",
+                                   ], :].T
+        # correction_df = am_df.loc[["fastqc_clean.R1_clean_GC_mean",
+        #                            "fastqc_raw.R1_raw_GC_mean",
+        #                            "fastqc_clean.R2_clean_GC_mean",
+        #                            "fastqc_clean.R1_clean_GC_std",
+        #                            "fastqc_clean.R2_clean_GC_std",
+        #                            "fastqc_raw.R2_raw_GC_mean",
+        #                            "fastqc_raw.R1_raw_GC_std",
+        #                            "prime_bias.MEDIAN_5PRIME_BIAS",
+        #                            "fastqc_raw.R2_raw_GC_std",
+        #                            "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS"], :].T
+        print(correction_df)
+        expr_df = self.calculate_residuals(df=expr_df, correction_df=correction_df)
 
         # Safe the indices.
         metrics = am_df.index.tolist()
@@ -199,7 +232,7 @@ class main():
             now_time = int(time.time())
             if last_print_time is None or (now_time - last_print_time) >= 10 or (i + 1) == n_tests:
                 last_print_time = now_time
-                print("\t{}/{} ieQTLs analysed [{:.2f}%]".format((i + 1), n_tests, (100 / n_tests) * (i + 1)))
+                print("\t{}/{} genes corrected [{:.2f}%]".format((i + 1), n_tests, (100 / n_tests) * (i + 1)))
 
             ols = OLS(df.iloc[i, :], correction_df)
             results = ols.fit()
@@ -222,8 +255,8 @@ class main():
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > Expression: {}".format(self.expr_path))
         print("  > Alignment metrics: {}".format(self.am_path))
+        print("  > Expression: {}".format(self.expr_path))
         print("  > Output filename: {}".format(self.out_filename))
         print("")
 

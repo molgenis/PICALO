@@ -57,6 +57,10 @@ Syntax:
 ./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA
 
 ./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_MDSOutlierSamples.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier
+
+./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_Mixups.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups
+
+./filter_gte_file.py -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_Mixups_and_MDSOutlierSamples.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier
 """
 
 

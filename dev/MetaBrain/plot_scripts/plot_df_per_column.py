@@ -53,11 +53,13 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter -e png pdf
+./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-noOutliers-VariantSubsetFilter -e png
+
+./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter -e png
 
 ./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter -e png pdf
 
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -transpose -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier/SampleToDataset.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_20RNAseqAlignemntMetrics_PostCorrectionExpressionPCS -n 4 -e png pdf
+./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter -e png
 """
 
 
@@ -210,6 +212,30 @@ class main():
         print("\tAdding z-score color")
         for name in columns:
             df["{} z-score".format(name)] = (df[name] - df[name].mean()) / df[name].std()
+
+        # df["outlier"] = "False"
+        # for sample in [
+        #         "BD1P0GACXX-8-11_BC52YAACXX-5-11",
+        #         "AC1C14ACXX-8-8",
+        #         "AC1C40ACXX-8-6",
+        #         "AC1C14ACXX-8-6",
+        #         "AC1C14ACXX-7-22",
+        #         "AC1C40ACXX-7-13",
+        #         "AC1C14ACXX-7-13",
+        #         "AC1C40ACXX-6-4",
+        #         "AC1C40ACXX-8-8",
+        #         "AC1C14ACXX-7-18",
+        #         "AC1C40ACXX-7-18",
+        #         "AC1C40ACXX-7-22",
+        #         "AC1C14ACXX-6-4",
+        #         "AD1NFNACXX-7-19",
+        #         "AD1NAMACXX-7-14"
+        #         ]:
+        #     if sample in df.index:
+        #         df.loc[sample, "outlier"] = "True"
+        #     else:
+        #         print(sample)
+        # print("sd")
 
         df["outlier"] = "False"
         df.loc[(df["{} z-score".format(columns[0])].abs() > self.sd) | (df["{} z-score".format(columns[1])].abs() > self.sd) | (df["{} z-score".format(columns[2])].abs() > self.sd) | (df["{} z-score".format(columns[3])].abs() > self.sd), "outlier"] = "True"
