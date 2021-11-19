@@ -3,7 +3,7 @@
 """
 File:         visualise_results_bios.py
 Created:      2021/11/09
-Last Changed: 2021/11/16
+Last Changed: 2021/11/17
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -53,7 +53,11 @@ Syntax:
 
 ./visualise_results_bios.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5 -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/sample_to_dataset.txt.gz -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_20RNAseqAlignemntMetrics -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5
 
-./visualise_results_bios.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5 -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS--BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-20RNAseqAlignemntMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-20RNAseqAlignemntMetrics/sample_to_dataset.txt.gz -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5
+./visualise_results_bios.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5 -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-20RNAseqAlignemntMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-20RNAseqAlignemntMetrics/sample_to_dataset.txt.gz -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5
+
+./visualise_results_bios.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5 -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5
+
+./visualise_results_bios.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5 -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5
 """
 
 
@@ -62,10 +66,8 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.input_data_path = getattr(arguments, 'input_data')
-        self.eqtl_path = getattr(arguments, 'eqtl')
-        self.std_path = getattr(arguments, 'sample_to_dataset')
+        self.pf_path = getattr(arguments, 'picalo_files')
         self.expression_preprocessing_path = getattr(arguments, 'expression_preprocessing_dir')
-        self.mds_path = getattr(arguments, 'mds')
         self.palette_path = getattr(arguments, 'palette')
         self.outname = getattr(arguments, 'outname')
 
@@ -91,27 +93,16 @@ class main():
                             type=str,
                             required=True,
                             help="The path to PICALO results.")
-        parser.add_argument("-eq",
-                            "--eqtl",
+        parser.add_argument("-pf",
+                            "--picalo_files",
                             type=str,
                             required=True,
-                            help="The path to the eqtl matrix.")
-        parser.add_argument("-std",
-                            "--sample_to_dataset",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The path to the sample-dataset link matrix.")
+                            help="The path to the picalo files.")
         parser.add_argument("-ep",
                             "--expression_preprocessing_dir",
                             type=str,
                             required=True,
                             help="The path to the expression preprocessing data.")
-        parser.add_argument("-m",
-                            "--mds",
-                            type=str,
-                            required=True,
-                            help="The path to the mds matrix.")
         parser.add_argument("-p",
                             "--palette",
                             type=str,
@@ -134,11 +125,11 @@ class main():
         self.run_command(command)
 
         # Plot genotype stats.
-        command = ['python3', 'create_histplot.py', '-d', os.path.join(self.input_data_path, "genotype_stats.txt.gz"), "-o", self.outname]
+        command = ['python3', 'create_histplot.py', '-d', os.path.join(self.input_data_path, "genotype_stats.txt.gz"), "-o", self.outname + "_GenotypeStats"]
         self.run_command(command)
 
         # Plot eQTL upsetplot.
-        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', self.eqtl_path, '-p', self.palette_path, '-o', self.outname]
+        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.pf_path, "BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         # Plot interaction overview plot.
@@ -149,13 +140,16 @@ class main():
         command = ['python3', 'no_ieqtls_per_sample_plot.py', '-i', self.input_data_path, '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
+        pics = []
         for i in range(1, 25):
             comp_iterations_path = os.path.join(self.input_data_path, "PIC{}".format(i), "iteration.txt.gz")
 
             if os.path.exists(comp_iterations_path):
+                pics.append("PIC{}".format(i))
+
                 # Plot scatterplot.
                 command = ['python3', 'create_scatterplot.py', '-d', comp_iterations_path,
-                           "-hr", "0", "-ic", "0", "-a", "1", "-std", self.std_path, '-p', self.palette_path, "-o", self.outname + "_PIC{}".format(i)]
+                           "-hr", "0", "-ic", "0", "-a", "1", "-std", os.path.join(self.pf_path, "sample_to_dataset.txt.gz"), '-p', self.palette_path, "-o", self.outname + "_PIC{}".format(i)]
                 self.run_command(command)
 
         # Create components_df if not exists.
@@ -178,9 +172,19 @@ class main():
                 components_df.columns = columns
                 self.save_file(components_df.T, outpath=components_path, header=True, index=True)
 
+        # Plot comparison to expression mean correlation.
+        for pic in pics:
+            command = ['python3', 'create_regplot.py', '-xd', components_path,
+                       "-xi", pic, '-yd', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/BIOS_CorrelationsWithAverageExpression.txt.gz', '-y_transpose', '-yi', 'AvgExprCorrelation', '-std', os.path.join(self.pf_path, "sample_to_dataset.txt.gz"), '-p', self.palette_path, '-o', self.outname + "_{}_vs_AvgExprCorrelation".format(pic)]
+            self.run_command(command)
+
+        # Compare t-values.
+        command = ['python3', 'compare_tvalues.py', '-d'] + [os.path.join(self.input_data_path, "PIC_interactions", "{}.txt.gz".format(pic)) for pic in pics] + ['-n'] + pics + ['-o', '{}_tvaluesOverview'.format(self.outname)]
+        self.run_command(command)
+
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
-                   "-std", self.std_path, '-p', self.palette_path, '-o', self.outname]
+                   '-std', os.path.join(self.pf_path, "sample_to_dataset.txt.gz"), '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         if os.path.exists(components_path):
@@ -188,8 +192,20 @@ class main():
             command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-o", self.outname]
             self.run_command(command)
 
+            # Plot correlation_heatmap of components vs datasets.
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "datasets_table.txt.gz"), "-cn", "phenotypes", "-o", self.outname + "_vs_Phenotypes"]
+            self.run_command(command)
+
+            # Plot correlation_heatmap of components vs included RNA alignment metrics.
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "rnaseq_alignment_metrics_table.txt.gz"), "-cn", "included STAR metrics", "-o", self.outname + "_vs_IncludedSTARMetrics"]
+            self.run_command(command)
+
+            # Plot correlation_heatmap of components vs Sex.
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "sex_table.txt.gz"), "-cn", "Sex", "-o", self.outname + "_vs_Sex"]
+            self.run_command(command)
+
             # Plot correlation_heatmap of components vs MDS.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", self.mds_path, "-cn", "MDS", "-o", self.outname + "_vs_MDS"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "mds_table.txt.gz"), "-cn", "MDS", "-o", self.outname + "_vs_MDS"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs PCA without cov correction.
@@ -212,12 +228,8 @@ class main():
             command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz", "-cn", "cell fractions %", "-o", self.outname + "_vs_CellFractionPercentages"]
             self.run_command(command)
 
-            # Plot correlation_heatmap of components vs included RNA alignment metrics.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz", "-cn", "corrected RNAseq alignment metrics", "-o", self.outname + "_vs_Corrected_RNAAlignmentMetrics"]
-            self.run_command(command)
-
             # Plot correlation_heatmap of components vs RNA alignment metrics.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz", "-cn", "RNAseq alignment metrics", "-o", self.outname + "_vs_All_RNAAlignmentMetrics"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz", "-cn", "all STAR metrics", "-o", self.outname + "_vs_AllSTARMetrics"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs phenotypes.
@@ -258,10 +270,8 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Input data path: {}".format(self.input_data_path))
-        print("  > eQTL path: {}".format(self.eqtl_path))
-        print("  > Sample-to-dataset path: {}".format(self.std_path))
+        print("  > Picalo files path: {}".format(self.pf_path))
         print("  > Expression pre-processing data path: {}".format(self.expression_preprocessing_path))
-        print("  > MDS path: {}".format(self.eqtl_path))
         print("  > Palette path: {}".format(self.palette_path))
         print("  > Outname {}".format(self.outname))
         print("  > Output directory {}".format(self.outdir))

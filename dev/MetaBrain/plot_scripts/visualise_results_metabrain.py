@@ -134,10 +134,13 @@ class main():
         command = ['python3', 'no_ieqtls_per_sample_plot.py', '-i', self.input_data_path, '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
+        pics = []
         for i in range(1, 11):
             comp_iterations_path = os.path.join(self.input_data_path, "PIC{}".format(i), "iteration.txt.gz")
 
             if os.path.exists(comp_iterations_path):
+                pics.append("PIC{}".format(i))
+
                 # Plot scatterplot.
                 command = ['python3', 'create_scatterplot.py', '-d', comp_iterations_path,
                            "-hr", "0", "-ic", "0", "-a", "1", "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, "-o", self.outname + "_PIC{}".format(i)]
@@ -162,6 +165,12 @@ class main():
                 components_df = pd.concat(data, axis=1)
                 components_df.columns = columns
                 self.save_file(components_df.T, outpath=components_path, header=True, index=True)
+
+        # Plot comparison to expression mean correlation.
+        for pic in pics:
+            command = ['python3', 'create_regplot.py', '-xd', components_path,
+                       "-xi", pic, '-yd', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/BIOS_CorrelationsWithAverageExpression.txt.gz', '-y_transpose', '-yi', 'AvgExprCorrelation', '-o', self.outname + "_{}_vs_AvgExprCorrelation".format(pic)]
+            self.run_command(command)
 
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,

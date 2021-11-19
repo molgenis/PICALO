@@ -58,6 +58,12 @@ Syntax:
 ./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_Round1
 
 ./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_Round3
+
+./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering
+
+./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics
+
+./correlate_align_metrics_with_genes.py -am /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetrics
 """
 
 
@@ -130,28 +136,28 @@ class main():
         # Remove columns that are a linear combination of others.
         am_df = self.remove_multicollinearity(am_df.T).T
 
-        print("Correcting gene expression data.")
-        correction_df = am_df.loc[["fastqc_clean.R1_clean_GC_mean",
-                                   "fastqc_raw.R1_raw_GC_mean",
-                                   "fastqc_clean.R2_clean_GC_mean",
-                                   "fastqc_clean.R1_clean_GC_std",
-                                   "fastqc_clean.R2_clean_GC_std",
-                                   "fastqc_raw.R2_raw_GC_mean",
-                                   "fastqc_raw.R1_raw_GC_std",
-                                   "prime_bias.MEDIAN_5PRIME_BIAS",
-                                   "fastqc_raw.R2_raw_GC_std",
-                                   "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS",
-                                   "star.pct_mapped_many",
-                                   "star.pct_mapped_multiple",
-                                   "bam.genome_total",
-                                   "star.num_input",
-                                   "bam.genome_mapped",
-                                   "star.num_unique_mapped",
-                                   "star.rate_insertion_per_base",
-                                   "star.avg_insertion_length",
-                                   "star.num_mapped_many",
-                                   "bam.genome_insert_std",
-                                   ], :].T
+        # print("Correcting gene expression data.")
+        # correction_df = am_df.loc[["fastqc_clean.R1_clean_GC_mean",
+        #                            "fastqc_raw.R1_raw_GC_mean",
+        #                            "fastqc_clean.R2_clean_GC_mean",
+        #                            "fastqc_clean.R1_clean_GC_std",
+        #                            "fastqc_clean.R2_clean_GC_std",
+        #                            "fastqc_raw.R2_raw_GC_mean",
+        #                            "fastqc_raw.R1_raw_GC_std",
+        #                            "prime_bias.MEDIAN_5PRIME_BIAS",
+        #                            "fastqc_raw.R2_raw_GC_std",
+        #                            "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS",
+        #                            "star.pct_mapped_many",
+        #                            "star.pct_mapped_multiple",
+        #                            "bam.genome_total",
+        #                            "star.num_input",
+        #                            "bam.genome_mapped",
+        #                            "star.num_unique_mapped",
+        #                            "star.rate_insertion_per_base",
+        #                            "star.avg_insertion_length",
+        #                            "star.num_mapped_many",
+        #                            "bam.genome_insert_std",
+        #                            ], :].T
         # correction_df = am_df.loc[["fastqc_clean.R1_clean_GC_mean",
         #                            "fastqc_raw.R1_raw_GC_mean",
         #                            "fastqc_clean.R2_clean_GC_mean",
@@ -162,8 +168,8 @@ class main():
         #                            "prime_bias.MEDIAN_5PRIME_BIAS",
         #                            "fastqc_raw.R2_raw_GC_std",
         #                            "prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS"], :].T
-        print(correction_df)
-        expr_df = self.calculate_residuals(df=expr_df, correction_df=correction_df)
+        # print(correction_df)
+        # expr_df = self.calculate_residuals(df=expr_df, correction_df=correction_df)
 
         # Safe the indices.
         metrics = am_df.index.tolist()

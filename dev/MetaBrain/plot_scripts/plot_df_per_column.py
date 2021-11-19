@@ -60,6 +60,8 @@ Syntax:
 ./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter -e png pdf
 
 ./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter -e png
+
+./plot_df_per_column.py -d //groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.gz -transpose -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PCsBeforeCovCorrection_ColoredBySex -e png -n 5
 """
 
 
@@ -98,15 +100,17 @@ class main():
            "GTE-EUR-UCLA_ASD": "#f36d2a",
            "GTE-EUR-CMC": "#eae453",
            "GTE-EUR-CMC_HBCC_set1": "#eae453",
-            "LL": "#9c9fa0",
-            "PAN": "#0877b4",
-            "LLS_OmniExpr": "#0fa67d",
-            "NTR_AFFY": "#6950a1",
-            "NTR_GONL": "#48b2e5",
-            "CODAM": "#6d743a",
+            "LL": "#0fa67d",
             "RS": "#d46727",
             "LLS_660Q": "#000000",
-            "GONL": "#eae453"
+            "NTR_AFFY": "#0877b4",
+            "LLS_OmniExpr": "#9c9fa0",
+            "CODAM": "#6d743a",
+            "PAN": "#6950a1",
+            "NTR_GONL": "#48b2e5",
+            "GONL": "#eae453",
+            0.0: "#DC106C",
+            1.0: "#03165e"
         }
 
         self.dataset_to_cohort = {
@@ -287,7 +291,7 @@ class main():
                         added_handles = []
                         for key, value in palette.items():
                             if key in groups_present:
-                                label = key
+                                label = str(key)
                                 if key in self.dataset_to_cohort:
                                     label = self.dataset_to_cohort[key]
                                 if value + label not in added_handles:

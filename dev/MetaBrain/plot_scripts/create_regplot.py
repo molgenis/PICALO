@@ -25,10 +25,10 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
+import json
 import os
 
 # Third party imports.
-import numpy as np
 import pandas as pd
 from scipy import stats
 import seaborn as sns
@@ -55,6 +55,16 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_regplot.py -h
+
+./create_regplot.py -xd ../../fast_interaction_mapper/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PCR_stats.txt.gz -x_transpose -xi Variance explained -yd ../../fast_interaction_mapper/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PCR_stats.txt.gz -y_transpose -yi Max. Pearson r -o VarianceExplained_vs_MaxPearsonR
+
+./create_regplot.py -xd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -x_transpose -xi Neut_Perc -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -y_transpose -yi star.pct_mapped_many -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o NeutPcnt_vs_PcntMappedMany
+
+./create_regplot.py -xd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -x_transpose -xi Granulocyte_Perc -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -y_transpose -yi star.pct_mapped_many -o GranulocytePerc_vs_PcntMappedMany
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/components.txt.gz -xi PIC4 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -y_transpose -yi prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS -o AllRNAseqAlignmentMetricsNoFilteringPIC4_vs_Median5Pt3PBias
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5/components.txt.gz -xi PIC4 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -y_transpose -yi Lymph_Perc -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o NoRNAseqAlignmentMetricsPIC4_vs_LymphPerc
 """
 
 
@@ -64,24 +74,33 @@ class main():
         arguments = self.create_argument_parser()
         self.x_data_path = getattr(arguments, 'x_data')
         self.x_transpose = getattr(arguments, 'x_transpose')
-        self.x_index = getattr(arguments, 'x_index')
+        self.x_index = " ".join(getattr(arguments, 'x_index'))
         x_label = getattr(arguments, 'x_label')
         if x_label is None:
             x_label = self.x_index
         self.x_label = x_label
         self.y_data_path = getattr(arguments, 'y_data')
         self.y_transpose = getattr(arguments, 'y_transpose')
-        self.y_index = getattr(arguments, 'y_index')
+        self.y_index = " ".join(getattr(arguments, 'y_index'))
         y_label = getattr(arguments, 'y_label')
         if y_label is None:
             y_label = self.y_index
         self.y_label = y_label
+        self.std_path = getattr(arguments, 'sample_to_dataset')
+        self.palette_path = getattr(arguments, 'palette')
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
+
+        # Loading palette.
+        self.palette = None
+        if self.palette_path is not None:
+            with open(self.palette_path) as f:
+                self.palette = json.load(f)
+            f.close()
 
     @staticmethod
     def create_argument_parser():
@@ -106,6 +125,7 @@ class main():
                                  " Default: False.")
         parser.add_argument("-xi",
                             "--x_index",
+                            nargs="*",
                             type=str,
                             required=True,
                             help="The index name.")
@@ -126,6 +146,7 @@ class main():
                                  " Default: False.")
         parser.add_argument("-yi",
                             "--y_index",
+                            nargs="*",
                             type=str,
                             required=True,
                             help="The index name.")
@@ -135,6 +156,19 @@ class main():
                             required=False,
                             default=None,
                             help="The y-axis label.")
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the sample-dataset link matrix.")
+        parser.add_argument("-p",
+                            "--palette",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to a json file with the"
+                                 "dataset to color combinations.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
@@ -175,8 +209,22 @@ class main():
         plot_df = plot_df.astype(float)
         print(plot_df)
 
+        print("Loading color data.")
+        hue = None
+        palette = None
+        if self.std_path is not None:
+            sa_df = self.load_file(self.std_path, header=None, index_col=None)
+            sa_df.set_index(sa_df.columns[0], inplace=True)
+            sa_df.columns = ["hue"]
+            plot_df = plot_df.merge(sa_df, left_index=True, right_index=True)
+
+            hue = "hue"
+            palette = self.palette
+
         print("Plotting.")
         self.single_regplot(df=plot_df,
+                            hue=hue,
+                            palette=palette,
                             xlabel=self.x_label,
                             ylabel=self.y_label,
                             filename=self.out_filename)
@@ -191,8 +239,8 @@ class main():
                                       df.shape))
         return df
 
-    def single_regplot(self, df, x="x", y="y", xlabel=None, ylabel=None,
-                       title="", filename="plot"):
+    def single_regplot(self, df, x="x", y="y", hue=None, palette=None,
+                       xlabel=None, ylabel=None, title="", filename="plot"):
         if xlabel is None:
             xlabel = x
         if ylabel is None:
@@ -203,11 +251,60 @@ class main():
         fig, ax = plt.subplots()
         sns.despine(fig=fig, ax=ax)
 
-        sns.regplot(x=x, y=y, data=df, ci=None,
-                    scatter_kws={'facecolors': "#000000",
-                                 'linewidth': 0},
-                    line_kws={"color": "#b22222"},
-                    ax=ax)
+        # Set annotation.
+        pearson_coef, _ = stats.pearsonr(df[y], df[x])
+        annot_xpos = 0.03
+        ha = "left"
+        if pearson_coef < 0:
+            annot_xpos = 0.97
+            ha = "right"
+        ax.annotate(
+            'total N = {:,}'.format(df.shape[0]),
+            xy=(annot_xpos, 0.94),
+            ha=ha,
+            xycoords=ax.transAxes,
+            color="#000000",
+            fontsize=14,
+            fontweight='bold')
+        ax.annotate(
+            'total r = {:.2f}'.format(pearson_coef),
+            xy=(annot_xpos, 0.90),
+            ha=ha,
+            xycoords=ax.transAxes,
+            color="#000000",
+            fontsize=14,
+            fontweight='bold')
+
+        group_column = hue
+        if hue is None:
+            df["hue"] = "#000000"
+            group_column = "hue"
+
+        for i, hue_group in enumerate(df[group_column].unique()):
+            subset = df.loc[df[group_column] == hue_group, :]
+
+            facecolors = "#000000"
+            color = "#b22222"
+            if palette is not None:
+                facecolors = palette[hue_group]
+                color = facecolors
+
+            sns.regplot(x=x, y=y, data=subset, ci=None,
+                        scatter_kws={'facecolors': facecolors,
+                                     'linewidth': 0},
+                        line_kws={"color": color},
+                        ax=ax)
+
+            if hue is not None:
+                subset_pearson_coef, _ = stats.pearsonr(subset[y], subset[x])
+                ax.annotate(
+                    '{} r = {:.2f} [N = {:,}]'.format(hue_group, subset_pearson_coef, subset.shape[0]),
+                    xy=(annot_xpos, 0.86 - (i * 0.04)),
+                    ha=ha,
+                    xycoords=ax.transAxes,
+                    color=color,
+                    fontsize=14,
+                    fontweight='bold')
 
         ax.set_xlabel(xlabel,
                       fontsize=14,
@@ -231,35 +328,6 @@ class main():
 
         ax.set_xlim(new_xlim[0], new_xlim[1])
         ax.set_ylim(new_ylim[0], new_ylim[1])
-
-        min_pos = min(new_xlim[0], new_ylim[0])
-        max_pos = max(new_xlim[1], new_ylim[1])
-        ax.plot([min_pos, max_pos], [min_pos, max_pos], ls='--', color="#000000", zorder=-1)
-
-        # Set annotation.
-        spearman_coef, _ = stats.spearmanr(df[y], df[x])
-        pearson_coef, _ = stats.pearsonr(df[y], df[x])
-        ax.annotate(
-            'total N = {:,}'.format(df.shape[0]),
-            xy=(0.03, 0.95),
-            xycoords=ax.transAxes,
-            color="#000000",
-            fontsize=14,
-            fontweight='bold')
-        ax.annotate(
-            'Spearman r = {:.2f}'.format(spearman_coef),
-            xy=(0.03, 0.90),
-            xycoords=ax.transAxes,
-            color="#000000",
-            fontsize=14,
-            fontweight='bold')
-        ax.annotate(
-            'Pearson r = {:.2f}'.format(pearson_coef),
-            xy=(0.03, 0.86),
-            xycoords=ax.transAxes,
-            color="#000000",
-            fontsize=14,
-            fontweight='bold')
 
         outpath = os.path.join(self.outdir, "{}.png".format(filename))
         fig.savefig(outpath)
