@@ -3,7 +3,7 @@
 """
 File:         prepare_bios_picalo_files.py
 Created:      2021/11/08
-Last Changed: 2021/11/11
+Last Changed: 2021/11/17
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -57,7 +57,11 @@ Syntax:
 
 ./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-20RNAseqAlignemntMetrics
 
-./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetrics
+./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetrics
+
+./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering
+
+./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics
 """
 
 
@@ -110,18 +114,21 @@ class main():
         parser.add_argument("-ra",
                             "--rna_alignment",
                             type=str,
-                            required=True,
+                            required=False,
+                            default=None,
                             help="The path to the RNAseq alignment metrics"
                                  " matrix.")
         parser.add_argument("-s",
                             "--sex",
                             type=str,
-                            required=True,
+                            required=False,
+                            default=None,
                             help="The path to the sex matrix.")
         parser.add_argument("-m",
                             "--mds",
                             type=str,
-                            required=True,
+                            required=False,
+                            default=None,
                             help="The path to the mds matrix.")
         parser.add_argument("-pcpc",
                             "--post_corr_pcs",
@@ -155,7 +162,18 @@ class main():
         std_df = gte_df.loc[:, ["rnaseq_id", "dataset"]]
         std_df.columns = ["sample", "dataset"]
         self.save_file(df=std_df, outpath=os.path.join(self.outdir, "sample_to_dataset.txt.gz"), index=False)
-        del std_df
+
+        print("Creating dataset file.")
+        dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
+        dataset_sample_counts.sort(key=lambda x: -x[1])
+        datasets = [csc[0] for csc in dataset_sample_counts]
+
+        dataset_df = pd.DataFrame(0, index=std_df.iloc[:, 0], columns=datasets)
+        for dataset in datasets:
+            dataset_df.loc[(std_df.iloc[:, 1] == dataset).values, dataset] = 1
+        dataset_df.index.name = "-"
+        self.save_file(df=dataset_df, outpath=os.path.join(self.outdir, "datasets_table.txt.gz"))
+        del std_df, dataset_df
 
         print("Loading eQTL file.")
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
@@ -226,13 +244,39 @@ class main():
         del pcpc_df
 
         print("Preparing technical covariates")
-        ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
-        sex_df = self.load_file(self.sex_path, header=0, index_col=0)
-        mds_df = self.load_file(self.mds_path, header=0, index_col=0)
+        ram_df = None
+        if self.rna_alignment_path is not None:
+            ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
+            self.save_file(df=ram_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "rnaseq_alignment_metrics_table.txt.gz"))
 
-        correction_df = ram_df.merge(sex_df, left_index=True, right_index=True)
-        correction_df = correction_df.merge(mds_df, left_index=True, right_index=True)
-        self.save_file(df=correction_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "rnaseq_alignment_metrics_sex_and_mds_table.txt.gz"))
+        sex_df = None
+        if self.sex_path is not None:
+            sex_df = self.load_file(self.sex_path, header=0, index_col=0)
+            self.save_file(df=sex_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "sex_table.txt.gz"))
+
+        mds_df = None
+        if self.mds_path is not None:
+            mds_df = self.load_file(self.mds_path, header=0, index_col=0)
+            self.save_file(df=mds_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "mds_table.txt.gz"))
+
+        correction_df = None
+        if ram_df is None:
+            correction_df = ram_df
+
+        if sex_df is not None:
+            if correction_df is not None:
+                correction_df = correction_df.merge(sex_df, left_index=True, right_index=True)
+            else:
+                correction_df = sex_df
+
+        if mds_df is not None:
+            if correction_df is not None:
+                correction_df = correction_df.merge(mds_df, left_index=True, right_index=True)
+            else:
+                correction_df = mds_df
+
+        correction_df = correction_df.loc[:, correction_df.std(axis=0) != 0]
+        self.save_file(df=correction_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "tech_covariates_with_interaction_df.txt.gz"))
         del correction_df
 
     @staticmethod

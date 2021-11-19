@@ -67,6 +67,10 @@ Syntax:
 ./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_AllRNAseqAlignemntMetrics
 
 ./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics
+
+./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering
+
+./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics
 """
 
 
@@ -119,18 +123,21 @@ class main():
         parser.add_argument("-ra",
                             "--rna_alignment",
                             type=str,
-                            required=True,
+                            required=False,
+                            default=None,
                             help="The path to the RNAseq alignment metrics"
                                  " matrix.")
         parser.add_argument("-s",
                             "--sex",
                             type=str,
-                            required=True,
+                            required=False,
+                            default=None,
                             help="The path to the sex matrix.")
         parser.add_argument("-m",
                             "--mds",
                             type=str,
-                            required=True,
+                            required=False,
+                            default=None,
                             help="The path to the mds matrix.")
         parser.add_argument("-std",
                             "--sample_to_dataset",
@@ -206,9 +213,6 @@ class main():
         else:
             df = np.log2(df + 1)
 
-        print("\tSaving file.")
-        self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz".format(filename)))
-
         print("Step 4: center probes.")
         df = df.subtract(df.mean(axis=1), axis=0)
 
@@ -225,13 +229,26 @@ class main():
                  file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
                  plot_appendix="_1")
 
+        df = self.load_file(os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)), header=0, index_col=0)
+
         print("Step 7: Construct correction matrix 1.")
-        ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
-        sex_df = self.load_file(self.sex_path, header=0, index_col=0)
-        mds_df = self.load_file(self.mds_path, header=0, index_col=0)
-        correction_df = self.prepare_correction_matrix(ram_df=ram_df.loc[samples, :],
-                                                       sex_df=sex_df.loc[samples, :],
-                                                       mds_df=mds_df.loc[samples, :],
+        ram_df = None
+        if self.rna_alignment_path is not None:
+            ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
+            ram_df = ram_df.loc[samples, :]
+
+        sex_df = None
+        if self.sex_path is not None:
+            sex_df = self.load_file(self.sex_path, header=0, index_col=0)
+            sex_df = sex_df.loc[samples, :]
+
+        mds_df = None
+        if self.mds_path is not None:
+            mds_df = self.load_file(self.mds_path, header=0, index_col=0)
+            mds_df = mds_df.loc[samples, :]
+        correction_df = self.prepare_correction_matrix(ram_df=ram_df,
+                                                       sex_df=sex_df,
+                                                       mds_df=mds_df,
                                                        dataset_df=dataset_df)
 
         print("\tSaving file.")
@@ -291,19 +308,37 @@ class main():
         return out_dict
 
     def prepare_correction_matrix(self, ram_df, sex_df, mds_df, dataset_df):
-        # Remove columns without variance and filter the RNAseq alignment
-        # metrics on VIF.
-        ram_df_subset_df = ram_df.copy()
-        ram_df_subset_df = self.remove_multicollinearity(ram_df_subset_df.loc[:, ram_df_subset_df.std(axis=0) != 0])
+        ram_df_subset_df = None
+        if ram_df is not None:
+            # Remove columns without variance and filter the RNAseq alignment
+            # metrics on VIF.
+            ram_df_subset_df = ram_df.copy()
+            ram_df_subset_df = self.remove_multicollinearity(ram_df_subset_df.loc[:, ram_df_subset_df.std(axis=0) != 0])
 
         # Merge the RNAseq alignment metrics with the sex and genotype
         # MDS components.
-        correction_df = ram_df_subset_df.merge(sex_df, left_index=True, right_index=True)
-        correction_df = correction_df.merge(mds_df, left_index=True, right_index=True)
+        correction_df = None
+        if ram_df is not None:
+            correction_df = ram_df
+
+        if sex_df is not None:
+            if correction_df is not None:
+                correction_df = ram_df_subset_df.merge(sex_df, left_index=True, right_index=True)
+            else:
+                correction_df = sex_df
+
+        if mds_df is not None:
+            if correction_df is not None:
+                correction_df = correction_df.merge(mds_df, left_index=True, right_index=True)
+            else:
+                correction_df = mds_df
 
         # Add the dataset dummies but exclude the dataset with the highest
         # number of samples.
-        correction_df = correction_df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
+        if correction_df is not None:
+            correction_df = correction_df.merge(dataset_df.iloc[:, 1:], left_index=True, right_index=True)
+        else:
+            correction_df = dataset_df.iloc[:, 1:]
 
         # Add intercept.
         correction_df.insert(0, "INTERCEPT", 1)
