@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/16
+Last Changed: 2021/11/19
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -251,8 +251,8 @@ class Main:
         self.log.info("")
 
         # Create the correction matrices.
-        corr_m = np.copy(dataset_m[:, :(dataset_m.shape[1] - 1)])
-        corr_inter_m = np.copy(dataset_m[:, :(dataset_m.shape[1] - 1)])
+        corr_m = np.copy(dataset_m[:, 1:])
+        corr_inter_m = np.copy(dataset_m[:, 1:])
 
         if tcov_m is not None:
             corr_m = np.hstack((corr_m, tcov_m))
@@ -318,11 +318,19 @@ class Main:
 
                 # Remove tech. covs. + components from expression matrix.
                 self.log.info("\t  Correcting expression matrix")
-                comp_expr_m = remove_covariates_pcr(y_m=expr_m,
-                                                    X_m=pic_corr_m,
-                                                    X_inter_m=pic_corr_inter_m,
-                                                    inter_m=geno_m,
-                                                    log=self.log)
+                comp_expr_m, PCR_stats_m = remove_covariates_pcr(y_m=expr_m,
+                                                                 X_m=pic_corr_m,
+                                                                 X_inter_m=pic_corr_inter_m,
+                                                                 inter_m=geno_m,
+                                                                 log=self.log)
+
+                # Save PCR stats.
+                save_dataframe(df=pd.DataFrame(PCR_stats_m, columns=["N eigenvectors", "Variance explained", "Max. Pearson r"]),
+                               outpath=os.path.join(comp_outdir, "PCR_stats.txt.gz"),
+                               header=True,
+                               index=False,
+                               log=self.log)
+                del PCR_stats_m
 
                 # Optimize the cell fractions in X iterations.
                 pic_a, stop = io.process(eqtl_m=eqtl_m,
@@ -371,11 +379,19 @@ class Main:
             os.makedirs(pic_ieqtl_outdir)
 
         # Correct the gene expression matrix.
-        corrected_expr_m = remove_covariates_pcr(y_m=expr_m,
-                                                 X_m=corr_m,
-                                                 X_inter_m=corr_inter_m,
-                                                 inter_m=geno_m,
-                                                 log=self.log)
+        corrected_expr_m, PCR_stats_m = remove_covariates_pcr(y_m=expr_m,
+                                                              X_m=corr_m,
+                                                              X_inter_m=corr_inter_m,
+                                                              inter_m=geno_m,
+                                                              log=self.log)
+
+        # Save PCR stats.
+        save_dataframe(df=pd.DataFrame(PCR_stats_m, columns=["N eigenvectors", "Variance explained", "Max. Pearson r"]),
+                       outpath=os.path.join(pic_ieqtl_outdir, "PCR_stats.txt.gz"),
+                       header=True,
+                       index=False,
+                       log=self.log)
+        del PCR_stats_m
 
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
 
@@ -422,7 +438,6 @@ class Main:
 
     def validate_data(self, std_df, eqtl_df=None, geno_df=None,
                       expr_df=None, covs_df=None, tcovs_df=None):
-
         # Check the samples.
         samples = std_df.iloc[:, 0].values.tolist()
         if geno_df is not None and geno_df.columns.tolist() != samples:

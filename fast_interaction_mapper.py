@@ -3,7 +3,7 @@
 """
 File:         fast_interaction_mapper.py
 Created:      2021/11/16
-Last Changed:
+Last Changed: 2021/11/19
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -154,6 +154,7 @@ class main():
 
         # Construct dataset df.
         dataset_df = self.construct_dataset_df(std_df=std_df)
+        datasets = dataset_df.columns.tolist()
 
         self.log.info("\tCalculating genotype call rate per dataset")
         geno_df, call_rate_df = self.calculate_call_rate(geno_df=geno_df,
@@ -268,8 +269,8 @@ class main():
         self.log.info("")
 
         # Create the correction matrices.
-        corr_m = np.copy(dataset_m[:, :(dataset_m.shape[1] - 1)])
-        corr_inter_m = np.copy(dataset_m[:, :(dataset_m.shape[1] - 1)])
+        corr_m = np.copy(dataset_m[:, 1:])
+        corr_inter_m = np.copy(dataset_m[:, 1:])
 
         if tcov_m is not None:
             corr_m = np.hstack((corr_m, tcov_m))
@@ -282,12 +283,19 @@ class main():
 
         self.log.info("Correcting expression matrix")
         # Correct the gene expression matrix.
-        corrected_expr_m = remove_covariates_pcr(y_m=expr_m,
-                                                 X_m=corr_m,
-                                                 X_inter_m=corr_inter_m,
-                                                 inter_m=geno_m,
-                                                 log=self.log)
+        corrected_expr_m, PCR_stats_m = remove_covariates_pcr(y_m=expr_m,
+                                                              X_m=corr_m,
+                                                              X_inter_m=corr_inter_m,
+                                                              inter_m=geno_m,
+                                                              log=self.log)
         del expr_m, corr_m, corr_inter_m
+
+        # Save PCR stats.
+        save_dataframe(df=pd.DataFrame(PCR_stats_m, columns=["N eigenvectors", "Variance explained", "Max. Pearson r"]),
+                       outpath=os.path.join(self.outdir, "PCR_stats.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
 
         # Force normalise the expression matrix.
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
@@ -305,7 +313,7 @@ class main():
             now_time = int(time.time())
             if last_print_time is None or (now_time - last_print_time) >= 30 or (eqtl_index + 1) == n_eqtls:
                 last_print_time = now_time
-                print("\t{}/{} eQTLs analysed [{:.2f}%]".format((eqtl_index + 1), n_eqtls, (100 / n_eqtls) * (eqtl_index + 1)))
+                self.log.info("\t{}/{} eQTLs analysed [{:.2f}%]".format((eqtl_index + 1), n_eqtls, (100 / n_eqtls) * (eqtl_index + 1)))
 
             # Get the genotype.
             genotype = geno_m[eqtl_index, :]
@@ -385,12 +393,12 @@ class main():
                                                  "eQTL std-genotype",
                                                  "eQTL p-value",
                                                  "rss model3",
-                                                 "ieQTL beta-interaction",
+                                                 "ieQTL beta-intercept",
                                                  "ieQTL beta-genotype",
                                                  "ieQTL beta-covariate",
                                                  "ieQTL beta-interaction",
                                                  "rss model2",
-                                                 "ieQTL std-interaction",
+                                                 "ieQTL std-intercept",
                                                  "ieQTL std-genotype",
                                                  "ieQTL std-covariate",
                                                  "ieQTL std-interaction",
@@ -403,11 +411,11 @@ class main():
             if cov_index == 0:
                 # Print the number of eQTLs.
                 n_hits = np.sum(df["eQTL p-value"] < self.eqtl_alpha)
-                self.log.info("\t{} has {:,} significant ieQTLs (p-value <{})".format(cov, n_hits, self.eqtl_alpha))
+                self.log.info("There are {:,} significant eQTLs (p-value <{})".format(n_hits, self.eqtl_alpha))
 
             # Print the number of interactions.
             n_hits = np.sum(df["ieQTL FDR"] < self.ieqtl_alpha)
-            self.log.info("\t{} has {:,} significant ieQTLs (FDR <{})".format(cov, n_hits, self.ieqtl_alpha))
+            self.log.info("  {} has {:,} significant ieQTLs (FDR <{})".format(cov, n_hits, self.ieqtl_alpha))
 
             # Save results.
             save_dataframe(df=df,

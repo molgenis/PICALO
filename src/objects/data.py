@@ -1,7 +1,7 @@
 """
 File:         data.py
 Created:      2020/11/16
-Last Changed: 2021/10/21
+Last Changed: 2021/11/19
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -140,7 +140,7 @@ class Data:
         seen_keys = set()
         for key, value in dict.items():
             if key in seen_keys:
-                print("Key {} has muiltiple values.".format(key))
+                print("Key {} has multiple values.".format(key))
             seen_keys.add(key)
 
             if value in out_dict.keys():

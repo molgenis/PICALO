@@ -1,7 +1,7 @@
 """
 File:         ieqtl.py
 Created:      2021/04/08
-Last Changed: 2021/11/15
+Last Changed: 2021/11/19
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -44,8 +44,7 @@ class IeQTL:
         self.n = np.sum(self.mask)
         self.X = self.construct_model_matrix(genotype=genotype,
                                              covariate=covariate)
-        # self.covariate = covariate[self.mask]
-        self.y = expression[self.mask]
+        self.y = np.copy(expression[self.mask])
         del genotype, covariate, expression
 
         # Initialize empty properties variables.
@@ -65,8 +64,8 @@ class IeQTL:
     def construct_model_matrix(self, genotype, covariate):
         X = np.empty((self.n, 4), np.float32)
         X[:, 0] = 1
-        X[:, 1] = genotype[self.mask]
-        X[:, 2] = covariate[self.mask]
+        X[:, 1] = np.copy(genotype[self.mask])
+        X[:, 2] = np.copy(covariate[self.mask])
         X[:, 3] = X[:, 1] * X[:, 2]
 
         return X
@@ -97,10 +96,17 @@ class IeQTL:
         y_hat = predict(X=self.X, betas=self.betas)
         self.residuals = calc_residuals(y=self.y, y_hat=y_hat)
         self.rss = np.sum(self.residuals * self.residuals)
-        self.std = calc_std(rss=self.rss, n=self.n, df=self.X.shape[1], inv_m=inv_m)
+        self.std = calc_std(rss=self.rss,
+                            n=self.n,
+                            df=self.X.shape[1],
+                            inv_m=inv_m)
 
         # Calculate interaction p-value.
-        self.p_value = calc_p_value(rss1=rss_null, rss2=self.rss, df1=3, df2=4, n=self.n)
+        self.p_value = calc_p_value(rss1=rss_null,
+                                    rss2=self.rss,
+                                    df1=3,
+                                    df2=4,
+                                    n=self.n)
 
         # Set the flag.
         self.is_computed = True

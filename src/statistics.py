@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/11/15
+Last Changed: 2021/11/19
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -84,9 +84,10 @@ def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
             X_inter_m_tmp = X_inter_m_tmp[:, np.newaxis]
 
     # Loop over expression rows.
-    y_m_corrected = np.empty_like(y_m, dtype=np.float64)
     last_print_time = None
     n_rows = y_m.shape[0]
+    y_corrected_m = np.empty_like(y_m, dtype=np.float64)
+    PCR_stats_m = np.empty((n_rows, 3), dtype=np.float64)
     for i in range(n_rows):
         # Update user on progress.
         now_time = int(time.time())
@@ -105,15 +106,14 @@ def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
 
         # Add the covariates with interaction termn.
         if X_inter_m_tmp is not None and inter_m is not None:
-            inter_a = inter_m[i, :][:, np.newaxis]
-            x_times_inter_m = X_inter_m_tmp * inter_a
+            X_inter_m_tmp = X_inter_m_tmp * inter_m[i, :][:, np.newaxis]
 
             if X is None:
-                X = x_times_inter_m
+                X = X_inter_m_tmp
             else:
-                X = np.concatenate((X, x_times_inter_m), axis=1)
+                X = np.concatenate((X, X_inter_m_tmp), axis=1)
 
-        X = summarize_matrix(X)
+        X, n_eigenvectors, variance_explained = summarize_matrix(X)
 
         pearsonr_m = calc_pearsonr_matrix(X=X)
         mask = np.ones(pearsonr_m.shape, dtype=bool)
@@ -121,15 +121,16 @@ def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
         max_pearsonr = np.max(pearsonr_m[mask])
         if max_pearsonr > 0.8:
             log.warning("PCR correction matrix has a high correlation of {:.2f}".format(max_pearsonr))
+        PCR_stats_m[i, :] = np.array([n_eigenvectors, variance_explained, max_pearsonr])
 
         # Add the intercept.
         if include_intercept:
             intercept = np.ones((X.shape[0], 1))
             X = np.hstack((intercept, X))
 
-        y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
+        y_corrected_m[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
 
-    return y_m_corrected
+    return y_corrected_m, PCR_stats_m
 
 
 def summarize_matrix(m):
@@ -148,7 +149,7 @@ def summarize_matrix(m):
     variance_expl = np.cumsum(eigenvalues / np.sum(eigenvalues))
     mask = np.round(variance_expl, 10) != 1
 
-    return np.dot(zscore, eigenvectors[:, mask])
+    return np.dot(zscore, eigenvectors[:, mask]), np.sum(mask), np.sum(eigenvalues[mask]) / np.sum(eigenvalues)
 
 
 def calc_pearsonr_matrix(X):
