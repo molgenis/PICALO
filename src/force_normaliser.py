@@ -56,7 +56,7 @@ class ForceNormaliser:
             exit()
 
         # Force normalise.
-        normal = np.empty_like(data, dtype=np.float64)
+        normal = np.empty(data.shape, dtype=np.float64)
         for cohort_index in range(self.dataset_m.shape[1]):
             mask = self.dataset_m[:, cohort_index].astype(bool)
             if np.sum(mask) > 0:

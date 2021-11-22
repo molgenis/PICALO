@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/19
+Last Changed: 2021/11/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -34,7 +34,7 @@ from src.logger import Logger
 from src.force_normaliser import ForceNormaliser
 from src.objects.data import Data
 from src.inter_optimizer import InteractionOptimizer
-from src.statistics import remove_covariates_pcr, remove_covariates_elementwise
+from src.statistics import remove_covariates, remove_covariates_elementwise
 from src.utilities import save_dataframe, get_ieqtls
 
 
@@ -250,9 +250,10 @@ class Main:
         tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=get_tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
         self.log.info("")
 
-        # Create the correction matrices.
+        # Create the correction matrices. Note that for the interaction term
+        # we need to include all datasets.
         corr_m = np.copy(dataset_m[:, 1:])
-        corr_inter_m = np.copy(dataset_m[:, 1:])
+        corr_inter_m = np.copy(dataset_m)
 
         if tcov_m is not None:
             corr_m = np.hstack((corr_m, tcov_m))
@@ -281,6 +282,7 @@ class Main:
         stop = False
         pic_corr_m = np.copy(corr_m)
         pic_corr_inter_m = np.copy(corr_inter_m)
+        components_df = None
         for comp_count in range(self.n_components):
             if stop:
                 self.log.warning("Last component did not converge, stop "
@@ -318,19 +320,11 @@ class Main:
 
                 # Remove tech. covs. + components from expression matrix.
                 self.log.info("\t  Correcting expression matrix")
-                comp_expr_m, PCR_stats_m = remove_covariates_pcr(y_m=expr_m,
-                                                                 X_m=pic_corr_m,
-                                                                 X_inter_m=pic_corr_inter_m,
-                                                                 inter_m=geno_m,
-                                                                 log=self.log)
-
-                # Save PCR stats.
-                save_dataframe(df=pd.DataFrame(PCR_stats_m, columns=["N eigenvectors", "Variance explained", "Max. Pearson r"]),
-                               outpath=os.path.join(comp_outdir, "PCR_stats.txt.gz"),
-                               header=True,
-                               index=False,
-                               log=self.log)
-                del PCR_stats_m
+                comp_expr_m = remove_covariates(y_m=expr_m,
+                                                X_m=pic_corr_m,
+                                                X_inter_m=pic_corr_inter_m,
+                                                inter_m=geno_m,
+                                                log=self.log)
 
                 # Optimize the cell fractions in X iterations.
                 pic_a, stop = io.process(eqtl_m=eqtl_m,
@@ -349,15 +343,16 @@ class Main:
             # Increment counter.
             n_components_performed += 1
 
-        components_df = pd.DataFrame(pic_m[:n_components_performed, :],
-                                     index=["PIC{}".format(i+1) for i in range(n_components_performed)],
-                                     columns=samples)
+            # Saving component output file.
+            components_df = pd.DataFrame(pic_m[:n_components_performed, :],
+                                         index=["PIC{}".format(i+1) for i in range(n_components_performed)],
+                                         columns=samples)
 
-        save_dataframe(df=components_df,
-                       outpath=os.path.join(self.outdir, "components.txt.gz"),
-                       header=True,
-                       index=True,
-                       log=self.log)
+            save_dataframe(df=components_df,
+                           outpath=os.path.join(self.outdir, "components.txt.gz"),
+                           header=True,
+                           index=True,
+                           log=self.log)
 
         pics_df = components_df
         if stop:
@@ -379,19 +374,11 @@ class Main:
             os.makedirs(pic_ieqtl_outdir)
 
         # Correct the gene expression matrix.
-        corrected_expr_m, PCR_stats_m = remove_covariates_pcr(y_m=expr_m,
-                                                              X_m=corr_m,
-                                                              X_inter_m=corr_inter_m,
-                                                              inter_m=geno_m,
-                                                              log=self.log)
-
-        # Save PCR stats.
-        save_dataframe(df=pd.DataFrame(PCR_stats_m, columns=["N eigenvectors", "Variance explained", "Max. Pearson r"]),
-                       outpath=os.path.join(pic_ieqtl_outdir, "PCR_stats.txt.gz"),
-                       header=True,
-                       index=False,
-                       log=self.log)
-        del PCR_stats_m
+        corrected_expr_m = remove_covariates(y_m=expr_m,
+                                             X_m=corr_m,
+                                             X_inter_m=corr_inter_m,
+                                             inter_m=geno_m,
+                                             log=self.log)
 
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
 

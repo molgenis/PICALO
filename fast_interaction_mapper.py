@@ -3,7 +3,7 @@
 """
 File:         fast_interaction_mapper.py
 Created:      2021/11/16
-Last Changed: 2021/11/19
+Last Changed: 2021/11/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -37,8 +37,10 @@ from src.cmd_line_arguments import CommandLineArguments
 from src.logger import Logger
 from src.objects.data import Data
 from src.utilities import save_dataframe
-from src.statistics import remove_covariates_pcr, inverse, fit, predict, calc_rss, fit_and_predict, calc_std, calc_p_value
+from src.statistics import remove_covariates, inverse, fit, predict, calc_rss, fit_and_predict, calc_std, calc_p_value
 from src.force_normaliser import ForceNormaliser
+from src.objects.ieqtl import IeQTL
+from src.visualiser import Visualiser
 
 # Metadata
 __program__ = "Fast Interaction Mapper"
@@ -270,7 +272,7 @@ class main():
 
         # Create the correction matrices.
         corr_m = np.copy(dataset_m[:, 1:])
-        corr_inter_m = np.copy(dataset_m[:, 1:])
+        corr_inter_m = np.copy(dataset_m)
 
         if tcov_m is not None:
             corr_m = np.hstack((corr_m, tcov_m))
@@ -283,24 +285,39 @@ class main():
 
         self.log.info("Correcting expression matrix")
         # Correct the gene expression matrix.
-        corrected_expr_m, PCR_stats_m = remove_covariates_pcr(y_m=expr_m,
-                                                              X_m=corr_m,
-                                                              X_inter_m=corr_inter_m,
-                                                              inter_m=geno_m,
-                                                              log=self.log)
+        corrected_expr_m = remove_covariates(y_m=expr_m,
+                                             X_m=corr_m,
+                                             X_inter_m=corr_inter_m,
+                                             inter_m=geno_m,
+                                             log=self.log)
         del expr_m, corr_m, corr_inter_m
-
-        # Save PCR stats.
-        save_dataframe(df=pd.DataFrame(PCR_stats_m, columns=["N eigenvectors", "Variance explained", "Max. Pearson r"]),
-                       outpath=os.path.join(self.outdir, "PCR_stats.txt.gz"),
-                       header=True,
-                       index=True,
-                       log=self.log)
 
         # Force normalise the expression matrix.
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
         corrected_expr_m = fn.process(data=corrected_expr_m)
         covs_m = fn.process(data=covs_m)
+
+        ########################################################################
+
+        # visualiser = Visualiser()
+        # for eqtl_index in range(geno_m.shape[0]):
+        #     snp, gene = eqtl_m[eqtl_index, :]
+        #
+        #     if snp + gene != "rs1131017ENSG00000197728":
+        #         continue
+        #
+        #     for cov_index, cov in enumerate(covariates):
+        #         if cov != "PIC1":
+        #             continue
+        #
+        #         ieqtl = IeQTL(snp=snp,
+        #                       gene=gene,
+        #                       cov=cov,
+        #                       genotype=geno_m[eqtl_index, :],
+        #                       covariate=covs_m[cov_index, :],
+        #                       expression=corrected_expr_m[eqtl_index, :]
+        #                       )
+        #         visualiser.plot_overview(ieqtl, out_path=self.outdir, label="AfterFN")
 
         ########################################################################
 

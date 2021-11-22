@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/11/19
+Last Changed: 2021/11/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,36 +25,12 @@ import math
 import time
 
 # Third party imports.
-from scipy.special import betainc
 import numpy as np
+from scipy.special import betainc
 from statsmodels.regression.linear_model import OLS
 
 
-def remove_multicollinearity(X, threshold=0.95):
-    dropped_indices = []
-    indices = np.arange(X.shape[1])
-    max_vif = np.inf
-    while len(indices) > 1 and max_vif > threshold:
-        vif = np.array([calc_ols_rsquared(X[:, indices], ix) for ix in range(len(indices))])
-        max_vif = max(vif)
-
-        if max_vif > threshold:
-            max_index = np.where(vif == max_vif)[0][0]
-            dropped_indices.append(indices[max_index])
-            indices = np.delete(indices, max_index)
-
-    dropped_indices.sort()
-
-    return X[:, indices], dropped_indices
-
-
-def calc_ols_rsquared(m, idx):
-    n_vars = m.shape[1]
-    mask = np.arange(n_vars) != idx
-    return OLS(m[:, idx], m[:, mask]).fit().rsquared
-
-
-def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
+def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
                       include_intercept=True, log=None):
     if X_m is None and X_inter_m is None:
         return y_m
@@ -86,8 +62,7 @@ def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
     # Loop over expression rows.
     last_print_time = None
     n_rows = y_m.shape[0]
-    y_corrected_m = np.empty_like(y_m, dtype=np.float64)
-    PCR_stats_m = np.empty((n_rows, 3), dtype=np.float64)
+    y_corrected_m = np.empty(y_m.shape, dtype=np.float64)
     for i in range(n_rows):
         # Update user on progress.
         now_time = int(time.time())
@@ -106,59 +81,28 @@ def remove_covariates_pcr(y_m, X_m=None, X_inter_m=None, inter_m=None,
 
         # Add the covariates with interaction termn.
         if X_inter_m_tmp is not None and inter_m is not None:
-            X_inter_m_tmp = X_inter_m_tmp * inter_m[i, :][:, np.newaxis]
+            X_inter_times_inter_m = X_inter_m_tmp * inter_m[i, :][:, np.newaxis]
 
             if X is None:
-                X = X_inter_m_tmp
+                X = X_inter_times_inter_m
             else:
-                X = np.concatenate((X, X_inter_m_tmp), axis=1)
-
-        X, n_eigenvectors, variance_explained = summarize_matrix(X)
-
-        pearsonr_m = calc_pearsonr_matrix(X=X)
-        mask = np.ones(pearsonr_m.shape, dtype=bool)
-        np.fill_diagonal(mask, 0)
-        max_pearsonr = np.max(pearsonr_m[mask])
-        if max_pearsonr > 0.8:
-            log.warning("PCR correction matrix has a high correlation of {:.2f}".format(max_pearsonr))
-        PCR_stats_m[i, :] = np.array([n_eigenvectors, variance_explained, max_pearsonr])
+                X = np.hstack((X, X_inter_times_inter_m))
 
         # Add the intercept.
         if include_intercept:
             intercept = np.ones((X.shape[0], 1))
             X = np.hstack((intercept, X))
 
-        y_corrected_m[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
+        # Calculate residuals using OLS.
+        y_corrected_m[i, :] = calculate_residuals_ols(X=X, y=y_m[i, :])
 
-    return y_corrected_m, PCR_stats_m
+    del X_m_tmp, X_inter_m_tmp
 
-
-def summarize_matrix(m):
-    m = m[:, m.std(axis=0) != 0]
-    zscore = (m - m.mean(axis=0)) / m.std(axis=0)
-    corr_matrix = np.dot(zscore.T, zscore) / (zscore.shape[0] - 1)
-    eigenvalues, eigenvectors = np.linalg.eig(corr_matrix)
-    order = eigenvalues.argsort()[::-1]
-    eigenvalues = np.real(eigenvalues[order])
-    eigenvectors = np.real(eigenvectors[:, order])
-
-    # Replace negative eigenvalues with 0
-    eigenvalues[eigenvalues < 0] = 0
-
-    # Find the number of eigenvalues that explain 99.99999999% of the variance.
-    variance_expl = np.cumsum(eigenvalues / np.sum(eigenvalues))
-    mask = np.round(variance_expl, 10) != 1
-
-    return np.dot(zscore, eigenvectors[:, mask]), np.sum(mask), np.sum(eigenvalues[mask]) / np.sum(eigenvalues)
-
-
-def calc_pearsonr_matrix(X):
-    zscores = (X - X.mean(axis=0)) / X.std(axis=0)
-    return np.dot(zscores.T, zscores) / zscores.shape[0]
+    return y_corrected_m
 
 
 def remove_covariates_elementwise(y_m, X_m, a):
-    y_m_corrected = np.empty_like(y_m, dtype=np.float64)
+    y_m_corrected = np.empty(y_m.shape, dtype=np.float64)
 
     X = np.empty((X_m.shape[1], 3), dtype=np.float64)
     X[:, 0] = 1
@@ -206,6 +150,10 @@ def calc_rss(y, y_hat):
 
 def calc_std(rss, n, df, inv_m):
     return np.sqrt(rss / (n - df) * np.diag(inv_m))
+
+
+def calculate_residuals_ols(X, y):
+    return OLS(y, X).fit().resid
 
 
 def calc_p_value(rss1, rss2, df1, df2, n):
