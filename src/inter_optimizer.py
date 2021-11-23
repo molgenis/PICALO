@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/11/12
+Last Changed: 2021/11/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -59,13 +59,14 @@ class InteractionOptimizer:
         info_m = np.empty((self.max_iter, 5), dtype=np.float64)
         n_ieqtls_per_sample_m = np.empty((self.max_iter, geno_m.shape[1]), dtype=np.float64)
         iterations_m = np.empty((self.max_iter + 1, geno_m.shape[1]), dtype=np.float64)
-        for iteration in range(n_iterations_performed, self.max_iter):
+        for iteration in range(self.max_iter):
             self.log.info("\t\tIteration: {}".format(iteration))
 
             start_time = int(time.time())
 
-            if np.shape(covs_m)[0] == 1:
+            if iteration == 0 and np.shape(covs_m)[0] == 1:
                 context_a = np.squeeze(covs_m)
+                cov = self.covariates[0]
 
             # Find the significant ieQTLs.
             if context_a is None:

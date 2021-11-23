@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/11/20
+Last Changed: 2021/11/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -41,8 +41,10 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
         log.error("Error in remove_covariates")
         exit()
 
-    # Prepare X_m
-    X_m_tmp = None
+    # Initialize the base matrix with an intercept.
+    correction_matrix = np.ones((y_m.shape[1], 1))
+
+    # Add the technical covariates.
     if X_m is not None:
         X_m_tmp = np.copy(X_m)
 
@@ -50,14 +52,20 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
         if np.ndim(X_m_tmp) == 1:
             X_m_tmp = X_m_tmp[:, np.newaxis]
 
-    # Prepare X_inter_m
+        # Merge.
+        correction_matrix = np.hstack((correction_matrix, X_m_tmp))
+
+    # Prepare the technical covariates * genotype matrix.
     X_inter_m_tmp = None
-    if X_inter_m is not None:
+    if X_inter_m is not None and inter_m is not None:
         X_inter_m_tmp = np.copy(X_inter_m)
 
         # Force 2D matrix.
         if np.ndim(X_inter_m_tmp) == 1:
             X_inter_m_tmp = X_inter_m_tmp[:, np.newaxis]
+
+        # Merge.
+        correction_matrix = np.hstack((correction_matrix, X_inter_m_tmp))
 
     # Loop over expression rows.
     last_print_time = None
@@ -73,25 +81,12 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
             last_print_time = now_time
 
         # Initialize the correction matrix.
-        X = None
-
-        # Add the covariates without interaction.
-        if X_m_tmp is not None:
-            X = X_m_tmp
+        X = np.copy(correction_matrix)
 
         # Add the covariates with interaction termn.
-        if X_inter_m_tmp is not None and inter_m is not None:
+        if X_inter_m_tmp is not None:
             X_inter_times_inter_m = X_inter_m_tmp * inter_m[i, :][:, np.newaxis]
-
-            if X is None:
-                X = X_inter_times_inter_m
-            else:
-                X = np.hstack((X, X_inter_times_inter_m))
-
-        # Add the intercept.
-        if include_intercept:
-            intercept = np.ones((X.shape[0], 1))
-            X = np.hstack((intercept, X))
+            X = np.hstack((X, X_inter_times_inter_m))
 
         # Calculate residuals using OLS.
         y_corrected_m[i, :] = calculate_residuals_ols(X=X, y=y_m[i, :])

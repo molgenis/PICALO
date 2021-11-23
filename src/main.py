@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/20
+Last Changed: 2021/11/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -137,6 +137,7 @@ class Main:
 
         # Construct dataset df.
         dataset_df = self.construct_dataset_df(std_df=std_df)
+        datasets = dataset_df.columns.tolist()
 
         self.log.info("\tCalculating genotype call rate per dataset")
         geno_df, call_rate_df = self.calculate_call_rate(geno_df=geno_df,
@@ -248,19 +249,18 @@ class Main:
 
         tcov_m, tcov_labels = self.load_tech_cov(df=tcov_df, name="tech. cov. without interaction", std_df=std_df)
         tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=get_tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
+
+        corr_m, corr_inter_m, correction_m_labels = \
+            self.construct_correct_matrices(dataset_m=dataset_m,
+                                            dataset_labels=datasets,
+                                            tcov_m=tcov_m,
+                                            tcov_labels=tcov_labels,
+                                            tcov_inter_m=tcov_inter_m,
+                                            tcov_inter_labels=tcov_inter_labels)
+
+        self.log.info("\tCorrection matrix includes the following columns [N={}]: {}".format(len(correction_m_labels), ", ".join(correction_m_labels)))
         self.log.info("")
-
-        # Create the correction matrices. Note that for the interaction term
-        # we need to include all datasets.
-        corr_m = np.copy(dataset_m[:, 1:])
-        corr_inter_m = np.copy(dataset_m)
-
-        if tcov_m is not None:
-            corr_m = np.hstack((corr_m, tcov_m))
-
-        if tcov_inter_m is not None:
-            corr_m = np.hstack((corr_m, tcov_inter_m))
-            corr_inter_m = np.hstack((corr_inter_m, tcov_inter_m))
+        del tcov_m, tcov_labels, tcov_inter_m, tcov_inter_labels, correction_m_labels
 
         ########################################################################
 
@@ -642,6 +642,45 @@ class Main:
         self.log.info("\t  Technical covariates [{}]: {}".format(len(covariates), ", ".join(covariates)))
 
         return m, covariates
+
+    @staticmethod
+    def construct_correct_matrices(dataset_m, dataset_labels, tcov_m, tcov_labels,
+                                   tcov_inter_m, tcov_inter_labels):
+        # Create the correction matrices.
+        corr_m = None
+        corr_m_columns = ["Intercept"]
+        corr_inter_m = None
+        corr_inter_m_columns = []
+        if dataset_m.shape[1] > 1:
+            # Note that for the interaction term we need to include all
+            # datasets.
+            corr_m = np.copy(dataset_m[:, 1:])
+            corr_m_columns.extend(dataset_labels[1:])
+
+            corr_inter_m = np.copy(dataset_m)
+            corr_inter_m_columns.extend(["{} x Genotype".format(label) for label in dataset_labels])
+
+        if tcov_m is not None:
+            corr_m_columns.extend(tcov_labels)
+            if corr_m is not None:
+                corr_m = np.hstack((corr_m, tcov_m))
+            else:
+                corr_m = tcov_m
+
+        if tcov_inter_m is not None:
+            corr_m_columns.extend(tcov_inter_labels)
+            if corr_m is not None:
+                corr_m = np.hstack((corr_m, tcov_inter_m))
+            else:
+                corr_m = tcov_inter_m
+
+            corr_inter_m_columns.extend(["{} x Genotype".format(label) for label in tcov_inter_labels])
+            if corr_inter_m is not None:
+                corr_inter_m = np.hstack((corr_inter_m, tcov_inter_m))
+            else:
+                corr_inter_m = tcov_inter_m
+
+        return corr_m, corr_inter_m, corr_m_columns + corr_inter_m_columns
 
     def print_arguments(self):
         self.log.info("Arguments:")
