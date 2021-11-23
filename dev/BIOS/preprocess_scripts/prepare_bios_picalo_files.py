@@ -62,6 +62,10 @@ Syntax:
 ./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering
 
 ./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics
+
+./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoCorrection-AtAll
+
+./prepare_bios_picalo_files.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_eqtl_file/BIOS_eQTLProbesFDR0.05-ProbeLevel.txt.gz -ge /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_NoSex/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pcpc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_NoSex/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/GenotypeToExpression.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-NoSex
 """
 
 
@@ -232,12 +236,14 @@ class main():
         self.save_file(df=geno_df, outpath=os.path.join(self.outdir, "genotype_table.txt.gz"))
         self.save_file(df=allele_df, outpath=os.path.join(self.outdir, "genotype_alleles_table.txt.gz"))
         self.save_file(df=expr_df, outpath=os.path.join(self.outdir, "expression_table.txt.gz"))
-        del eqtl_df, present_eqtl_df, geno_df, expr_df
+        # del eqtl_df, present_eqtl_df, geno_df, expr_df
 
         print("Preparing PCS after tech. cov. correction")
         pcpc_df = self.load_file(self.post_corr_pcs_path, header=0, index_col=0)
         print(pcpc_df)
 
+        for pc_index in range(0, 9):
+            self.save_file(df=pcpc_df.iloc[[pc_index], :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "ExpressionPC{}.txt.gz".format(pc_index)))
         for n_pcs in range(5, 105, 5):
             if n_pcs <= pcpc_df.shape[0]:
                 self.save_file(df=pcpc_df.iloc[:n_pcs, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first{}ExpressionPCs.txt.gz".format(n_pcs)))
@@ -275,8 +281,9 @@ class main():
             else:
                 correction_df = mds_df
 
-        correction_df = correction_df.loc[:, correction_df.std(axis=0) != 0]
-        self.save_file(df=correction_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "tech_covariates_with_interaction_df.txt.gz"))
+        if correction_df is not None:
+            correction_df = correction_df.loc[:, correction_df.std(axis=0) != 0]
+            self.save_file(df=correction_df.loc[rnaseq_ids, :].T, outpath=os.path.join(self.outdir, "tech_covariates_with_interaction_df.txt.gz"))
         del correction_df
 
     @staticmethod

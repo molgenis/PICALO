@@ -137,6 +137,7 @@ class main():
         cf_df = df.loc[:, cf_columns]
         cf_df.dropna(axis=0, how="all", inplace=True)
         cf_df = cf_df.reindex(sorted(cf_df.columns), axis=1)
+        cf_df["sum"] = cf_df.sum(axis=1)
         self.save_file(df=cf_df, outpath=os.path.join(self.outdir, "BIOS_CellFractions.txt.gz"))
         del cf_df
 
