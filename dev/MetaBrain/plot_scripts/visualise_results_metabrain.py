@@ -3,7 +3,7 @@
 """
 File:         visualise_results_metabrain.py
 Created:      2021/05/06
-Last Changed: 2021/11/16
+Last Changed: 2021/11/23
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -26,6 +26,7 @@ from __future__ import print_function
 from pathlib import Path
 import argparse
 import subprocess
+import glob
 import os
 
 # Third party imports.
@@ -135,16 +136,25 @@ class main():
         self.run_command(command)
 
         pics = []
-        for i in range(1, 11):
-            comp_iterations_path = os.path.join(self.input_data_path, "PIC{}".format(i), "iteration.txt.gz")
+        last_iter_fpaths = []
+        for i in range(1, 25):
+            pic = "PIC{}".format(i)
+            comp_iterations_path = os.path.join(self.input_data_path, pic, "iteration.txt.gz")
 
             if os.path.exists(comp_iterations_path):
-                pics.append("PIC{}".format(i))
+                pics.append(pic)
+                fpaths = glob.glob(os.path.join(self.input_data_path, pic, "results_iteration*"))
+                fpaths.sort()
+                last_iter_fpaths.append(fpaths[-1])
 
                 # Plot scatterplot.
                 command = ['python3', 'create_scatterplot.py', '-d', comp_iterations_path,
                            "-hr", "0", "-ic", "0", "-a", "1", "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, "-o", self.outname + "_PIC{}".format(i)]
                 self.run_command(command)
+
+        # Compare iterative t-values .
+        command = ['python3', 'compare_tvalues.py', '-d'] + last_iter_fpaths + ['-n'] + pics + ['-o', self.outname + '_IterativeTValuesOverview']
+        self.run_command(command)
 
         # Create components_df if not exists.
         components_path = os.path.join(self.input_data_path, "components.txt.gz")
@@ -172,10 +182,29 @@ class main():
                        "-xi", pic, '-yd', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/BIOS_CorrelationsWithAverageExpression.txt.gz', '-y_transpose', '-yi', 'AvgExprCorrelation', '-o', self.outname + "_{}_vs_AvgExprCorrelation".format(pic)]
             self.run_command(command)
 
+        # Check for which PICs we have the interaction stats.
+        pics = []
+        pic_interactions_fpaths = []
+        for i in range(1, 25):
+            pic = "PIC{}".format(i)
+            fpath = os.path.join(self.input_data_path, "PIC_interactions", "{}.txt.gz".format(pic))
+            if os.path.exists(fpath):
+                pics.append(pic)
+                pic_interactions_fpaths.append(fpath)
+
+        # Compare t-values.
+        command = ['python3', 'compare_tvalues.py', '-d'] + pic_interactions_fpaths + ['-n'] + pics + ['-o', '{}_TValuesOverview'.format(self.outname)]
+        self.run_command(command)
+
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
-                   "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, '-o', self.outname]
+                   "-std", os.path.join(self.matrix_preparation_path, "combine_gte_files", "SampleToDataset.txt.gz"), '-p', self.palette_path, '-o', self.outname + '_ColoredByDataset']
         self.run_command(command)
+
+        # # Plot comparison scatterplot.
+        # command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
+        #            '-std', "", '-p', self.palette_path, '-o', self.outname + "_ColoredBySex"]
+        # self.run_command(command)
 
         if os.path.exists(components_path):
             # Plot correlation_heatmap of components.

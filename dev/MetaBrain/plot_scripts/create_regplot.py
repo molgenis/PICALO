@@ -35,6 +35,7 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 # Local application imports.
 
@@ -65,6 +66,27 @@ Syntax:
 ./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/components.txt.gz -xi PIC4 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -y_transpose -yi prime_bias.MEDIAN_5PRIME_TO_3PRIME_BIAS -o AllRNAseqAlignmentMetricsNoFilteringPIC4_vs_Median5Pt3PBias
 
 ./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5/components.txt.gz -xi PIC4 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -y_transpose -yi Lymph_Perc -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o NoRNAseqAlignmentMetricsPIC4_vs_LymphPerc
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/PIC1/iteration.txt.gz -xi iteration49 -xl PIC1 -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/PIC4/iteration.txt.gz -yi iteration49 -yl PIC4 -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS_PIC1_vs_PIC4
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -xi PIC1 -xl PIC1 -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/components.txt.gz -yi PIC1 -yl PIC1 -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected_vs_Not
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -xi PIC2 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -y_transpose -yi Lymph_Perc -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected-PIC2_vs_Lymph_Perc
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -xi PIC2 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -y_transpose -yi Neut_Perc -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected-PIC2_vs_Neut_Perc
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -xi PIC2 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -y_transpose -yi Granulocyte_Perc -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected-PIC2_vs_Granulocyte_Perc
+
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -xi PIC2 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -y_transpose -yi Lymph_Perc -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5-OLS-AllDatasetsCorrected-PIC2_vs_Lymph_Perc
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -xi PIC4 -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -y_transpose -yi Lymph_Perc -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5-OLS-AllDatasetsCorrected-PIC4_vs_Lymph_Perc
+
+./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -xi PIC1 -xl NoRNAseqAlignmentMetrics_PIC1 -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoCorrectionAtAll-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -yi PIC1 -yl NoCorrectionAtAll_PIC1 -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS-AllDatasetsCorrected-NoRNAseqAlignmentMetrics_vs_NoCorrectionAtAll
+
+./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-SP140AsCov-MAF5-OLS-AllDatasetsCorrected/PIC3/iteration.txt.gz -xi iteration49 -xl PIC3 -yd /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.Datasets_MDS_SexRemovedOLS.SP140.txt.gz -yi ENSG00000079263 -yl SP140 -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-SP140AsCov-MAF5-OLS-AllDatasetsCorrected
+
+./create_regplot.py -xd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-SP140AsCov-MAF5-OLS-AllDatasetsCorrected/PIC3/iteration.txt.gz -xi iteration49 -xl SP140_PIC3 -yd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/PIC3/iteration.txt.gz  -yi iteration99 -yl Comp1_PIC3 -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignemntMetricsNoFiltering/sample_to_dataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected-PIC3_SP140_vs_Comp1
 """
 
 
@@ -121,8 +143,7 @@ class main():
                             help="The path to the x-axis data matrix.")
         parser.add_argument("-x_transpose",
                             action='store_true',
-                            help="Combine the created files with force."
-                                 " Default: False.")
+                            help="Transpose X.")
         parser.add_argument("-xi",
                             "--x_index",
                             nargs="*",
@@ -142,8 +163,7 @@ class main():
                             help="The path to the y-axis data matrix.")
         parser.add_argument("-y_transpose",
                             action='store_true',
-                            help="Combine the created files with force."
-                                 " Default: False.")
+                            help="Transpose Y.")
         parser.add_argument("-yi",
                             "--y_index",
                             nargs="*",
@@ -248,29 +268,24 @@ class main():
 
         sns.set(rc={'figure.figsize': (12, 9)})
         sns.set_style("ticks")
-        fig, ax = plt.subplots()
-        sns.despine(fig=fig, ax=ax)
+        fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2,
+                                       gridspec_kw={"width_ratios": [0.9, 0.1]})
+        sns.despine(fig=fig, ax=ax1)
+        ax2.axis('off')
 
         # Set annotation.
         pearson_coef, _ = stats.pearsonr(df[y], df[x])
-        annot_xpos = 0.03
-        ha = "left"
-        if pearson_coef < 0:
-            annot_xpos = 0.97
-            ha = "right"
-        ax.annotate(
+        ax1.annotate(
             'total N = {:,}'.format(df.shape[0]),
-            xy=(annot_xpos, 0.94),
-            ha=ha,
-            xycoords=ax.transAxes,
+            xy=(0.03, 0.94),
+            xycoords=ax1.transAxes,
             color="#000000",
             fontsize=14,
             fontweight='bold')
-        ax.annotate(
+        ax1.annotate(
             'total r = {:.2f}'.format(pearson_coef),
-            xy=(annot_xpos, 0.90),
-            ha=ha,
-            xycoords=ax.transAxes,
+            xy=(0.03, 0.90),
+            xycoords=ax1.transAxes,
             color="#000000",
             fontsize=14,
             fontweight='bold')
@@ -280,6 +295,8 @@ class main():
             df["hue"] = "#000000"
             group_column = "hue"
 
+        group_corr_coef = {}
+        group_sizes = {}
         for i, hue_group in enumerate(df[group_column].unique()):
             subset = df.loc[df[group_column] == hue_group, :]
 
@@ -293,32 +310,34 @@ class main():
                         scatter_kws={'facecolors': facecolors,
                                      'linewidth': 0},
                         line_kws={"color": color},
-                        ax=ax)
+                        ax=ax1)
 
             if hue is not None:
                 subset_pearson_coef, _ = stats.pearsonr(subset[y], subset[x])
-                ax.annotate(
-                    '{} r = {:.2f} [N = {:,}]'.format(hue_group, subset_pearson_coef, subset.shape[0]),
-                    xy=(annot_xpos, 0.86 - (i * 0.04)),
-                    ha=ha,
-                    xycoords=ax.transAxes,
-                    color=color,
-                    fontsize=14,
-                    fontweight='bold')
+                group_corr_coef[hue_group] = subset_pearson_coef
+                group_sizes[hue_group] = subset.shape[0]
 
-        ax.set_xlabel(xlabel,
-                      fontsize=14,
+        if hue is not None:
+            handles = []
+            for hue_group in df[group_column].unique():
+                if hue_group in palette:
+                    handles.append(mpatches.Patch(color=palette[hue_group],
+                                                  label="{} [n={:,}; r={:.2f}]".format(hue_group, group_sizes[hue_group],group_corr_coef[hue_group])))
+            ax2.legend(handles=handles, loc="center")
+
+        ax1.set_xlabel(xlabel,
+                       fontsize=14,
+                       fontweight='bold')
+        ax1.set_ylabel(ylabel,
+                       fontsize=14,
+                       fontweight='bold')
+        ax1.set_title(title,
+                      fontsize=18,
                       fontweight='bold')
-        ax.set_ylabel(ylabel,
-                      fontsize=14,
-                      fontweight='bold')
-        ax.set_title(title,
-                     fontsize=18,
-                     fontweight='bold')
 
         # Change margins.
-        xlim = ax.get_xlim()
-        ylim = ax.get_ylim()
+        xlim = ax1.get_xlim()
+        ylim = ax1.get_ylim()
 
         xmargin = (xlim[1] - xlim[0]) * 0.05
         ymargin = (ylim[1] - ylim[0]) * 0.05
@@ -326,8 +345,8 @@ class main():
         new_xlim = (xlim[0] - xmargin, xlim[1] + xmargin)
         new_ylim = (ylim[0] - ymargin, ylim[1] + ymargin)
 
-        ax.set_xlim(new_xlim[0], new_xlim[1])
-        ax.set_ylim(new_ylim[0], new_ylim[1])
+        ax1.set_xlim(new_xlim[0], new_xlim[1])
+        ax1.set_ylim(new_ylim[0], new_ylim[1])
 
         outpath = os.path.join(self.outdir, "{}.png".format(filename))
         fig.savefig(outpath)

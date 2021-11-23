@@ -118,7 +118,7 @@ class main():
         info_dict = {}
         df_m_list = []
         # column_data = {}
-        for i in range(1, 11):
+        for i in range(1, 23):
             fpath = os.path.join(self.input_directory, "PIC{}".format(i), "info.txt.gz")
             if os.path.exists(fpath):
                 df = self.load_file(fpath, header=0, index_col=0)
@@ -144,7 +144,10 @@ class main():
                 df_m_list.append(df_m)
 
         print("Merging data")
-        df_m = pd.concat(df_m_list, axis=0)
+        if len(df_m_list) > 1:
+            df_m = pd.concat(df_m_list, axis=0)
+        else:
+            df_m = df_m_list[0]
         df_m["log10 value"] = np.log10(df_m["value"])
 
         # print("Exporting excel")

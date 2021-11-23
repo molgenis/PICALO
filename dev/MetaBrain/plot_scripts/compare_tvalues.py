@@ -72,12 +72,9 @@ Syntax:
     -n NoSTARCorrected_Median5Pt3PBias AllSTARCorrected_Median5Pt3PBias AllSTARCorrected_PIC4Iterative AllSTARCorrected_PIC4 -o plot2 
     
 ./compare_tvalues.py \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC_interactions/PIC1.txt.gz \
-    /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC_interactions/PIC2.txt.gz \
-    /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC_interactions/PIC3.txt.gz \
-    /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC_interactions/PIC4.txt.gz \
-    /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC_interactions/PIC5.txt.gz \
-    -n PIC1 PIC2 PIC3 PIC4 PIC5 -o plot3
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/PIC1/results_iteration049.txt.gz \
+    /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/PIC2/results_iteration049.txt.gz \
+    -n PIC1 PIC2 -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS
     
 ./compare_tvalues.py \
     -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC1/results_iteration000.txt.gz \
@@ -100,6 +97,11 @@ Syntax:
     /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC1/results_iteration008.txt.gz \
     /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5/PIC1/results_iteration009.txt.gz \
     -n iteration000 iteration001 iteration002 iteration003 iteration004 iteration005 iteration006 iteration007 iteration008 iteration009 -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5-PIC1-First10Iterations 
+    
+./compare_tvalues.py \
+    -d ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoCorrectionAtAll-MAF5-OLS-AllDatasetsCorrected/PIC1/results_iteration099.txt.gz \
+    ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/PIC1/results_iteration049.txt.gz \
+    -n NoCorrectionAtAll NoRNAseqAlignmentMetrics -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoCorrectionAtAll-MAF5-OLS-AllDatasetsCorrected_PIC1_NoCorrectionAtAll_vs_NoRNAseqAlignmentMetrics
     
     
 """

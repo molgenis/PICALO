@@ -231,7 +231,7 @@ class main():
 
     @staticmethod
     def calculate_residuals(df, correction_df):
-        corrected_m = np.empty_like(df, dtype=np.float64)
+        corrected_m = np.empty(df.shape, dtype=np.float64)
         last_print_time = None
         n_tests = df.shape[0]
         for i in range(n_tests):

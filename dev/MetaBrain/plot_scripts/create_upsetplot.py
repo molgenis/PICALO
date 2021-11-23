@@ -214,15 +214,16 @@ class main():
             signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
             pic_data[pic] = signif_ieqtl
 
-        # Plot upsetplot of all PICS combined.
-        counts = self.count(pic_data)
-        counts = counts[counts > 0]
-        print(counts)
+        if len(pic_data.keys()) > 0:
+            # Plot upsetplot of all PICS combined.
+            counts = self.count(pic_data)
+            counts = counts[counts > 0]
+            print(counts)
 
-        print("Creating plot.")
-        up.plot(counts, sort_by='cardinality', show_counts=True)
-        plt.savefig(os.path.join(self.outdir, "{}_PICS_upsetplot.png".format(self.out_filename)))
-        plt.close()
+            print("Creating plot.")
+            up.plot(counts, sort_by='cardinality', show_counts=True)
+            plt.savefig(os.path.join(self.outdir, "{}_PICS_upsetplot.png".format(self.out_filename)))
+            plt.close()
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
