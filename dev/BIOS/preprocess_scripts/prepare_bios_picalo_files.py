@@ -243,7 +243,7 @@ class main():
         print(pcpc_df)
 
         for pc_index in range(0, 9):
-            self.save_file(df=pcpc_df.iloc[[pc_index], :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "ExpressionPC{}.txt.gz".format(pc_index)))
+            self.save_file(df=pcpc_df.iloc[[pc_index], :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "ExpressionPC{}.txt.gz".format(pc_index + 1)))
         for n_pcs in range(5, 105, 5):
             if n_pcs <= pcpc_df.shape[0]:
                 self.save_file(df=pcpc_df.iloc[:n_pcs, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first{}ExpressionPCs.txt.gz".format(n_pcs)))
