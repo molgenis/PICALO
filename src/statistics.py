@@ -30,8 +30,7 @@ from scipy.special import betainc
 from statsmodels.regression.linear_model import OLS
 
 
-def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
-                      include_intercept=True, log=None):
+def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None, log=None):
     if X_m is None and X_inter_m is None:
         return y_m
     if X_inter_m is not None and inter_m is None:
@@ -63,9 +62,6 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None,
         # Force 2D matrix.
         if np.ndim(X_inter_m_tmp) == 1:
             X_inter_m_tmp = X_inter_m_tmp[:, np.newaxis]
-
-        # Merge.
-        correction_matrix = np.hstack((correction_matrix, X_inter_m_tmp))
 
     # Loop over expression rows.
     last_print_time = None
