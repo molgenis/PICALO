@@ -73,6 +73,8 @@ Syntax:
 ./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics
 
 ./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_NoSex
+
+./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pi /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/PIC1_PIC2.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PIC1_PIC2Removed
 """
 
 
@@ -84,6 +86,7 @@ class main():
         self.rna_alignment_path = getattr(arguments, 'rna_alignment')
         self.sex_path = getattr(arguments, 'sex')
         self.mds_path = getattr(arguments, 'mds')
+        self.pic_path = getattr(arguments, 'pic')
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.palette_path = getattr(arguments, 'palette')
         outdir = getattr(arguments, 'outdir')
@@ -141,13 +144,19 @@ class main():
                             required=False,
                             default=None,
                             help="The path to the mds matrix.")
+        parser.add_argument("-pi",
+                            "--pic",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the pic matrix.")
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
                             required=False,
                             default=None,
                             help="The path to the sample-dataset link matrix.")
-        parser.add_argument("-p",
+        parser.add_argument("-pa",
                             "--palette",
                             type=str,
                             required=False,
@@ -231,7 +240,7 @@ class main():
                  file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
                  plot_appendix="_1")
 
-        df = self.load_file(os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)), header=0, index_col=0)
+        # df = self.load_file(os.path.join("/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz"), header=0, index_col=0)
 
         print("Step 7: Construct correction matrix 1.")
         ram_df = None
@@ -248,9 +257,15 @@ class main():
         if self.mds_path is not None:
             mds_df = self.load_file(self.mds_path, header=0, index_col=0)
             mds_df = mds_df.loc[samples, :]
+
+        pic_df = None
+        if self.mds_path is not None:
+            pic_df = self.load_file(self.pic_path, header=0, index_col=0)
+            pic_df = pic_df.loc[:, samples].T
         correction_df = self.prepare_correction_matrix(ram_df=ram_df,
                                                        sex_df=sex_df,
                                                        mds_df=mds_df,
+                                                       pic_df=pic_df,
                                                        dataset_df=dataset_df)
 
         print("\tSaving file.")
@@ -259,8 +274,8 @@ class main():
         print("Step 8: remove technical covariates OLS.")
         corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
 
-        print("\tSaving file.")
-        self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
+        # print("\tSaving file.")
+        # self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
 
         print("Step 9: PCA analysis.")
         self.pca(df=corrected_df,
@@ -309,7 +324,7 @@ class main():
 
         return out_dict
 
-    def prepare_correction_matrix(self, ram_df, sex_df, mds_df, dataset_df):
+    def prepare_correction_matrix(self, ram_df, sex_df, mds_df, pic_df, dataset_df):
         ram_df_subset_df = None
         if ram_df is not None:
             # Remove columns without variance and filter the RNAseq alignment
@@ -334,6 +349,12 @@ class main():
                 correction_df = correction_df.merge(mds_df, left_index=True, right_index=True)
             else:
                 correction_df = mds_df
+
+        if pic_df is not None:
+            if correction_df is not None:
+                correction_df = correction_df.merge(pic_df, left_index=True, right_index=True)
+            else:
+                correction_df = pic_df
 
         # Add the dataset dummies but exclude the dataset with the highest
         # number of samples.
@@ -461,6 +482,7 @@ class main():
         print("  > RNAseq alignment metrics: {}".format(self.rna_alignment_path))
         print("  > Sex: {}".format(self.sex_path))
         print("  > MDS: {}".format(self.mds_path))
+        print("  > PIC: {}".format(self.pic_path))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Palette path: {}".format(self.palette_path))
         print("  > Plot output directory: {}".format(self.plot_outdir))
