@@ -1,7 +1,7 @@
 """
 File:         visualiser.py
 Created:      2021/04/14
-Last Changed: 2021/11/15
+Last Changed: 2021/11/26
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -46,34 +46,40 @@ class Visualiser:
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
+        if not ieqtl.is_computed:
+            ieqtl.compute()
+
         # Get the data we need.
         X = np.copy(ieqtl.X)
         y = np.copy(ieqtl.y)
 
         # Calculate the eqtl pearson R.
         eqtl_pearsonr = calc_pearsonr_vector(x=y, y=fit_and_predict(X=X[:, :2], y=y))
-        eqtl_r_squared = eqtl_pearsonr * eqtl_pearsonr
-
-        # Calculate the interaction pearson R.
-        inter_pearsonr = calc_pearsonr_vector(x=y, y=fit_and_predict(X=X, y=y))
-        inter_r_squared = inter_pearsonr * inter_pearsonr
 
         # Construct plot data frames.
         df = pd.DataFrame(X, columns=["intercept", "genotype", "covariate", "interaction"])
         df["expression"] = y
         df["group"] = df["genotype"].round(0)
 
+        annot1 = ["N = {:,}".format(ieqtl.n),
+                  "r = {:.2f}".format(eqtl_pearsonr)]
+        annot2 = ["N = {:,}".format(ieqtl.n),
+                  "Betas = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.betas])),
+                  "SD = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.std])),
+                  "t-values = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.betas / ieqtl.std])),
+                  "p-value = {:.2e}".format(ieqtl.p_value)]
+
         # Plot.
         self.create_overview_figure(df=df,
-                                    eqtl_rs=eqtl_r_squared,
-                                    inter_rs=inter_r_squared,
+                                    annot1=annot1,
+                                    annot2=annot2,
                                     snp=ieqtl.get_snp(),
                                     gene=ieqtl.get_gene(),
                                     cov=ieqtl.get_cov(),
                                     title="{}:{}".format(ieqtl.get_ieqtl_id(), label),
                                     outdir=outdir)
 
-    def create_overview_figure(self, df, eqtl_rs, inter_rs, snp, gene, cov,
+    def create_overview_figure(self, df, annot1, annot2, snp, gene, cov,
                                title, outdir):
         sns.set_style("ticks")
         fig, (ax1, ax2) = plt.subplots(nrows=1,
@@ -88,7 +94,7 @@ class Visualiser:
                        palette=self.palette,
                        xlabel=snp,
                        ylabel=gene,
-                       rsquared=eqtl_rs,
+                       annot=annot1,
                        title="eQTL"
                        )
 
@@ -101,7 +107,7 @@ class Visualiser:
                         palette=self.palette,
                         xlabel=cov,
                         ylabel="",
-                        rsquared=inter_rs,
+                        annot=annot2,
                         ci=None,
                         title="interaction")
 
@@ -110,8 +116,7 @@ class Visualiser:
         fig.savefig(os.path.join(outdir,"{}_overview_plot.png".format(title.replace(":", "-"))))
         plt.close()
 
-    def plot_interaction_optimization(self, ieqtl, out_path, label,
-                                      fdr=None, ocf=None):
+    def plot_interaction_optimization(self, ieqtl, out_path, label, ocf=None):
         # Initialize the output directory.
         outdir = os.path.join(out_path, "plot")
         if not os.path.exists(outdir):
@@ -154,20 +159,29 @@ class Visualiser:
             df["expression"] = y
             df["group"] = df["genotype"].round(0)
 
+        annot1 = ["N = {:,}".format(ieqtl.n),
+                  "R^2 = {:.2f}".format(r_squared_start),
+                  "Betas = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.betas])),
+                  "SD = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.std])),
+                  "t-values = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.betas / ieqtl.std])),
+                  "p-value = {:.2e}".format(ieqtl.p_value)]
+        annot2 = ["N = {:,}".format(ieqtl.n)]
+        if r_squared_opt is not None:
+            annot2.append("R^2 = {:.2f}".format(r_squared_start))
+
         # Plot.
         self.create_optimization_figure(df1=df1,
                                         df2=df2,
-                                        rs1=r_squared_start,
-                                        rs2=r_squared_opt,
+                                        annot1=annot1,
+                                        annot2=annot2,
                                         gene=ieqtl.get_gene(),
                                         cov=ieqtl.get_cov(),
-                                        fdr1=fdr,
                                         p2_ci=p2_ci,
                                         title="{}:{}".format(ieqtl.get_ieqtl_id(), label),
                                         outdir=outdir,
                                         solo_optimized=solo_optimized)
 
-    def create_optimization_figure(self, df1, df2, rs1, rs2, gene, cov, fdr1,
+    def create_optimization_figure(self, df1, df2, annot1, annot2, gene, cov,
                                    p2_ci, title, outdir, solo_optimized):
         sns.set_style("ticks")
         fig, (ax1, ax2) = plt.subplots(nrows=1,
@@ -184,8 +198,7 @@ class Visualiser:
                         ci=95,
                         xlabel=cov,
                         ylabel=gene,
-                        rsquared=rs1,
-                        fdr=fdr1,
+                        annot=annot1,
                         title="start")
 
         p2_title = "optimized"
@@ -204,7 +217,7 @@ class Visualiser:
                         ci=p2_ci,
                         xlabel="{} [optimized]".format(cov),
                         ylabel=gene,
-                        rsquared=rs2,
+                        annot=annot2,
                         title=p2_title)
 
         plt.suptitle(title, fontsize=18)
@@ -213,7 +226,7 @@ class Visualiser:
         plt.close()
 
     @staticmethod
-    def eqtl_plot(fig, ax, df, x="x", y="y", palette=None, rsquared=None,
+    def eqtl_plot(fig, ax, df, x="x", y="y", palette=None, annot=None,
                   xlabel="", ylabel="", title=""):
         sns.despine(fig=fig, ax=ax)
 
@@ -230,22 +243,15 @@ class Visualiser:
                     zorder=-1,
                     ax=ax)
 
-        ax.annotate(
-            'N = {:,}'.format(df.shape[0]),
-            xy=(0.03, 0.94),
-            xycoords=ax.transAxes,
-            color="#000000",
-            alpha=1,
-            fontsize=12,
-            fontweight='bold')
-        if rsquared is not None:
-            ax.annotate('r-squared = {:.2f}'.format(rsquared),
-                        xy=(0.03, 0.90),
-                        xycoords=ax.transAxes,
-                        color="#000000",
-                        alpha=0.75,
-                        fontsize=12,
-                        fontweight='bold')
+        if annot is not None:
+            for i, annot_label in enumerate(annot):
+                ax.annotate(annot_label,
+                            xy=(0.03, 0.94 - (i * 0.04)),
+                            xycoords=ax.transAxes,
+                            color="#000000",
+                            alpha=0.75,
+                            fontsize=12,
+                            fontweight='bold')
 
         ax.set_title(title,
                      fontsize=16,
@@ -259,8 +265,7 @@ class Visualiser:
 
     @staticmethod
     def inter_plot(fig, ax, df, x="x", y="y", group="group", palette=None,
-                   ci=95, fdr=None, rsquared=None, xlabel="", ylabel="",
-                   title=""):
+                   ci=95, annot=None, xlabel="", ylabel="", title=""):
         if len(set(df[group].unique()).symmetric_difference({0, 1, 2})) > 0:
             return
 
@@ -295,23 +300,15 @@ class Visualiser:
                 fontsize=12,
                 fontweight='bold')
 
-        if rsquared is not None:
-            ax.annotate('r-squared = {:.2f}'.format(rsquared),
-                        xy=(0.03, 0.82),
-                        xycoords=ax.transAxes,
-                        color="#000000",
-                        alpha=0.75,
-                        fontsize=12,
-                        fontweight='bold')
-
-        if fdr is not None:
-            ax.annotate('FDR = {:.2e}'.format(fdr),
-                        xy=(0.03, 0.78),
-                        xycoords=ax.transAxes,
-                        color="#000000",
-                        alpha=0.75,
-                        fontsize=12,
-                        fontweight='bold')
+        if annot is not None:
+            for i, annot_label in enumerate(annot):
+                ax.annotate(annot_label,
+                            xy=(0.03, 0.82 - (i * 0.04)),
+                            xycoords=ax.transAxes,
+                            color="#000000",
+                            alpha=0.75,
+                            fontsize=12,
+                            fontweight='bold')
 
         ax.set_title(title,
                      fontsize=16,

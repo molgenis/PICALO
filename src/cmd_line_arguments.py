@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2021/11/01
+Last Changed: 2021/11/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -166,6 +166,11 @@ class CommandLineArguments:
                                  "will stop when the 1 - pearson correlation"
                                  "coefficient is below this threshold. "
                                  "Default: 1e-3.")
+        parser.add_argument("-force_continue",
+                            action='store_true',
+                            help="Force to identify more PICs even if the "
+                                 "previous one did not converge."
+                                 " Default: False.")
         parser.add_argument("-verbose",
                             action='store_true',
                             help="Enable verbose output. Default: False.")

@@ -3,7 +3,7 @@
 """
 File:         fast_interaction_mapper.py
 Created:      2021/11/16
-Last Changed: 2021/11/23
+Last Changed: 2021/11/26
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -292,7 +292,7 @@ class main():
                                              log=self.log)
         del expr_m, corr_m, corr_inter_m
 
-        # Force normalise the expression matrix.
+        self.log.info("Force normalise the expression matrix and covariates.")
         fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
         corrected_expr_m = fn.process(data=corrected_expr_m)
         covs_m = fn.process(data=covs_m)
@@ -330,7 +330,7 @@ class main():
             now_time = int(time.time())
             if last_print_time is None or (now_time - last_print_time) >= 30 or (eqtl_index + 1) == n_eqtls:
                 last_print_time = now_time
-                self.log.info("\t{}/{} eQTLs analysed [{:.2f}%]".format((eqtl_index + 1), n_eqtls, (100 / n_eqtls) * (eqtl_index + 1)))
+                self.log.info("\t{:,}/{:,} eQTLs analysed [{:.2f}%]".format((eqtl_index + 1), n_eqtls, (100 / n_eqtls) * (eqtl_index + 1)))
 
             # Get the genotype.
             genotype = geno_m[eqtl_index, :]
@@ -403,10 +403,10 @@ class main():
             # Convert to pandas data frame.
             df = pd.DataFrame(output_m, columns=["n",
                                                  "rss model1",
-                                                 "eQTL beta-interaction",
+                                                 "eQTL beta-intercept",
                                                  "eQTL beta-genotype",
                                                  "rss model2",
-                                                 "eQTL std-interaction",
+                                                 "eQTL std-intercept",
                                                  "eQTL std-genotype",
                                                  "eQTL p-value",
                                                  "rss model3",
@@ -414,7 +414,7 @@ class main():
                                                  "ieQTL beta-genotype",
                                                  "ieQTL beta-covariate",
                                                  "ieQTL beta-interaction",
-                                                 "rss model2",
+                                                 "rss model4",
                                                  "ieQTL std-intercept",
                                                  "ieQTL std-genotype",
                                                  "ieQTL std-covariate",

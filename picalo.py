@@ -3,7 +3,7 @@
 """
 File:         picalo.py
 Created:      2020/11/16
-Last Changed: 2021/11/02
+Last Changed: 2021/11/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -71,8 +71,12 @@ if __name__ == '__main__':
     MIN_ITER = CLA.get_argument('min_iter')
     MAX_ITER = CLA.get_argument('max_iter')
     TOL = CLA.get_argument('tol')
+    FORCE_CONTINUE = CLA.get_argument('force_continue')
     VERBOSE = CLA.get_argument('verbose')
     OUTDIR = CLA.get_argument('outdir')
+
+    if MAX_ITER <= MIN_ITER:
+        MAX_ITER = MIN_ITER + 1
 
     # Start the program.
     PROGRAM = Main(eqtl_path=EQTL_PATH,
@@ -93,6 +97,7 @@ if __name__ == '__main__':
                    min_iter=MIN_ITER,
                    max_iter=MAX_ITER,
                    tol=TOL,
+                   force_continue=FORCE_CONTINUE,
                    verbose=VERBOSE,
                    outdir=OUTDIR
                    )

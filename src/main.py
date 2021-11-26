@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/23
+Last Changed: 2021/11/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -43,7 +43,8 @@ class Main:
                  tech_covariate_path, tech_covariate_with_inter_path,
                  covariate_path, sample_dataset_path,
                  eqtl_alpha, ieqtl_alpha, call_rate, hw_pval, maf, mgs,
-                 n_components, min_iter, max_iter, tol, verbose, outdir):
+                 n_components, min_iter, max_iter, tol, force_continue,
+                 verbose, outdir):
         # Safe arguments.
         self.genotype_na = genotype_na
         self.eqtl_alpha = eqtl_alpha
@@ -56,6 +57,7 @@ class Main:
         self.min_iter = min_iter
         self.max_iter = max_iter
         self.tol = tol
+        self.force_continue = force_continue
 
         # Other global variables.
         self.min_dataset_sample_size = 30
@@ -285,9 +287,10 @@ class Main:
         components_df = None
         for comp_count in range(self.n_components):
             if stop:
-                self.log.warning("Last component did not converge, stop "
-                                 "further identification of components")
-                break
+                self.log.warning("Last component did not converge")
+                if not self.force_continue:
+                    self.log.warning("Stop further identification of components")
+                    break
 
             self.log.info("\tIdentifying PIC {}".format(comp_count + 1))
 
@@ -355,7 +358,7 @@ class Main:
                            log=self.log)
 
         pics_df = components_df
-        if stop:
+        if stop and not self.force_continue:
             pics_df = components_df.iloc[:-1, :]
         save_dataframe(df=pics_df,
                        outpath=os.path.join(self.outdir, "PICs.txt.gz"),
@@ -695,6 +698,7 @@ class Main:
         self.log.info("  > Min iterations: {}".format(self.min_iter))
         self.log.info("  > Max iterations: {}".format(self.max_iter))
         self.log.info("  > Tolerance: {}".format(self.tol))
+        self.log.info("  > Force continue: {}".format(self.force_continue))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")
 
