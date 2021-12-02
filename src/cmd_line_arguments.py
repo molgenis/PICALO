@@ -63,7 +63,7 @@ class CommandLineArguments:
                             help="The path to the genotype matrix")
         parser.add_argument("-na",
                             "--genotype_na",
-                            type=str,
+                            type=int,
                             required=False,
                             default=-1,
                             help="The genotype value that equals a missing "
