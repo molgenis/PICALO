@@ -1,7 +1,7 @@
 """
 File:         visualiser.py
 Created:      2021/04/14
-Last Changed: 2021/11/26
+Last Changed: 2021/12/03
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -33,7 +33,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # Local application imports.
-from src.statistics import calc_vertex_xpos, calc_pearsonr_vector, fit_and_predict
+from src.statistics import calc_vertex_xpos, calc_pearsonr_vector, fit_and_predict, calc_rss, inverse, fit, predict, calc_std, calc_p_value
 
 
 class Visualiser:
@@ -52,9 +52,17 @@ class Visualiser:
         # Get the data we need.
         X = np.copy(ieqtl.X)
         y = np.copy(ieqtl.y)
+        n = ieqtl.n
 
-        # Calculate the eqtl pearson R.
-        eqtl_pearsonr = calc_pearsonr_vector(x=y, y=fit_and_predict(X=X[:, :2], y=y))
+        # Calculate the eqtl stats.
+        rss_model1 = calc_rss(y=y, y_hat=np.mean(y))
+        eqtl_inv_m = inverse(X=X[:, :2])
+        eqtl_betas = fit(X=X[:, :2], y=y, inv_m=eqtl_inv_m)
+        y_hat = predict(X=X[:, :2], betas=eqtl_betas)
+        eqtl_pearsonr = calc_pearsonr_vector(x=y, y=y_hat)
+        rss_model2 = calc_rss(y=y, y_hat=y_hat)
+        eqtl_std = calc_std(rss=rss_model2, n=n, df=2, inv_m=eqtl_inv_m)
+        eqtl_p_value = calc_p_value(rss1=rss_model1, rss2=rss_model2, df1=1, df2=2, n=n)
 
         # Construct plot data frames.
         df = pd.DataFrame(X, columns=["intercept", "genotype", "covariate", "interaction"])
@@ -62,7 +70,11 @@ class Visualiser:
         df["group"] = df["genotype"].round(0)
 
         annot1 = ["N = {:,}".format(ieqtl.n),
-                  "r = {:.2f}".format(eqtl_pearsonr)]
+                  "r = {:.2f}".format(eqtl_pearsonr),
+                  "Betas = {}".format(", ".join(["{:.2f}".format(x) for x in eqtl_betas])),
+                  "SD = {}".format(", ".join(["{:.2f}".format(x) for x in eqtl_std])),
+                  "t-values = {}".format(", ".join(["{:.2f}".format(x) for x in eqtl_betas / eqtl_std])),
+                  "p-value = {:.2e}".format(eqtl_p_value)]
         annot2 = ["N = {:,}".format(ieqtl.n),
                   "Betas = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.betas])),
                   "SD = {}".format(", ".join(["{:.2f}".format(x) for x in ieqtl.std])),
@@ -108,7 +120,6 @@ class Visualiser:
                         xlabel=cov,
                         ylabel="",
                         annot=annot2,
-                        ci=None,
                         title="interaction")
 
         plt.suptitle(title, fontsize=18)
@@ -133,12 +144,10 @@ class Visualiser:
         # Calc the OCF if not given.
         if ocf is None:
             solo_optimized = True
-            p2_ci = None
             coef_a, coef_b = ieqtl.get_mll_coef_representation()
             ocf = calc_vertex_xpos(a=coef_a, b=coef_b)
         else:
             solo_optimized = False
-            p2_ci = 95
             ocf = ocf[ieqtl.mask]
 
         # Construct the OCF ieQTL matrix.
@@ -176,13 +185,12 @@ class Visualiser:
                                         annot2=annot2,
                                         gene=ieqtl.get_gene(),
                                         cov=ieqtl.get_cov(),
-                                        p2_ci=p2_ci,
                                         title="{}:{}".format(ieqtl.get_ieqtl_id(), label),
                                         outdir=outdir,
                                         solo_optimized=solo_optimized)
 
     def create_optimization_figure(self, df1, df2, annot1, annot2, gene, cov,
-                                   p2_ci, title, outdir, solo_optimized):
+                                   title, outdir, solo_optimized):
         sns.set_style("ticks")
         fig, (ax1, ax2) = plt.subplots(nrows=1,
                                        ncols=2,
@@ -195,7 +203,6 @@ class Visualiser:
                         y="expression",
                         group="group",
                         palette=self.palette,
-                        ci=95,
                         xlabel=cov,
                         ylabel=gene,
                         annot=annot1,
@@ -214,7 +221,6 @@ class Visualiser:
                         y="expression",
                         group="group",
                         palette=self.palette,
-                        ci=p2_ci,
                         xlabel="{} [optimized]".format(cov),
                         ylabel=gene,
                         annot=annot2,
@@ -234,12 +240,22 @@ class Visualiser:
                     y=y,
                     data=df,
                     scatter=False,
+                    ci=None,
                     line_kws={"color": "#000000"},
                     ax=ax)
+        sns.violinplot(x=x,
+                       y=y,
+                       data=df,
+                       palette=palette,
+                       cut=0,
+                       zorder=-1,
+                       ax=ax)
+        plt.setp(ax.collections, alpha=.75)
         sns.boxplot(x=x,
                     y=y,
                     data=df,
-                    palette=palette,
+                    whis=np.inf,
+                    color="white",
                     zorder=-1,
                     ax=ax)
 
@@ -265,7 +281,7 @@ class Visualiser:
 
     @staticmethod
     def inter_plot(fig, ax, df, x="x", y="y", group="group", palette=None,
-                   ci=95, annot=None, xlabel="", ylabel="", title=""):
+                   annot=None, xlabel="", ylabel="", title=""):
         if len(set(df[group].unique()).symmetric_difference({0, 1, 2})) > 0:
             return
 
@@ -282,7 +298,7 @@ class Visualiser:
                 coef_str = "{:.2f}".format(coef)
 
                 # Plot.
-                sns.regplot(x=x, y=y, data=subset, ci=ci,
+                sns.regplot(x=x, y=y, data=subset, ci=None,
                             scatter_kws={'facecolors': palette[group_id],
                                          'linewidth': 0,
                                          'alpha': 0.3},

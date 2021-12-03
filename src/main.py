@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/11/25
+Last Changed: 2021/12/03
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -279,6 +279,8 @@ class Main:
                                   log=self.log)
 
         pic_m = np.empty((self.n_components, np.size(samples)), dtype=np.float64)
+        summary_stats_m = np.empty((self.n_components, 2), dtype=np.float64)
+        summary_stats_m[:] = np.nan
         n_components_performed = 0
         pic_a = None
         stop = False
@@ -330,11 +332,17 @@ class Main:
                                                 log=self.log)
 
                 # Optimize the cell fractions in X iterations.
-                pic_a, stop = io.process(eqtl_m=eqtl_m,
-                                         geno_m=geno_m,
-                                         expr_m=comp_expr_m,
-                                         covs_m=covs_m,
-                                         outdir=comp_outdir)
+                pic_a, n_ieqtls, stop = io.process(eqtl_m=eqtl_m,
+                                                   geno_m=geno_m,
+                                                   expr_m=comp_expr_m,
+                                                   covs_m=covs_m,
+                                                   outdir=comp_outdir)
+
+                # Save #ieQTLs to summary stats.
+                summary_stats_m[comp_count, 0] = n_ieqtls
+
+                if pic_a is None:
+                    break
 
                 # Save.
                 pic_m[comp_count, :] = pic_a
@@ -347,15 +355,29 @@ class Main:
             n_components_performed += 1
 
             # Saving component output file.
-            components_df = pd.DataFrame(pic_m[:n_components_performed, :],
-                                         index=["PIC{}".format(i+1) for i in range(n_components_performed)],
-                                         columns=samples)
+            if n_components_performed > 0:
+                components_df = pd.DataFrame(pic_m[:n_components_performed, :],
+                                             index=["PIC{}".format(i+1) for i in range(n_components_performed)],
+                                             columns=samples)
 
-            save_dataframe(df=components_df,
-                           outpath=os.path.join(self.outdir, "components.txt.gz"),
+                save_dataframe(df=components_df,
+                               outpath=os.path.join(self.outdir, "components.txt.gz"),
+                               header=True,
+                               index=True,
+                               log=self.log)
+
+        if n_components_performed == 0:
+            self.log.error("No PICs identified. Stopping PICALO.")
+
+            # Save summary stats.
+            save_dataframe(df=pd.DataFrame(summary_stats_m,
+                                           index=["PIC{}".format(i + 1) for i in range(self.n_components)],
+                                           columns=["Iterative #ieQTLs", "Raw #ieQTLs"]),
+                           outpath=os.path.join(self.outdir, "SummaryStats.txt.gz"),
                            header=True,
                            index=True,
                            log=self.log)
+            exit()
 
         pics_df = components_df
         if stop and not self.force_continue:
@@ -416,12 +438,22 @@ class Main:
                            header=True,
                            index=False,
                            log=self.log)
+            summary_stats_m[pic_index, 1] = n_hits
 
             del pic_expr_m, pic_a, results_df
 
         del corrected_expr_m
 
         ########################################################################
+
+        # Save summary stats.
+        save_dataframe(df=pd.DataFrame(summary_stats_m,
+                                       index=["PIC{}".format(i + 1) for i in range(self.n_components)],
+                                       columns=["Iterative #ieQTLs", "Raw #ieQTLs"]),
+                       outpath=os.path.join(self.outdir, "SummaryStats.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
 
         self.log.info("Finished")
         self.log.info("")

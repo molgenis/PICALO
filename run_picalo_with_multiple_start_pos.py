@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         run_PICALO_with_multiple_start_pos.py
+File:         run_picalo_with_multiple_start_pos.py
 Created:      2021/11/30
-Last Changed:
+Last Changed: 2021/12/03
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -58,7 +58,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./run_PICALO_with_multiple_start_pos.py \
+./run_picalo_with_multiple_start_pos.py \
     -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
     -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/genotype_table.txt.gz \
     -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/expression_table.txt.gz \
@@ -70,6 +70,20 @@ Syntax:
     -min_iter 50 \
     -n_components 2 \
     -o 2021-11-30-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics \
+    -pp /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO
+    
+./run_picalo_with_multiple_start_pos.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/genotype_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/first60ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/first25ExpressionPCs.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -min_iter 50 \
+    -n_components 15 \
+    -o 2021-12-03-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter \
     -pp /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO
 """
 
@@ -84,8 +98,8 @@ class main():
         self.genotype = getattr(arguments, 'genotype')
         self.genotype_na =getattr(arguments, 'genotype_na')
         self.expression = getattr(arguments, 'expression')
-        self.tech_covariate_path = getattr(arguments, 'tech_covariate')
-        self.tech_covariate_with_inter_path = getattr(arguments, 'tech_covariate_with_inter')
+        self.tech_covariate = getattr(arguments, 'tech_covariate')
+        self.tech_covariate_with_inter = getattr(arguments, 'tech_covariate_with_inter')
         self.covariate = getattr(arguments, 'covariate')
         self.sample_to_dataset = getattr(arguments, 'sample_to_dataset')
         self.eqtl_alpha = getattr(arguments, 'eqtl_alpha')
@@ -311,12 +325,10 @@ class main():
         print("Running PICALO with {} covariates as start positions".format(n_covariates))
 
         print("")
-        tech_covariate_with_inter_path = self.tech_covariate_with_inter_path
+        tech_covariate_with_inter_path = self.tech_covariate_with_inter
         top_pics_per_group = []
         top_pics_per_group_path = os.path.join(self.outdir, "all_found_pics.txt.gz")
         for i in range(self.n_components):
-            if i != 2:
-                continue
             pic = "PIC{}".format(i+1)
             name = "{}-{}".format(self.picalo_outdir, pic)
             print("### Analyzing {} ###".format(name))
@@ -325,9 +337,8 @@ class main():
             pic_output_dir = os.path.join(self.outdir, pic)
             pic_jobs_dir = os.path.join(pic_output_dir, "jobs")
             pic_jobs_output_dir = os.path.join(pic_jobs_dir, "output")
-            pic_status_dir = os.path.join(pic_output_dir, "status")
             pic_plot_dir = os.path.join(pic_output_dir, "plot")
-            for dir in [pic_output_dir, pic_jobs_dir, pic_jobs_output_dir, pic_status_dir, pic_plot_dir]:
+            for dir in [pic_output_dir, pic_jobs_dir, pic_jobs_output_dir, pic_plot_dir]:
                 if not os.path.exists(dir):
                     os.makedirs(dir)
 
@@ -340,45 +351,49 @@ class main():
                                                               covariate=covariate,
                                                               covariate_path=covariate_path,
                                                               jobs_dir=pic_jobs_dir,
-                                                              jobs_output_dir=pic_jobs_output_dir,
-                                                              status_dir=pic_status_dir)
+                                                              jobs_output_dir=pic_jobs_output_dir)
                 jobfile_paths.append(jobfile_path)
                 job_names.append(job_name)
 
-            print("  Starting job files.")
-            start_time = int(time.time())
-            for jobfile_path in jobfile_paths:
-                command = ['sbatch', jobfile_path]
-                self.run_command(command)
+            if i > 1:
+                print("  Starting job files.")
+                start_time = int(time.time())
+                for jobfile_path in jobfile_paths:
+                    command = ['sbatch', jobfile_path]
+                    self.run_command(command)
 
-            print("  Waiting for jobs to finish.")
-            last_print_time = None
-            while True:
-                # Check how many jobs are done.
-                n_completed = len(
-                    glob.glob(os.path.join(pic_status_dir, "*.txt")))
+                print("  Waiting for jobs to finish.")
+                last_print_time = None
+                completed_jobs = set()
+                while True:
+                    # Check how many jobs are done.
+                    n_completed = 0
+                    for job_name in job_names:
+                        if os.path.exists(os.path.join(self.picalo_path, "output", job_name, "SummaryStats.txt.gz")):
+                            if job_name not in completed_jobs:
+                                print("\t  '{}' finished".format(job_name))
+                                completed_jobs.add(job_name)
 
-                # Update user on progress.
-                now_time = int(time.time())
-                if last_print_time is None or (
-                        now_time - last_print_time) >= self.print_interval or n_completed == n_covariates:
-                    print("\t{:,}/{:,} jobs finished [{:.2f}%]".format(
-                        n_completed, n_covariates,
-                        (100 / n_covariates) * n_completed))
-                    last_print_time = now_time
+                            n_completed += 1
 
-                if time.time() > self.max_end_time:
-                    print("\tMax end time reached.")
-                    break
+                    # Update user on progress.
+                    now_time = int(time.time())
+                    if last_print_time is None or (now_time - last_print_time) >= self.print_interval or n_completed == n_covariates:
+                        print("\t{:,}/{:,} jobs finished [{:.2f}%]".format(n_completed, n_covariates, (100 / n_covariates) * n_completed))
+                        last_print_time = now_time
 
-                if n_completed == n_covariates:
-                    rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
-                    print("\t\tAll jobs are finished in {} minute(s) and "
-                          "{} second(s)".format(int(rt_min),
-                                                int(rt_sec)))
-                    break
+                    if time.time() > self.max_end_time:
+                        print("\tMax end time reached.")
+                        break
 
-                time.sleep(self.sleep_time)
+                    if n_completed == n_covariates:
+                        rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
+                        print("\t\tAll jobs are finished in {} minute(s) and "
+                              "{} second(s)".format(int(rt_min),
+                                                    int(rt_sec)))
+                        break
+
+                    time.sleep(self.sleep_time)
 
             # Check if we didnt exceed the time limit.
             if time.time() > self.max_end_time:
@@ -437,6 +452,10 @@ class main():
                                 pic_groups=pic_groups,
                                 outdir=pic_plot_dir,
                                 name=name)
+            self.plot_summary_stats(summary_stats_df=summary_stats_df,
+                                    pic_groups=pic_groups,
+                                    outdir=pic_plot_dir,
+                                    name=name)
 
             self.plot_pics_df(pics_df=pics_df,
                               pic_groups=pic_groups,
@@ -514,7 +533,7 @@ class main():
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
 
-    def create_job_file(self, name, tech_covariate_with_inter_path, covariate, covariate_path, jobs_dir, jobs_output_dir, status_dir):
+    def create_job_file(self, name, tech_covariate_with_inter_path, covariate, covariate_path, jobs_dir, jobs_output_dir):
         job_name = "{}-{}AsCov".format(name, covariate)
 
         lines = ["#!/bin/bash",
@@ -537,7 +556,7 @@ class main():
                  "  -ge {} \\".format(self.genotype),
                  "  -na {} \\".format(self.genotype_na),
                  "  -ex {} \\".format(self.expression),
-                 "  -tc {} \\".format(self.tech_covariate_path),
+                 "  -tc {} \\".format(self.tech_covariate),
                  "  -tci {} \\".format(tech_covariate_with_inter_path),
                  "  -co {} \\".format(covariate_path),
                  "  -std {} \\".format(self.sample_to_dataset),
@@ -553,8 +572,6 @@ class main():
                  "  -tol {} \\".format(self.tol),
                  "  -verbose \\",
                  "  -o {}".format(job_name),
-                 "",
-                 "echo 'completed' > {}".format(os.path.join(status_dir, job_name + ".txt")),
                  "",
                  "deactivate",
                  ""]
@@ -579,9 +596,12 @@ class main():
             fpath = os.path.join(self.picalo_path, "output", job_name, "PIC1", "info.txt.gz")
             if not os.path.exists(fpath):
                 print("{} does not exist".format(fpath))
-                exit()
+                info_df = pd.DataFrame([job_name.split("-")[-1].replace("AsCov", ""), 0, np.nan, np.nan, np.nan, np.nan],
+                                       columns=["iteration0"],
+                                       index=["covariate", "N", "N Overlap", "Overlap %", "Sum Abs Normalized Delta Log Likelihood", "Pearson r"]).T
+            else:
+                info_df = self.load_file(inpath=fpath, header=0, index_col=0)
 
-            info_df = self.load_file(inpath=fpath, header=0, index_col=0)
             info_df["index"] = np.arange(1, (info_df.shape[0] + 1))
 
             summary_stats.append([info_df.loc["iteration0", "covariate"],
@@ -593,7 +613,9 @@ class main():
 
         # Merge info stats.
         info_df_m = pd.concat(info_df_m_list, axis=0)
-        info_df_m["log10 value"] = np.log10(info_df_m["value"])
+        info_df_m.dropna(inplace=True)
+        info_df_m["log10 value"] = np.nan
+        info_df_m.loc[info_df_m["value"] > 0, "log10 value"] = np.log10(info_df_m.loc[info_df_m["value"] > 0, "value"].astype(float))
 
         # Construct summary stats df.
         summary_stats_df = pd.DataFrame(summary_stats,
@@ -609,7 +631,7 @@ class main():
             covariate = job_name.split("-")[-1].replace("AsCov", "")
             if not os.path.exists(fpath):
                 print("{} does not exist".format(fpath))
-                exit()
+                continue
 
             pic_df = self.load_file(inpath=fpath, header=0, index_col=0).T
             pic_df.columns = [covariate]
@@ -713,6 +735,62 @@ class main():
         fig.savefig(outpath)
         plt.close()
 
+    def plot_summary_stats(self, summary_stats_df, pic_groups, outdir, name):
+        summary_stats_df["group"] = -1
+        for group_index, group_indices in pic_groups.items():
+            summary_stats_df.loc[summary_stats_df["covariate"].isin(group_indices), "group"] = group_index
+
+        for y in ["start", "end"]:
+            print("\t{}".format(y))
+
+            self.barplot(df=summary_stats_df,
+                         x="covariate",
+                         y=y,
+                         hue="group",
+                         palette=self.palette,
+                         xlabel="start position",
+                         ylabel="#ieQTLs (FDR<0.05)",
+                         title=y,
+                         filename=name + "_{}_barplot".format(y),
+                         outdir=outdir
+                         )
+
+    @staticmethod
+    def barplot(df, x="x", y="y", hue=None, palette=None, title="", xlabel="",
+                ylabel="", filename="plot", outdir=None):
+        sns.set(rc={'figure.figsize': (12, 9)})
+        sns.set_style("ticks")
+        fig, ax = plt.subplots()
+        sns.despine(fig=fig, ax=ax)
+
+        g = sns.barplot(x=x,
+                        y=y,
+                        hue=hue,
+                        palette=palette,
+                        dodge=False,
+                        data=df)
+
+        g.set_title(title,
+                    fontsize=14,
+                    fontweight='bold')
+        g.set_xlabel(xlabel,
+                     fontsize=10,
+                     fontweight='bold')
+        g.set_ylabel(ylabel,
+                     fontsize=10,
+                     fontweight='bold')
+
+        g.tick_params(labelsize=12)
+        g.set_xticks(range(df.shape[0]))
+        g.set_xticklabels(df[x], rotation=90)
+
+        plt.tight_layout()
+        outpath = "{}.png".format(filename)
+        if outdir is not None:
+            outpath = os.path.join(outdir, outpath)
+        fig.savefig(outpath)
+        plt.close()
+
     def plot_pics_df(self, pics_df, pic_groups, outdir, name):
         annot_df = pd.DataFrame(-1, index=pics_df.index, columns=["group"])
         for group_index, group_indices in pic_groups.items():
@@ -724,7 +802,7 @@ class main():
         self.plot_clustermap(df=corr_df,
                              colors=colors,
                              outdir=outdir,
-                             name=name)
+                             filename=name + "_correlation_clustermap")
 
     @staticmethod
     def correlate(df):
@@ -743,7 +821,7 @@ class main():
         return out_df
 
     @staticmethod
-    def plot_clustermap(df, colors, outdir, name):
+    def plot_clustermap(df, colors=None, outdir=None, filename=""):
         cmap = sns.diverging_palette(246, 24, as_cmap=True)
         sns.set(color_codes=True)
         g = sns.clustermap(df, cmap=cmap, vmin=-1, vmax=1, center=0,
@@ -751,10 +829,14 @@ class main():
                            yticklabels=True, xticklabels=True,
                            annot=df.round(2), dendrogram_ratio=(.1, .1),
                            figsize=(df.shape[0], df.shape[1]))
-        plt.setp(g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_ymajorticklabels(), fontsize=10))
+        plt.setp(g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_ymajorticklabels(),fontsize=10))
         g.fig.subplots_adjust(bottom=0.05, top=0.7)
+
         plt.tight_layout()
-        g.savefig(os.path.join(outdir, "{}_correlation_clustermap.png".format(name)))
+        outpath = "{}.png".format(filename)
+        if outdir is not None:
+            outpath = os.path.join(outdir, outpath)
+        g.savefig(outpath)
         plt.close()
 
     def print_arguments(self):
@@ -763,8 +845,8 @@ class main():
         print("  > Genotype: {}".format(self.genotype))
         print("  > Genotype NA: {}".format(self.genotype_na))
         print("  > Expression: {}".format(self.expression))
-        print("  > Technical covariates: {}".format(self.tech_covariate_path))
-        print("  > Technical covariates with interaction: {}".format(self.tech_covariate_with_inter_path))
+        print("  > Technical covariates: {}".format(self.tech_covariate))
+        print("  > Technical covariates with interaction: {}".format(self.tech_covariate_with_inter))
         print("  > Covariate: {}".format(self.covariate))
         print("  > Sample to dataset: {}".format(self.sample_to_dataset))
         print("  > eQTL alpha: <{}".format(self.eqtl_alpha))

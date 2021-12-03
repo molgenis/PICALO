@@ -102,10 +102,12 @@ class main():
                                     "variance": v,
                                     "skewness": sk,
                                     "kurtosis": kurt})
-        print(describe_df)
         describe_df.insert(3, "median", expr_df.median(axis=1).to_numpy())
         describe_df.insert(4, "sum", expr_df.sum(axis=1).to_numpy())
         print(describe_df)
+
+        for column in describe_df:
+            self.histplot(df=describe_df, x=column, title=column, filename="_{}".format(column))
 
         describe_df_m_list = []
         x_order = []
@@ -127,12 +129,12 @@ class main():
             describe_df[pic] = "not signif"
             describe_df.loc[(interaction_df["FDR"] < 0.05).to_numpy(bool), pic] = "signif"
 
-            # if pic in ["PIC1", "PIC2", "PIC15"]:
-            #     self.plot_overview(df=describe_df,
-            #                        columns=["min", "max", "mean", "variance", "skewness", "kurtosis"],
-            #                        hue=pic,
-            #                        palette={"not signif": "#808080", "signif": "#009E73"},
-            #                        name="_{}".format(pic))
+            if pic in ["PIC1", "PIC2", "PIC15"]:
+                self.plot_overview(df=describe_df,
+                                   columns=["min", "max", "mean", "variance", "skewness", "kurtosis"],
+                                   hue=pic,
+                                   palette={"not signif": "#808080", "signif": "#009E73"},
+                                   name="_{}".format(pic))
 
             signif_df = describe_df.loc[describe_df[pic] == "signif", :].copy()
             signif_df_m = signif_df.melt(value_vars=["min", "max", "mean", "median", "sum", "variance", "skewness", "kurtosis"])
@@ -235,6 +237,35 @@ class main():
                                   fontweight='bold')
 
         fig.savefig(os.path.join(self.outdir, "expression_describe_overview{}.png".format(name)))
+        plt.close()
+
+    def histplot(self, df, x="x", xlabel="", ylabel="", title="", filename="plot"):
+        sns.set(rc={'figure.figsize': (12, 9)})
+        sns.set_style("ticks")
+        fig, ax = plt.subplots()
+        sns.despine(fig=fig, ax=ax)
+
+        range = abs(df[x].max() - df[x].min())
+
+        g = sns.histplot(data=df,
+                         x=x,
+                         kde=True,
+                         binwidth=range / 100,
+                         color="#000000",
+                         ax=ax)
+
+        ax.set_title(title,
+                     fontsize=14,
+                     fontweight='bold')
+        ax.set_xlabel(xlabel,
+                      fontsize=10,
+                      fontweight='bold')
+        ax.set_ylabel(ylabel,
+                      fontsize=10,
+                      fontweight='bold')
+
+        plt.tight_layout()
+        fig.savefig(os.path.join(self.outdir, "expression_describe_histplot{}.png".format(filename)))
         plt.close()
 
     def plot_boxplot(self, df_m, x="x", y="value", col=None, hue=None,

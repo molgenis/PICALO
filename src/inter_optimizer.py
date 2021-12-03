@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/11/23
+Last Changed: 2021/12/03
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -54,6 +54,7 @@ class InteractionOptimizer:
         context_a = None
         cov = None
         results_df = None
+        n_ieqtls = 0
         prev_included_ieqtls = (0, set())
         n_iterations_performed = 0
         info_m = np.empty((self.max_iter, 5), dtype=np.float64)
@@ -158,7 +159,10 @@ class InteractionOptimizer:
 
             n_ieqtls = len(ieqtls)
             if n_ieqtls <= 1:
-                self.log.error("\t\t  No significant ieQTLs found\n")
+                self.log.error("\t\t  None or not enough significant ieQTLs "
+                               "found\n")
+                if iteration == 0:
+                    context_a = None
                 break
 
             self.log.info("\t\t  Optimizing ieQTLs")
@@ -233,30 +237,31 @@ class InteractionOptimizer:
                        index=True,
                        log=self.log)
 
-        n_ieqtls_per_sample_df = pd.DataFrame(n_ieqtls_per_sample_m[:n_iterations_performed, :],
-                                              index=["iteration{}".format(i) for i in range(n_iterations_performed)],
-                                              columns=self.samples)
-        save_dataframe(df=n_ieqtls_per_sample_df,
-                       outpath=os.path.join(outdir, "n_ieqtls_per_sample.txt.gz"),
-                       header=True,
-                       index=True,
-                       log=self.log)
+        if n_iterations_performed > 0:
+            n_ieqtls_per_sample_df = pd.DataFrame(n_ieqtls_per_sample_m[:n_iterations_performed, :],
+                                                  index=["iteration{}".format(i) for i in range(n_iterations_performed)],
+                                                  columns=self.samples)
+            save_dataframe(df=n_ieqtls_per_sample_df,
+                           outpath=os.path.join(outdir, "n_ieqtls_per_sample.txt.gz"),
+                           header=True,
+                           index=True,
+                           log=self.log)
 
-        info_df = pd.DataFrame(info_m[:n_iterations_performed, :],
-                               index=["iteration{}".format(i) for i in range(n_iterations_performed)],
-                               columns=["N", "N Overlap", "Overlap %",
-                                        "Sum Abs Normalized Delta Log Likelihood",
-                                        "Pearson r"])
-        info_df.insert(0, "covariate", cov)
-        save_dataframe(df=info_df,
-                       outpath=os.path.join(outdir, "info.txt.gz"),
-                       header=True,
-                       index=True,
-                       log=self.log)
+            info_df = pd.DataFrame(info_m[:n_iterations_performed, :],
+                                   index=["iteration{}".format(i) for i in range(n_iterations_performed)],
+                                   columns=["N", "N Overlap", "Overlap %",
+                                            "Sum Abs Normalized Delta Log Likelihood",
+                                            "Pearson r"])
+            info_df.insert(0, "covariate", cov)
+            save_dataframe(df=info_df,
+                           outpath=os.path.join(outdir, "info.txt.gz"),
+                           header=True,
+                           index=True,
+                           log=self.log)
 
         del iteration_df, iterations_m, n_ieqtls_per_sample_df, n_ieqtls_per_sample_m, info_df, info_m
 
-        return context_a, stop
+        return context_a, n_ieqtls, stop
 
     @staticmethod
     def optimize_ieqtls(ieqtls):
