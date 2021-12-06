@@ -56,9 +56,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-./visualise_interaction_eqtl.py -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -i rs1981760_NOD2_STX3.txt -n 6000
-
-./visualise_interaction_eqtl.py -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/components.txt.gz -i bios_top_ieqtls_pic1.txt
+./visualise_interaction_eqtl.py -h
 """
 
 

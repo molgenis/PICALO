@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-File:         pre_process_bios_expression_matrix.py
+File:         pre_process_expression_matrix.py
 Created:      2021/10/22
 Last Changed: 2021/11/11
 Author:       M.Vochteloo
@@ -58,23 +58,15 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./pre_process_bios_expression_matrix.py -h
+./pre_process_expression_matrix.py -h
 
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -t /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics_andSex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_noRNAPhenoNA_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS-cis-NoMDSOutlier-noRNAPhenoNA
+### MetaBrain ###
 
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_20RNAseqAlignemntMetrics
+./pre_process_expression_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz -s /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_sex.txt.gz -m /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/filter_gte_file/MetaBrain_CortexEUR_NoENA_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -of MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics
 
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/BIOS_for_eQTLGenII/data/BIOS_EGCUT_for_eQTLGen/BIOS_only/eqtlpipeline_lld_backup150317/1-normalise/normalise/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.CPM.Log2Transformed.ProbesCentered.SamplesZTransformed.txt -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMDSOutlier_AllRNAseqAlignemntMetrics
+### BIOS ###
 
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics
-
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -r /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_AllRNAseqAlignemntMetricsNoFiltering
-
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics
-
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_NoSex
-
-./pre_process_bios_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pi /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/PIC1_PIC2.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PIC1_PIC2Removed
+./pre_process_expression_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics
 """
 
 
@@ -240,8 +232,6 @@ class main():
                  file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
                  plot_appendix="_1")
 
-        # df = self.load_file(os.path.join("/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz"), header=0, index_col=0)
-
         print("Step 7: Construct correction matrix 1.")
         ram_df = None
         if self.rna_alignment_path is not None:
@@ -259,9 +249,10 @@ class main():
             mds_df = mds_df.loc[samples, :]
 
         pic_df = None
-        if self.mds_path is not None:
+        if self.pic_path is not None:
             pic_df = self.load_file(self.pic_path, header=0, index_col=0)
             pic_df = pic_df.loc[:, samples].T
+
         correction_df = self.prepare_correction_matrix(ram_df=ram_df,
                                                        sex_df=sex_df,
                                                        mds_df=mds_df,
@@ -273,9 +264,6 @@ class main():
 
         print("Step 8: remove technical covariates OLS.")
         corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
-
-        # print("\tSaving file.")
-        # self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
 
         print("Step 9: PCA analysis.")
         self.pca(df=corrected_df,

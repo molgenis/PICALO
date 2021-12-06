@@ -35,7 +35,7 @@ from src.force_normaliser import ForceNormaliser
 from src.objects.data import Data
 from src.inter_optimizer import InteractionOptimizer
 from src.statistics import remove_covariates, remove_covariates_elementwise
-from src.utilities import save_dataframe, get_ieqtls
+from src.utilities import load_dataframe, save_dataframe, get_ieqtls
 
 
 class Main:
@@ -320,6 +320,11 @@ class Main:
                     pic_a = np.load(f)
                 f.close()
                 pic_m[comp_count, :] = pic_a
+
+                info_df_path = os.path.join(comp_outdir, "info.txt.gz")
+                if os.path.exists(info_df_path):
+                    info_df = load_dataframe(info_df_path, header=0, index_col=0)
+                    summary_stats_m[comp_count, 0] = info_df.loc[info_df.index[-1], "N"]
             else:
                 self.log.info("\t  Optimizing interaction component")
 

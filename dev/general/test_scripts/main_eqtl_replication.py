@@ -60,6 +60,8 @@ Syntax:
 ./main_eqtl_replication.py -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_table.txt.gz -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/genotype_alleles_table.txt.gz -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_BIOS_PICALO_files/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-20RnaAlignment/expression_table_CovCorrected.txt.gz -o eQTLReplication-BIOS-withMDSCorrection-noRNAPhenoNa-20RnaAlignment
 
 ./main_eqtl_replication.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/genotype_table.txt.gz -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/genotype_alleles_table.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/expression_table_CovCorrected.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics
+
+./main_eqtl_replication.py -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/genotype_table.txt.gz -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/genotype_alleles_table.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/expression_table_CovCorrected.txt.gz -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics
 """
 
 
@@ -126,41 +128,41 @@ class main():
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None, nrows=nrows)
         eqtl_df.index = eqtl_df["ProbeName"] + "_" + eqtl_df["SNPName"]
         print(eqtl_df)
-        geno_df = self.load_file(self.geno_path, header=0, index_col=0, nrows=nrows)
-        alleles_df = self.load_file(self.alleles_path, header=0, index_col=0, nrows=nrows)
-        expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=nrows)
-
-        print("Checking matrices")
-        if list(geno_df.index) != list(eqtl_df["SNPName"].values):
-            print("Unequal input matrix.")
-            exit()
-        if list(expr_df.index) != list(eqtl_df["ProbeName"].values):
-            print("Unequal input matrix.")
-            exit()
-        if list(geno_df.columns) != list(expr_df.columns):
-            print("Unequal input matrix.")
-            exit()
-
-        print("Modelling discovery expression ~ genotype")
-        X = np.ones((geno_df.shape[1], 2), dtype=np.float64)
-        results_m = np.empty((eqtl_df.shape[0], 12), dtype=np.float64)
-        for i in range(eqtl_df.shape[0]):
-            genotype = geno_df.iloc[i, :].to_numpy()
-            expression = expr_df.iloc[i, :].to_numpy()
-            mask = genotype != -1
-            if np.std(genotype[mask]) != 0 and np.std(expression[mask]) != 0:
-                X[:, 1] = genotype
-                results_m[i, :] = self.calculate(X=X[mask, :], y=expression[mask])
-
-                # ols = OLS(expression, X)
-                # results = ols.fit()
-                # print(results.summary())
-                # exit()
-            else:
-                results_m[i, :] = np.array([np.sum(mask), 2] + [np.nan] * 10)
-        results_df = pd.DataFrame(results_m, index=eqtl_df.index, columns=["N", "df", "RSS", "beta intercept", "beta genotype", "std intercept", "std genotype", "t-value intercept", "t-value genotype", "f-value", "p-value", "z-score"])
-        results_df["AA"] = alleles_df.loc[:, "AltAllele"].to_numpy()
-        self.save_file(df=results_df, outpath=os.path.join(self.outdir, "{}_results_df.txt.gz".format(self.out_filename)))
+        # geno_df = self.load_file(self.geno_path, header=0, index_col=0, nrows=nrows)
+        # alleles_df = self.load_file(self.alleles_path, header=0, index_col=0, nrows=nrows)
+        # expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=nrows)
+        #
+        # print("Checking matrices")
+        # if list(geno_df.index) != list(eqtl_df["SNPName"].values):
+        #     print("Unequal input matrix.")
+        #     exit()
+        # if list(expr_df.index) != list(eqtl_df["ProbeName"].values):
+        #     print("Unequal input matrix.")
+        #     exit()
+        # if list(geno_df.columns) != list(expr_df.columns):
+        #     print("Unequal input matrix.")
+        #     exit()
+        #
+        # print("Modelling discovery expression ~ genotype")
+        # X = np.ones((geno_df.shape[1], 2), dtype=np.float64)
+        # results_m = np.empty((eqtl_df.shape[0], 12), dtype=np.float64)
+        # for i in range(eqtl_df.shape[0]):
+        #     genotype = geno_df.iloc[i, :].to_numpy()
+        #     expression = expr_df.iloc[i, :].to_numpy()
+        #     mask = genotype != -1
+        #     if np.std(genotype[mask]) != 0 and np.std(expression[mask]) != 0:
+        #         X[:, 1] = genotype
+        #         results_m[i, :] = self.calculate(X=X[mask, :], y=expression[mask])
+        #
+        #         # ols = OLS(expression, X)
+        #         # results = ols.fit()
+        #         # print(results.summary())
+        #         # exit()
+        #     else:
+        #         results_m[i, :] = np.array([np.sum(mask), 2] + [np.nan] * 10)
+        # results_df = pd.DataFrame(results_m, index=eqtl_df.index, columns=["N", "df", "RSS", "beta intercept", "beta genotype", "std intercept", "std genotype", "t-value intercept", "t-value genotype", "f-value", "p-value", "z-score"])
+        # results_df["AA"] = alleles_df.loc[:, "AltAllele"].to_numpy()
+        # self.save_file(df=results_df, outpath=os.path.join(self.outdir, "{}_results_df.txt.gz".format(self.out_filename)))
         results_df = self.load_file(os.path.join(self.outdir, "{}_results_df.txt.gz".format(self.out_filename)), header=0, index_col=0)
         print(results_df)
 
@@ -168,12 +170,18 @@ class main():
         # eqtl_data_df = eqtl_df.loc[:, ["AssessedAllele", "Pvalue", "Zscore"]].copy()
         eqtl_data_df = eqtl_df.loc[:, ["AlleleAssessed", "PValue", "OverallZScore"]].copy()
         eqtl_data_df.columns = ["eqtl AA", "eQTL p-value", "eQTL z-score"]
+        eqtl_data_df.loc[eqtl_data_df["eQTL p-value"] == 0, "eQTL p-value"] = 1e-307
         plot_df = results_df.loc[:, ["AA", "p-value", "t-value genotype"]].merge(eqtl_data_df, left_index=True, right_index=True)
         plot_df.dropna(inplace=True)
 
         # flip.
         plot_df["flip"] = (plot_df["eqtl AA"] == plot_df["AA"]).map({True: 1, False: -1})
         plot_df["t-value genotype flipped"] = plot_df["t-value genotype"] * plot_df["flip"]
+        print(plot_df)
+
+        # log10 transform.
+        plot_df["-log10 p-value"] = np.log10(plot_df["p-value"]) * -1
+        plot_df["-log10 eQTL p-value"] = np.log10(plot_df["eQTL p-value"]) * -1
 
         print("Comparing")
         self.plot_replication(df=plot_df,
@@ -182,6 +190,13 @@ class main():
                               xlabel="eQTL file z-score",
                               ylabel="t-value",
                               name="{}_zscore_vs_tvalue_replication".format(self.out_filename))
+
+        self.plot_replication(df=plot_df,
+                              x="-log10 eQTL p-value",
+                              y="-log10 p-value",
+                              xlabel="-log10 eQTL p-value",
+                              ylabel="-log10 p-value",
+                              name="{}_eqtl_pvalue_replication".format(self.out_filename))
 
     @staticmethod
     def load_file(path, sep="\t", header=0, index_col=0, nrows=None):
@@ -238,112 +253,6 @@ class main():
         print("\tSaved dataframe: {} "
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
-
-    @staticmethod
-    def plot_eqtl(df, palette, ax, title="", xlabel="", ylabel="", annotate=None):
-        # Calculate the correlation.
-        coef, _ = stats.pearsonr(df["genotype"], df["expression"])
-
-        # Plot the scatter / box plot.
-        sns.regplot(x="genotype", y="expression", data=df,
-                    scatter=False,
-                    line_kws={"color": "#000000"},
-                    ax=ax
-                    )
-        sns.boxplot(x="round_geno", y="expression", data=df,
-                    palette=palette,
-                    showfliers=False,
-                    zorder=1,
-                    ax=ax)
-
-        ax.annotate(
-            'N = {:,}'.format(df.shape[0]),
-            xy=(0.03, 0.94),
-            xycoords=ax.transAxes,
-            color="#000000",
-            alpha=1,
-            fontsize=12,
-            fontweight='bold')
-        ax.annotate(
-            'r = {:.2f}'.format(coef),
-            xy=(0.03, 0.90),
-            xycoords=ax.transAxes,
-            color="#000000",
-            alpha=1,
-            fontsize=12,
-            fontweight='bold')
-
-        if annotate is not None:
-            for i, (label, value, rounding) in enumerate(annotate):
-                ax.annotate(
-                    '{} = {:{}}'.format(label, value, rounding),
-                    xy=(0.03, 0.86 - (0.04 * i)),
-                    xycoords=ax.transAxes,
-                    color="#000000",
-                    alpha=0.75,
-                    fontsize=12,
-                    fontweight='bold')
-
-        ax.set_title(title,
-                     fontsize=22,
-                     weight='bold')
-        ax.set_ylabel(ylabel,
-                      fontsize=14,
-                      fontweight='bold')
-        ax.set_xlabel(xlabel,
-                      fontsize=14,
-                      fontweight='bold')
-
-    @staticmethod
-    def plot_inter_eqtl(df, palette, ax, title="", xlabel="", ylabel="",
-                        annotate=None):
-
-        for i, genotype in enumerate([0.0, 1.0, 2.0]):
-            subset = df.loc[df["round_geno"] == genotype, :].copy()
-            color = palette[genotype]
-            coef = np.nan
-            if len(subset.index) > 1:
-                # Calculate the correlation.
-                coef, _ = stats.pearsonr(subset["cell count"], subset["expression"])
-
-                # Plot the scatter / box plot.
-                sns.regplot(x="cell count", y="expression", data=subset,
-                            scatter_kws={'facecolors': color,
-                                         'linewidth': 0,
-                                         'alpha': 0.75},
-                            line_kws={"color": color, "alpha": 0.75},
-                            ax=ax
-                            )
-
-            ax.annotate(
-                '{}: r = {:.2f} [N = {:,}]'.format(genotype, coef, subset.shape[0]),
-                xy=(0.03, 0.94 - (0.04 * i)),
-                xycoords=ax.transAxes,
-                color=color,
-                alpha=0.75,
-                fontsize=12,
-                fontweight='bold')
-
-        if annotate is not None:
-            for i, (label, value, rounding) in enumerate(annotate):
-                ax.annotate(
-                    '{} = {:{}}'.format(label, value, rounding),
-                    xy=(0.03, 0.82 - (0.04 * i)),
-                    xycoords=ax.transAxes,
-                    color="#000000",
-                    alpha=0.75,
-                    fontsize=12,
-                    fontweight='bold')
-
-        ax.set_title(title,
-                     fontsize=22,
-                     weight='bold')
-        ax.set_ylabel(ylabel,
-                      fontsize=14,
-                      fontweight='bold')
-        ax.set_xlabel(xlabel,
-                      fontsize=14,
-                      fontweight='bold')
 
     def plot_replication(self, df, x="x", y="y", hue=None, xlabel="",
                          ylabel="", name="", title=""):

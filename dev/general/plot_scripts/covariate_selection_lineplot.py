@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         no_ieqtls_per_sample_plot.py
-Created:      2021/10/22
-Last Changed: 2021/10/25
+File:         covariate_selection_lineplot.py
+Created:      2021/12/06
+Last Changed:
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -26,7 +26,6 @@ from __future__ import print_function
 from pathlib import Path
 import argparse
 import json
-import math
 import os
 
 # Third party imports.
@@ -36,12 +35,12 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
+import matplotlib.patches as mpatches
 
 # Local application imports.
 
 # Metadata
-__program__ = "Number of ieQTLs per Sample Plot"
+__program__ = "Covariate Selection Lineplot"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -55,10 +54,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
                                         __license__)
 
 """
-Syntax:
-./no_ieqtls_per_sample_plot.py -h
-
-./no_ieqtls_per_sample_plot.py -i ../../output/test/ -p ../../data/MetaBrainColorPalette.json
+Syntax: 
+./covariate_selection_lineplot.py -h
 """
 
 
@@ -118,33 +115,29 @@ class main():
         self.print_arguments()
 
         print("Loading data")
-        pics = []
-        pic_df_m_collection = []
-        for i in range(1, 11):
-            pic = "PIC{}".format(i)
-            data_path = os.path.join(self.input_directory, pic, "n_ieqtls_per_sample.txt.gz")
+        df_list = []
+        for i in range(1, 23):
+            fpath = os.path.join(self.input_directory, "PIC{}".format(i), "covariate_selection.txt.gz")
+            if os.path.exists(fpath):
+                df = self.load_file(fpath, header=0, index_col=None)
+                df["index"] = i
+                df_list.append(df)
 
-            if not os.path.exists(data_path):
-                continue
+        print("Merging data")
+        if len(df_list) > 1:
+            df = pd.concat(df_list, axis=0)
+        else:
+            df = df_list[0]
+        print(df)
 
-            df = self.load_file(data_path, header=0, index_col=0)
-            df.index = [i+1 for i in range(df.shape[0])]
-            df_m = df.T.melt()
-            df_m["group"] = pic
+        print("Plotting")
+        self.lineplot(df_m=df, x="index", y="N-ieQTLs", units="Covariate",
+                      xlabel="PIC", ylabel="#ieQTLs (FDR <0.05)",
+                      filename=self.out_filename + "covariate_selection_lineplot",
+                      outdir=self.outdir)
 
-            pics.append(pic)
-            pic_df_m_collection.append(df_m)
-
-        combined_df_m = pd.concat(pic_df_m_collection, axis=0)
-
-        print("Plotting.")
-        self.plot_boxplot(df_m=combined_df_m,
-                          xlabel="iteration",
-                          ylabel="#ieQTLs per sample",
-                          order=pics,
-                          palette=self.palette)
-
-    def load_file(self, inpath, header, index_col, sep="\t", low_memory=True,
+    @staticmethod
+    def load_file(inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
         df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
                          low_memory=low_memory, nrows=nrows, skiprows=skiprows)
@@ -153,88 +146,60 @@ class main():
                                       df.shape))
         return df
 
-    def plot_boxplot(self, df_m, order, x="variable", y="value", panel="group",
-                     xlabel="", ylabel="", palette=None):
-        nplots = len(order) + 1
-        ncols = math.ceil(np.sqrt(nplots))
-        nrows = math.ceil(nplots / ncols)
+    @staticmethod
+    def lineplot(df_m, x="x", y="y", units=None, hue=None, palette=None, title="",
+                 xlabel="", ylabel="", filename="plot", info=None, outdir=None):
+        sns.set(rc={'figure.figsize': (12, 9)})
+        sns.set_style("ticks")
+        fig, (ax1, ax2) = plt.subplots(nrows=1,
+                                       ncols=2,
+                                       gridspec_kw={"width_ratios": [0.99, 0.01]})
+        sns.despine(fig=fig, ax=ax1)
 
-        fig, axes = plt.subplots(nrows=nrows,
-                                 ncols=ncols,
-                                 sharex='none',
-                                 sharey='none',
-                                 figsize=(12 * ncols, 12 * nrows))
-        sns.set(color_codes=True)
+        g = sns.lineplot(data=df_m,
+                         x=x,
+                         y=y,
+                         units=units,
+                         hue=hue,
+                         palette=palette,
+                         estimator=None,
+                         legend=None,
+                         ax=ax1)
 
-        row_index = 0
-        col_index = 0
-        for i in range(ncols * nrows):
-            print(i)
-            if nrows == 1:
-                ax = axes[col_index]
-            elif ncols == 1:
-                ax = axes[row_index]
-            else:
-                ax = axes[row_index, col_index]
+        ax1.set_title(title,
+                      fontsize=14,
+                      fontweight='bold')
+        ax1.set_xlabel(xlabel,
+                       fontsize=10,
+                       fontweight='bold')
+        ax1.set_ylabel(ylabel,
+                       fontsize=10,
+                       fontweight='bold')
 
-            if i < len(order):
-                sns.despine(fig=fig, ax=ax)
+        if palette is not None:
+            handles = []
+            for key, color in palette.items():
+                if key in df_m[hue].values.tolist():
+                    label = key
+                    if info is not None and key in info:
+                        label = "{} [{}]".format(key, info[key])
+                    handles.append(mpatches.Patch(color=color, label=label))
+            ax2.legend(handles=handles, loc="center")
+        ax2.set_axis_off()
 
-                subset = df_m.loc[df_m[panel] == order[i], :]
-
-                color = "#808080"
-                if palette is not None and order[i] in palette:
-                    color = palette[order[i]]
-
-                sns.violinplot(x=x,
-                               y=y,
-                               data=subset,
-                               color=color,
-                               ax=ax)
-
-                plt.setp(ax.collections, alpha=.75)
-
-                sns.boxplot(x=x,
-                            y=y,
-                            data=subset,
-                            color="white",
-                            ax=ax)
-
-                plt.setp(ax.artists, edgecolor='k', facecolor='w')
-                plt.setp(ax.lines, color='k')
-
-                ax.set_title(order[i],
-                             fontsize=25,
-                             fontweight='bold')
-                ax.set_ylabel(ylabel,
-                              fontsize=20,
-                              fontweight='bold')
-                ax.set_xlabel(xlabel,
-                              fontsize=20,
-                              fontweight='bold')
-
-                start, end = ax.get_xlim()
-                ax.xaxis.set_ticks(np.arange(start + 0.5, end + 0.5, 10))
-                ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.0f'))
-
-                ax.tick_params(axis='both', which='major', labelsize=14)
-            else:
-                ax.set_axis_off()
-
-            col_index += 1
-            if col_index > (ncols - 1):
-                col_index = 0
-                row_index += 1
-
-        fig.savefig(os.path.join(self.outdir, "{}_no_ieqtls_per_sample_plot.png".format(self.out_filename)))
+        plt.tight_layout()
+        outpath = "{}.png".format(filename)
+        if outdir is not None:
+            outpath = os.path.join(outdir, outpath)
+        fig.savefig(outpath)
         plt.close()
 
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
         print("  > Palette path: {}".format(self.palette_path))
+        print("  > Outpath {}".format(self.outdir))
         print("  > Output filename: {}".format(self.out_filename))
-        print("  > Output directory: {}".format(self.outdir))
         print("")
 
 

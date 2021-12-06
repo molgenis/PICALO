@@ -53,19 +53,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-noOutliers-VariantSubsetFilter -e png
-
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter -e png
-
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter -e png pdf
-
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter -e png
-
-./plot_df_per_column.py -d //groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.gz -transpose -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PCsBeforeCovCorrection_ColoredBySex -e png -n 5
-
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_NoSex/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.gz -transpose -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PCsBeforeCovCorrection_ColoredBySex -e png -n 5
-
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_NoSex/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -transpose -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PCsAfterCovCorrection_ColoredBySex -e png -n 5
+./plot_df_per_column.py -h
 """
 
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-File:         create_histplot.py
-Created:      2021/11/11
+File:         force_normalise_matrix.py
+Created:      2021/11/03
 Last Changed:
 Author:       M.Vochteloo
 
@@ -25,23 +25,17 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
-import math
-import json
 import os
 
 # Third party imports.
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+from scipy.special import ndtri
 
 # Local application imports.
 
 # Metadata
-__program__ = "Create Histplot"
+__program__ = "Force normalise matrix"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -56,9 +50,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./create_histplot.py -h
-
-./create_histplot.py -d ../../output/BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5/genotype_stats.txt.gz -o BIOS-cis-noRNAPhenoNA-NoMDSOutlier-MAF5
+./force_normalise_matrix.py -h
 """
 
 
@@ -67,10 +59,12 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
+        self.transpose = getattr(arguments, 'transpose')
+        self.std_path = getattr(arguments, 'sample_to_dataset')
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'force_normalise_matrix')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -91,11 +85,21 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the data matrix.")
+        parser.add_argument("-transpose",
+                            action='store_true',
+                            help="Combine the created files with force."
+                                 " Default: False.")
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the sample-dataset link matrix.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
-                            required=True,
-                            help="The name of the outfile.")
+                            default="output",
+                            help="The name of the outfile. Default: output.")
 
         return parser.parse_args()
 
@@ -103,21 +107,28 @@ class main():
         self.print_arguments()
 
         print("Loading data.")
-        df = self.load_file(self.data_path, header=0, index_col=0)
-        print(df)
+        data_df = self.load_file(self.data_path, header=0, index_col=0, nrows=None)
+        std_df = self.load_file(self.std_path, header=0, index_col=None)
 
-        print("Pre-processing data.")
-        df = df.loc[df["mask"] == 1, :]
-        df.drop(['mask'], axis=1, inplace=True)
+        print("Pre-process")
+        if self.transpose:
+            data_df = data_df.T
 
-        print("Plotting.")
-        for column in df.columns:
-            print("\t{}".format(column))
-            self.histplot(df=df,
-                          x=column,
-                          title=column,
-                          filename=self.out_filename + "_histplot_" + column.lower(),
-                          outdir=self.outdir)
+        dataset_df = self.construct_dataset_df(std_df=std_df)
+        dataset_m = dataset_df.to_numpy(bool)
+        del std_df
+
+        print("Force normalise")
+        normal_data_df = self.force_normalise(data_df=data_df,
+                                              dataset_m=dataset_m)
+
+        if self.transpose:
+            normal_data_df = normal_data_df.T
+
+        print("Save file")
+        self.save_file(df=normal_data_df,
+                       outpath=os.path.join(self.outdir, self.out_filename + ".ForceNormalisePerDataset.txt.gz")
+                       )
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -130,44 +141,47 @@ class main():
         return df
 
     @staticmethod
-    def histplot(df, x="x", xlabel="", ylabel="", title="", filename="plot",
-                outdir=None):
-        sns.set(rc={'figure.figsize': (12, 9)})
-        sns.set_style("ticks")
-        fig, ax = plt.subplots()
-        sns.despine(fig=fig, ax=ax)
+    def construct_dataset_df(std_df):
+        dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
+        dataset_sample_counts.sort(key=lambda x: -x[1])
+        datasets = [csc[0] for csc in dataset_sample_counts]
 
-        range = abs(df[x].max() - df[x].min())
+        dataset_df = pd.DataFrame(0, index=std_df.iloc[:, 0], columns=datasets)
+        for dataset in datasets:
+            dataset_df.loc[(std_df.iloc[:, 1] == dataset).values, dataset] = 1
+        dataset_df.index.name = "-"
 
-        g = sns.histplot(data=df,
-                         x=x,
-                         kde=True,
-                         binwidth=range / 100,
-                         color="#000000",
-                         ax=ax)
+        return dataset_df
 
-        ax.set_title(title,
-                     fontsize=14,
-                     fontweight='bold')
-        ax.set_xlabel(xlabel,
-                      fontsize=10,
-                      fontweight='bold')
-        ax.set_ylabel(ylabel,
-                      fontsize=10,
-                      fontweight='bold')
+    @staticmethod
+    def force_normalise(data_df, dataset_m):
+        normal_df = pd.DataFrame(np.nan, index=data_df.index, columns=data_df.columns)
+        for cohort_index in range(dataset_m.shape[1]):
+            mask = dataset_m[:, cohort_index]
+            if np.sum(mask) > 0:
+                normal_df.loc[:, mask] = ndtri((data_df.loc[:, mask].rank(axis=1, ascending=True) - 0.5) / np.sum(mask))
 
-        plt.tight_layout()
-        outpath = "{}.png".format(filename)
-        if outdir is not None:
-            outpath = os.path.join(outdir, outpath)
-        fig.savefig(outpath)
-        plt.close()
+        return normal_df
+
+    @staticmethod
+    def save_file(df, outpath, header=True, index=True, sep="\t"):
+        compression = 'infer'
+        if outpath.endswith('.gz'):
+            compression = 'gzip'
+
+        df.to_csv(outpath, sep=sep, index=index, header=header,
+                  compression=compression)
+        print("\tSaved dataframe: {} "
+              "with shape: {}".format(os.path.basename(outpath),
+                                      df.shape))
 
     def print_arguments(self):
         print("Arguments:")
         print("  > Data path: {}".format(self.data_path))
+        print("  > Transpose: {}".format(self.transpose))
+        print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Output filename: {}".format(self.out_filename))
-        print("  > Outpath {}".format(self.outdir))
+        print("  > Output directory {}".format(self.outdir))
         print("")
 
 

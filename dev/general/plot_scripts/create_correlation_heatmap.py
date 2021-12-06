@@ -55,32 +55,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_correlation_heatmap.py -h
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS/components.txt.gz -rn OLS -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5/components.txt.gz -cn PCR -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5_OLS_vs_PCR
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/components.txt.gz -rn OLS -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5/components.txt.gz -cn PCR -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5_OLS_vs_PCR
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn AllDatasetsCorrected -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/components.txt.gz -cn Not -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS_AllDatasetsCorrected_vs_not
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn AllDatasetsCorrected -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS/components.txt.gz -cn Not -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS_AllDatasetsCorrected_vs_not
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn NoRNAseqAlignmentMetrics -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS/components.txt.gz -cn 20RNAseqAlignmentMetrics -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS_NoRNAseqAlignmentMetrics_vs_20RNAseqAlignmentMetrics
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn AllRNAseqAlignmentMetricsNoFiltering -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/components.txt.gz -cn NoRNAseqAlignmentMetrics -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS_AllRNAseqAlignmentMetricsNoFiltering_vs_NoRNAseqAlignmentMetrics
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-AllRNAseqAlignmentMetricsNoFiltering-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn AllRNAseqAlignmentMetrics -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS/components.txt.gz -cn 20RNAseqAlignmentMetrics -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS_AllRNAseqAlignmentMetrics_vs_20RNAseqAlignmentMetrics
-
-./create_correlation_heatmap.py -rd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractions.txt.gz -rn BIOS_CellFractions -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -cn RNAseqMetrics -o CellCounts_vs_RNAseqMetrics
-
-./create_correlation_heatmap.py -rd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_phenotypes.txt.gz -rn phenotypes -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz -cn RNAseqMetrics -o phenotypes_vs_RNAseqMetrics
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn NoRNAseqAlignmentMetrics -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoCorrectionAtAll-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -cn NoCorrectionAtAll -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-MAF5-OLS_NoRNAseqAlignmentMetrics_vs_NoCorrectionAtAll
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn WithSexCorrection -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-NoSex-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -cn WithoutSexCorrection -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected_WithSexCorrection_vs_Without
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-SP140AsCov-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn SP140_PIC3 -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -cn Comp1_PIC3 -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS-AllDatasetsCorrected-PIC3_SP140_vs_Comp1
-
-./create_correlation_heatmap.py -rd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-NoSex-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -rn ExpressionPCs -cd ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-NoSex-SexAsCov-MAF5-OLS-AllDatasetsCorrected/components.txt.gz -cn Sex -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-NoSex-MAF5-OLS-AllDatasetsCorrected_ExprPCs_vs_SexAsCov
 """
 
 
@@ -96,7 +70,7 @@ class main():
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
+        self.outdir = os.path.join(Path().resolve(), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

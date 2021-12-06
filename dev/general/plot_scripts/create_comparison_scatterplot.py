@@ -55,10 +55,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_comparison_scatterplot.py -h
-
-./create_comparison_scatterplot.py -d ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS/components.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data//BIOS_STD.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-MAF5-OLS
-
-./create_comparison_scatterplot.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/first10ExpressionPCs.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-10PCs
 """
 
 

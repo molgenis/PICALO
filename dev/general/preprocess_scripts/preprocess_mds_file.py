@@ -50,29 +50,17 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./preprocess_mds_file.py -d ../data/MetaBrain-allchr-mds-noENA-dupsremoved.mds -gte /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/OLD/ContainsDuplicateSamples/CortexEUR-cis/combine_gte_files/GTE_combined.txt.gz
+### MetaBrain ###
 
-./preprocess_mds_file.py -d ../data/MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved.mds -gte /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/OLD/ContainsDuplicateSamples/CortexEUR-cis/combine_gte_files/GTE_combined.txt.gz
+./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-dupsremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-
 
-./preprocess_mds_file.py -d ../data/MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/OLD/ContainsDuplicateSamples/CortexEUR-cis/combine_gte_files/GTE_combined.txt.gz
+./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-
 
-./preprocess_mds_file.py -d ../data/MetaBrain-allchr-mds-dupsremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/OLD/ContainsDuplicateSamples/CortexEUR-cis/combine_gte_files/GTE_combined.txt.gz
+./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-
 
-./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-10-28-mds-all-VariantFilter/allchr-mds-VariantFilter.mds -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -op BIOS-
-
-./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/projects/PICALO/tmpGonlStorage/2021-10-29-mds-BIOS-GTESubset-VariantFilter/allchr-mds-BIOS-GTESubset-VariantFilter.mds -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -op BIOS-
-
-./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/projects/PICALO/tmpGonlStorage/2021-10-29-mds-BIOS-GTESubset-VariantSubsetFilter/allchr-mds-BIOS-GTESubset-VariantSubsetFilter.mds -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -op BIOS-
-
-./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/projects/PICALO/tmpGonlStorage/2021-10-29-mds-BIOS-GTESubset-noOutlier-VariantSubsetFilter/allchr-mds-BIOS-GTESubset-noOutlier-VariantSubsetFilter.mds -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -op BIOS-
-
-./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/projects/PICALO/tmpGonlStorage/2021-11-05-mds-BIOS-GTESubset-noRNAPhenoNA-VariantSubsetFilter/allchr-mds-BIOS-GTESubset-noRNAPhenoNA-VariantSubsetFilter.mds -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -op BIOS-
-
-./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/projects/PICALO/tmpGonlStorage/2021-11-05-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter/allchr-mds-BIOS-GTESubset-noRNAPhenoNA-noOutliers-VariantSubsetFilter.mds -gte /groups/umcg-bios/prm03/projects/BIOS_EGCUT_for_eQTLGen/BIOS_EGCUT/eqtlpipeline_bios_egcut_backup010517/GTE_LLDEEP_and_BIOS_last_related_removed_110417.txt -op BIOS-
+#### BIOS ####
 
 ./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-11-mds-NoRNAPhenoNA_NoSexNA-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter.mds -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -op BIOS-
-
-./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-11-mds-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-VariantSubsetFilter.mds -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -op BIOS-
 
 ./preprocess_mds_file.py -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-15-mds-NoRNAPhenoNA-NoSexNA-NoMixups-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.mds -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz -op BIOS-
 

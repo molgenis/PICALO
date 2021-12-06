@@ -65,7 +65,7 @@ class main():
             self.create_job_file(pc_index=pc_index)
 
     def create_job_file(self, pc_index):
-        job_name = "2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-PIC4-PC{}AsCov".format(pc_index)
+        job_name = "2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-PIC15-PC{}AsCov".format(pc_index)
 
         lines = ["#!/bin/bash",
                  "#SBATCH --job-name={}".format(job_name),
@@ -87,7 +87,7 @@ class main():
                  "  -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/genotype_table.txt.gz \\",
                  "  -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/expression_table.txt.gz \\",
                  "  -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/first25ExpressionPCs.txt.gz \\",
-                 "  -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/tech_covariates_with_interaction_df_and_PIC1_PIC2_PIC3.txt.gz \\",
+                 "  -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/tech_covariates_with_interaction_df_and_PIC1_PIC2_PIC3_PIC4_PIC5_PIC6_PIC7_PIC8_PIC9_PIC10_PIC11_PIC12_PIC13_PIC14.txt.gz \\",
                  "  -co /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/ExpressionPC{}.txt.gz \\".format(pc_index),
                  "  -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/sample_to_dataset.txt.gz \\",
                  "  -maf 0.05 \\",

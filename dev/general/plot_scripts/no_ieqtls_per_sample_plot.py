@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         interaction_overview_plot.py
-Created:      2021/10/21
-Last Changed: 2021/11/13
+File:         no_ieqtls_per_sample_plot.py
+Created:      2021/10/22
+Last Changed: 2021/10/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,23 +25,23 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 from pathlib import Path
 import argparse
-import glob
 import json
+import math
 import os
 
 # Third party imports.
 import numpy as np
 import pandas as pd
-from itertools import compress
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 # Local application imports.
 
 # Metadata
-__program__ = "Interaction Overview Plot"
+__program__ = "Number of ieQTLs per Sample Plot"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -56,13 +56,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-./interaction_overview_plot.py -h
-
-./interaction_overview_plot.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5-PIC1 -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o test
-
-./interaction_overview_plot.py -i ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-PCs -p ../../data/MetaBrainColorPalette.json  -o MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-PCs
-
-./interaction_overview_plot.py -i ../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-CF -p ../../data/MetaBrainColorPalette.json  -o MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-CF
+./no_ieqtls_per_sample_plot.py -h
 """
 
 
@@ -123,61 +117,30 @@ class main():
 
         print("Loading data")
         pics = []
-        pic_dfs = []
-        for i in range(1, 25):
+        pic_df_m_collection = []
+        for i in range(1, 11):
             pic = "PIC{}".format(i)
+            data_path = os.path.join(self.input_directory, pic, "n_ieqtls_per_sample.txt.gz")
 
-            fpath = os.path.join(self.input_directory, "PIC_interactions", "{}.txt.gz".format(pic))
-            if not os.path.exists(fpath):
+            if not os.path.exists(data_path):
                 continue
 
-            df = self.load_file(fpath, header=0, index_col=None)
-            df.index = df["SNP"] + ":" + df["gene"]
-            signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
+            df = self.load_file(data_path, header=0, index_col=0)
+            df.index = [i+1 for i in range(df.shape[0])]
+            df_m = df.T.melt()
+            df_m["group"] = pic
 
-            signif_df = pd.DataFrame(0, index=df.index, columns=[pic])
-            signif_df.loc[signif_ieqtl, pic] = 1
-
-            pic_dfs.append(signif_df)
             pics.append(pic)
+            pic_df_m_collection.append(df_m)
 
-        pic_df = pd.concat(pic_dfs, axis=1)
+        combined_df_m = pd.concat(pic_df_m_collection, axis=0)
 
-        # Split data.
-        no_interaction_df = pic_df.loc[pic_df.sum(axis=1) == 0, :]
-        single_interaction_df = pic_df.loc[pic_df.sum(axis=1) == 1, :]
-        multiple_interactions_df = pic_df.loc[pic_df.sum(axis=1) > 1, :]
-
-        n_ieqtls_unique_per_pic = [(name, value) for name, value in single_interaction_df.sum(axis=0).iteritems()]
-        n_ieqtls_unique_per_pic.sort(key=lambda x: -x[1])
-        pics = [x[0] for x in n_ieqtls_unique_per_pic]
-        n_ieqtls = [x[1] for x in n_ieqtls_unique_per_pic]
-
-        # Construct pie data.
-        data = [no_interaction_df.shape[0]] + n_ieqtls + [multiple_interactions_df.shape[0]]
-        labels = ["None"] + pics + ["Multiple"]
-        colors = None
-        if self.palette is not None:
-            colors = ["#D3D3D3"] + [self.palette[pic] for pic in pics] + ["#808080"]
-        explode = [0.] + [0.1 for _ in pics] + [0.1]
-
-        data_sum = np.sum(data)
-        for i in range(len(data)):
-            print("{} (N = {}) = {:.2f}%".format(labels[i], data[i], (100 / data_sum) * data[i]))
-
-        total_n_ieqtls = pic_df.shape[0] - no_interaction_df.shape[0]
-        print("Total interactions (N = {}) = {:.2f}%".format(total_n_ieqtls, (100 / pic_df.shape[0]) * total_n_ieqtls))
-
-        # Remove sizes of 0.
-        mask = [False if x == 0 else True for x in data]
-        data = list(compress(data, mask))
-        labels = list(compress(labels, mask))
-        explode = list(compress(explode, mask))
-        if colors is not None:
-            colors = list(compress(colors, mask))
-
-        self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="png")
-        self.plot(data=data, labels=labels, explode=explode, colors=colors, extension="pdf", label_threshold=100)
+        print("Plotting.")
+        self.plot_boxplot(df_m=combined_df_m,
+                          xlabel="iteration",
+                          ylabel="#ieQTLs per sample",
+                          order=pics,
+                          palette=self.palette)
 
     def load_file(self, inpath, header, index_col, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
@@ -188,32 +151,81 @@ class main():
                                       df.shape))
         return df
 
-    def plot(self, data, labels, explode=None, colors=None, extension='png', label_threshold=0):
-        sns.set(rc={'figure.figsize': (12, 9)})
-        sns.set_style("ticks")
-        fig, ax = plt.subplots()
-        sns.despine(fig=fig, ax=ax)
+    def plot_boxplot(self, df_m, order, x="variable", y="value", panel="group",
+                     xlabel="", ylabel="", palette=None):
+        nplots = len(order) + 1
+        ncols = math.ceil(np.sqrt(nplots))
+        nrows = math.ceil(nplots / ncols)
 
-        plt.pie(data,
-                autopct=lambda pct: self.autopct_func(pct, data, label_threshold),
-                explode=explode,
-                labels=labels,
-                shadow=False,
-                colors=colors,
-                startangle=90,
-                wedgeprops={'linewidth': 1})
-        ax.axis('equal')
+        fig, axes = plt.subplots(nrows=nrows,
+                                 ncols=ncols,
+                                 sharex='none',
+                                 sharey='none',
+                                 figsize=(12 * ncols, 12 * nrows))
+        sns.set(color_codes=True)
 
-        fig.savefig(os.path.join(self.outdir, "{}_interaction_piechart.{}".format(self.out_filename, extension)))
+        row_index = 0
+        col_index = 0
+        for i in range(ncols * nrows):
+            print(i)
+            if nrows == 1:
+                ax = axes[col_index]
+            elif ncols == 1:
+                ax = axes[row_index]
+            else:
+                ax = axes[row_index, col_index]
+
+            if i < len(order):
+                sns.despine(fig=fig, ax=ax)
+
+                subset = df_m.loc[df_m[panel] == order[i], :]
+
+                color = "#808080"
+                if palette is not None and order[i] in palette:
+                    color = palette[order[i]]
+
+                sns.violinplot(x=x,
+                               y=y,
+                               data=subset,
+                               color=color,
+                               ax=ax)
+
+                plt.setp(ax.collections, alpha=.75)
+
+                sns.boxplot(x=x,
+                            y=y,
+                            data=subset,
+                            color="white",
+                            ax=ax)
+
+                plt.setp(ax.artists, edgecolor='k', facecolor='w')
+                plt.setp(ax.lines, color='k')
+
+                ax.set_title(order[i],
+                             fontsize=25,
+                             fontweight='bold')
+                ax.set_ylabel(ylabel,
+                              fontsize=20,
+                              fontweight='bold')
+                ax.set_xlabel(xlabel,
+                              fontsize=20,
+                              fontweight='bold')
+
+                start, end = ax.get_xlim()
+                ax.xaxis.set_ticks(np.arange(start + 0.5, end + 0.5, 10))
+                ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.0f'))
+
+                ax.tick_params(axis='both', which='major', labelsize=14)
+            else:
+                ax.set_axis_off()
+
+            col_index += 1
+            if col_index > (ncols - 1):
+                col_index = 0
+                row_index += 1
+
+        fig.savefig(os.path.join(self.outdir, "{}_no_ieqtls_per_sample_plot.png".format(self.out_filename)))
         plt.close()
-
-    @staticmethod
-    def autopct_func(pct, allvalues, label_threshold):
-        if pct >= label_threshold:
-            absolute = int(pct / 100. * np.sum(allvalues))
-            return "{:.1f}%\n(N = {:,.0f})".format(pct, absolute)
-        else:
-            return ""
 
     def print_arguments(self):
         print("Arguments:")

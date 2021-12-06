@@ -60,8 +60,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./create_upsetplot.py -h
-
-./create_upsetplot.py -i ../../output/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5 -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-20RNAseqAlignemntMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMDSOutlier-MAF5
 """
 
 

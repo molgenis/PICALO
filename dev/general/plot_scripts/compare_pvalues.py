@@ -66,8 +66,9 @@ class main():
         # self.palette_path = getattr(arguments, 'palette')
         # self.out_filename = getattr(arguments, 'outfile')
 
-        self.data_path1 = "../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5/PIC1/results_iteration001.txt.gz"
-        self.data_path2 = "../../output/MetaBrain-CortexEUR-cis-Uncorrected-NoENA-NoMDSOutlier-MAF5-ContextForceNormal/PIC1/results_iteration001.txt.gz"
+        self.data_path1 = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/test_scripts/main_eqtl_replication/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics_results_df.txt.gz"
+        self.data_path2 = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-PIC-Combined/PIC2/results_iteration049.txt.gz"
+        self.data_path3 = "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
@@ -117,23 +118,37 @@ class main():
         self.print_arguments()
 
         print("Loading data")
-        df1 = self.load_file(self.data_path1, header=0, index_col=None)
+        df1 = self.load_file(self.data_path1, header=0, index_col=0)
         df2 = self.load_file(self.data_path2, header=0, index_col=None)
+        df3 = self.load_file(self.data_path3, header=0, index_col=None)
 
         print(df1)
         print(df2)
+        print(df3)
+
+        df3.loc[df3["PValue"] == 0, "PValue"] = 1e-307
+
+        df3 = df3.loc[df3["Iteration"] == 1, :]
 
         print("Merging data")
-        df1.index = df1["SNP"] + ":" + df1["gene"]
-        df2.index = df2["SNP"] + ":" + df2["gene"]
-        df = df1.loc[:, ["p-value"]].merge(df2.loc[:, ["p-value"]], left_index=True, right_index=True)
-        df.columns = ["x", "y"]
+        # df2.index = df2["gene"] + "_" + df2["snp"]
+        df2.index = df2["gene"] + "_" + df2["SNP"]
+        df3.index = df3["ProbeName"] + "_" + df3["SNPName"]
+        # df = df1.loc[:, ["p-value"]].merge(df2.loc[:, ["ieQTL FDR"]], left_index=True, right_index=True).merge(df3.loc[:, ["PValue"]], left_index=True, right_index=True)
+        df = df1.loc[:, ["p-value"]].merge(df2.loc[:, ["FDR"]], left_index=True, right_index=True).merge(df3.loc[:, ["PValue"]], left_index=True, right_index=True)
+        df.columns = ["x", "z", "y"]
 
-        # Adding color.
-        df["hue"] = self.palette["no signif"]
-        df.loc[(df["x"] < 0.05) & (df["y"] >= 0.05), "hue"] = self.palette["x signif"]
-        df.loc[(df["x"] >= 0.05) & (df["y"] < 0.05), "hue"] = self.palette["y signif"]
-        df.loc[(df["x"] < 0.05) & (df["y"] < 0.05), "hue"] = self.palette["both signif"]
+        # print("Merging data")
+        # df = df.loc[:, ["eQTL p-value", "ieQTL p-value", "ieQTL FDR"]]
+        # df.columns = ["x", "y", "z"]
+
+        # # # Adding color.
+        # df["hue"] = self.palette["no signif"]
+        # df.loc[(df["x"] < 0.05) & (df["y"] >= 0.05), "hue"] = self.palette["x signif"]
+        # df.loc[(df["x"] >= 0.05) & (df["y"] < 0.05), "hue"] = self.palette["y signif"]
+        # df.loc[(df["x"] < 0.05) & (df["y"] < 0.05), "hue"] = self.palette["both signif"]
+        df["hue"] = "no signif"
+        df.loc[df["z"] < 0.05, "hue"] = "both signif"
 
         # Log10 transform.
         df["x"] = np.log10(df["x"]) * -1
@@ -142,8 +157,9 @@ class main():
 
         self.plot(df=df,
                   hue="hue",
-                  xlabel="no force normal",
-                  ylabel="force normal",
+                  palette=self.palette,
+                  xlabel="eQTL -log10(p-value)",
+                  ylabel="BIOS eQTL -log10(p-value)",
                   outdir=self.outdir)
 
     @staticmethod
@@ -157,30 +173,31 @@ class main():
         return df
 
     @staticmethod
-    def plot(df, x="x", y="y", hue=None, xlabel="", ylabel="", title="", filename="plot",
-             outdir=None):
+    def plot(df, x="x", y="y", hue=None, palette=None, xlabel="", ylabel="",
+             title="", filename="plot", outdir=None):
         sns.set(rc={'figure.figsize': (12, 9)})
         sns.set_style("ticks")
         fig, ax = plt.subplots()
         sns.despine(fig=fig, ax=ax)
 
-        facecolors = "#000000"
-        accent_color = "#b22222"
-        if hue is not None:
-            facecolors = df["hue"]
-            accent_color = "#000000"
-
         coef, _ = stats.spearmanr(df[x], df[y])
 
-        g = sns.regplot(x=x,
+        sns.scatterplot(x=x,
                         y=y,
-                        data=df,
-                        scatter_kws={'facecolors': facecolors,
-                                     'linewidth': 0,
-                                     'alpha': 0.5},
-                        line_kws={"color": accent_color},
-                        ax=ax
-                        )
+                        hue=hue,
+                        data=df.loc[df[hue] == "no signif", :],
+                        palette=palette,
+                        linewidth=0,
+                        legend=None,
+                        ax=ax)
+        sns.scatterplot(x=x,
+                        y=y,
+                        hue=hue,
+                        data=df.loc[df[hue] == "both signif", :],
+                        palette=palette,
+                        linewidth=0,
+                        legend=None,
+                        ax=ax)
 
         ax.axhline(1.3010299956639813, ls='--', color="#000000", zorder=-1)
         ax.axvline(1.3010299956639813, ls='--', color="#000000", zorder=-1)
@@ -188,14 +205,14 @@ class main():
         # Add the text.
         ax.annotate(
             'r = {:.2f}'.format(coef),
-            xy=(0.03, 0.94),
+            xy=(0.75, 0.94),
             xycoords=ax.transAxes,
             color="#404040",
             fontsize=14,
             fontweight='bold')
         ax.annotate(
             'total N = {:,}'.format(df.shape[0]),
-            xy=(0.03, 0.9),
+            xy=(0.75, 0.9),
             xycoords=ax.transAxes,
             color="#404040",
             fontsize=14,
@@ -204,9 +221,9 @@ class main():
             for i, group in enumerate(df[hue].unique()):
                 ax.annotate(
                     'N = {:,}'.format(df.loc[df[hue] == group, :].shape[0]),
-                    xy=(0.03, 0.86 - (i * 0.04)),
+                    xy=(0.75, 0.86 - (i * 0.04)),
                     xycoords=ax.transAxes,
-                    color=group,
+                    color=palette[group],
                     fontsize=14,
                     fontweight='bold')
 
@@ -220,8 +237,8 @@ class main():
                       fontsize=14,
                       fontweight='bold')
 
-        ax.set_xlim(0, 3)
-        ax.set_ylim(0, 3)
+        # ax.set_xlim(0, 3)
+        # ax.set_ylim(0, 3)
 
         outpath = "{}.png".format(filename)
         if outdir is not None:

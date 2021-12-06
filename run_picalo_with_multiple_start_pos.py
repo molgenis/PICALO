@@ -82,7 +82,7 @@ Syntax:
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter/sample_to_dataset.txt.gz \
     -maf 0.05 \
     -min_iter 50 \
-    -n_components 15 \
+    -n_components 10 \
     -o 2021-12-03-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter \
     -pp /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO
 """
@@ -328,6 +328,8 @@ class main():
         tech_covariate_with_inter_path = self.tech_covariate_with_inter
         top_pics_per_group = []
         top_pics_per_group_path = os.path.join(self.outdir, "all_found_pics.txt.gz")
+        top_pics_per_group_summary_stats = []
+        previous_pics_df = None
         for i in range(self.n_components):
             pic = "PIC{}".format(i+1)
             name = "{}-{}".format(self.picalo_outdir, pic)
@@ -355,45 +357,48 @@ class main():
                 jobfile_paths.append(jobfile_path)
                 job_names.append(job_name)
 
-            if i > 1:
-                print("  Starting job files.")
-                start_time = int(time.time())
-                for jobfile_path in jobfile_paths:
+            print("  Starting job files.")
+            start_time = int(time.time())
+            for job_name, jobfile_path in zip(job_names, jobfile_paths):
+                if not os.path.exists(os.path.join(self.picalo_path, "output", job_name, "SummaryStats.txt.gz")):
                     command = ['sbatch', jobfile_path]
                     self.run_command(command)
 
-                print("  Waiting for jobs to finish.")
-                last_print_time = None
-                completed_jobs = set()
-                while True:
-                    # Check how many jobs are done.
-                    n_completed = 0
-                    for job_name in job_names:
-                        if os.path.exists(os.path.join(self.picalo_path, "output", job_name, "SummaryStats.txt.gz")):
-                            if job_name not in completed_jobs:
-                                print("\t  '{}' finished".format(job_name))
-                                completed_jobs.add(job_name)
+            print("  Waiting for jobs to finish.")
+            last_print_time = None
+            completed_jobs = set()
+            while True:
+                # Check how many jobs are done.
+                n_completed = 0
+                for job_name in job_names:
+                    if os.path.exists(os.path.join(self.picalo_path, "output", job_name, "SummaryStats.txt.gz")):
+                        if job_name not in completed_jobs:
+                            print("\t  '{}' finished".format(job_name))
+                            completed_jobs.add(job_name)
 
-                            n_completed += 1
+                        n_completed += 1
 
-                    # Update user on progress.
-                    now_time = int(time.time())
-                    if last_print_time is None or (now_time - last_print_time) >= self.print_interval or n_completed == n_covariates:
-                        print("\t{:,}/{:,} jobs finished [{:.2f}%]".format(n_completed, n_covariates, (100 / n_covariates) * n_completed))
-                        last_print_time = now_time
+                # Update user on progress.
+                now_time = int(time.time())
+                if last_print_time is None or (
+                        now_time - last_print_time) >= self.print_interval or n_completed == n_covariates:
+                    print("\t{:,}/{:,} jobs finished [{:.2f}%]".format(
+                        n_completed, n_covariates,
+                        (100 / n_covariates) * n_completed))
+                    last_print_time = now_time
 
-                    if time.time() > self.max_end_time:
-                        print("\tMax end time reached.")
-                        break
+                if time.time() > self.max_end_time:
+                    print("\tMax end time reached.")
+                    break
 
-                    if n_completed == n_covariates:
-                        rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
-                        print("\t\tAll jobs are finished in {} minute(s) and "
-                              "{} second(s)".format(int(rt_min),
-                                                    int(rt_sec)))
-                        break
+                if n_completed == n_covariates:
+                    rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
+                    print("\t\tAll jobs are finished in {} minute(s) and "
+                          "{} second(s)".format(int(rt_min),
+                                                int(rt_sec)))
+                    break
 
-                    time.sleep(self.sleep_time)
+                time.sleep(self.sleep_time)
 
             # Check if we didnt exceed the time limit.
             if time.time() > self.max_end_time:
@@ -430,16 +435,23 @@ class main():
             print("")
 
             print("  Selecting top PIC per group")
+            current_top_pics_per_group = []
             for group_index, group_indices in pic_groups.items():
                 group_summary_stats_df = summary_stats_df.loc[summary_stats_df["covariate"].isin(group_indices), :]
                 print("\tGroup{}:\tavg. start: {:.2f}\tavg. end: {:.2f}".format(group_index, group_summary_stats_df["start"].mean(), group_summary_stats_df["end"].mean()))
-                group_top_covariate, _, _ = group_summary_stats_df.loc[group_summary_stats_df["start"].idxmax(), :]
+                group_top_covariate_index = group_summary_stats_df["start"].idxmax()
+                group_top_covariate, _, _ = group_summary_stats_df.loc[group_top_covariate_index, :]
                 group_top_pic = pics_df.loc[[group_top_covariate], :]
                 appendix = ""
                 if group_top_covariate == top_covariate:
                     appendix = "-X"
-                group_top_pic.index = ["{}-{}-Group{}{}".format(pic, group_top_covariate, group_index, appendix)]
+                label = "{}-{}-Group{}{}".format(pic, group_top_covariate, group_index, appendix)
+                group_top_pic.index = [label]
+                top_pics_per_group_summary_stats.append([label, group_summary_stats_df.loc[group_top_covariate_index, "start"], group_summary_stats_df.loc[group_top_covariate_index, "end"]])
                 top_pics_per_group.append(group_top_pic)
+                current_top_pics_per_group.append(group_top_pic)
+            current_top_pics_per_group_df = pd.concat(current_top_pics_per_group, axis=0)
+            del current_top_pics_per_group
 
             print("\tSaving results.")
             top_pics_per_group_df = pd.concat(top_pics_per_group, axis=0)
@@ -456,11 +468,17 @@ class main():
                                     pic_groups=pic_groups,
                                     outdir=pic_plot_dir,
                                     name=name)
-
             self.plot_pics_df(pics_df=pics_df,
                               pic_groups=pic_groups,
                               outdir=pic_plot_dir,
                               name=name)
+            if previous_pics_df is not None:
+                self.plot_compare_top_pics_per_group(current_pics_df=pics_df,
+                                                     previous_pics_df=previous_pics_df,
+                                                     outdir=pic_plot_dir,
+                                                     name=name)
+            previous_pics_df = pics_df
+            del pics_df
             print("")
 
             print("  Adding top PIC to tech_covariate_with_inter_path")
@@ -475,40 +493,66 @@ class main():
 
             # Overwriting -tci argument.
             tech_covariate_with_inter_path = new_tech_covariate_with_inter_outpath
-            del new_tech_covariate_with_inter_df, tech_covariate_with_inter_df, new_tech_covariate_with_inter_outpath
+            del new_tech_covariate_with_inter_df, tech_covariate_with_inter_df, new_tech_covariate_with_inter_outpath, summary_stats_df
             print("")
+
+        print("  Grouping PICs.")
+        top_pics_per_group_df = pd.concat(top_pics_per_group, axis=0)
+        pic_groups = self.group_pics(df=top_pics_per_group_df)
+        for group_index, group_indices in pic_groups.items():
+            print("\tGroup{}: {}".format(group_index, ", ".join(group_indices)))
+        print("")
+
+        print("  Selecting top PIC per group")
+        top_pics_per_group_summary_stats_df = pd.DataFrame(top_pics_per_group_summary_stats, columns=["label", "start", "end"])
+        print(top_pics_per_group_summary_stats_df)
+        top_unique_pics_per_group = []
+        for group_index, group_indices in pic_groups.items():
+            group_summary_stats_df = top_pics_per_group_summary_stats_df.loc[top_pics_per_group_summary_stats_df["label"].isin(group_indices), :]
+            print("\tGroup{}:\tavg. start: {:.2f}\tavg. end: {:.2f}".format(group_index, group_summary_stats_df["start"].mean(), top_pics_per_group_summary_stats_df["end"].mean()))
+            group_top_covariate, _, _ = group_summary_stats_df.loc[group_summary_stats_df["start"].idxmax(), :]
+            group_top_pic = top_pics_per_group_df.loc[[group_top_covariate], :]
+            top_unique_pics_per_group.append(group_top_pic)
+
+        print("\tSaving results.")
+        top_unique_pics_per_group_df = pd.concat(top_unique_pics_per_group, axis=0)
+        top_unique_pics_per_group_path = os.path.join(self.outdir, "all_found_unique_pics.txt.gz")
+        self.save_file(df=top_unique_pics_per_group_df,
+                       outpath=top_unique_pics_per_group_path)
+        del top_unique_pics_per_group_df
+        print("")
 
         print("Plotting.")
         # Plot correlation_heatmap of components.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-o", self.picalo_outdir]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-o", self.picalo_outdir]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs Sex.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz", "-cn", "Sex", "-o", self.picalo_outdir + "_vs_Sex"]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz", "-cn", "Sex", "-o", self.picalo_outdir + "_vs_Sex"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs decon.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz", "-cn", "Decon-Cell cell fractions", "-o", self.picalo_outdir + "_vs_decon"]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz", "-cn", "Decon-Cell cell fractions", "-o", self.picalo_outdir + "_vs_decon"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs cell fraction %.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz", "-cn", "cell fractions %", "-o", self.picalo_outdir + "_vs_CellFractionPercentages"]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz", "-cn", "cell fractions %", "-o", self.picalo_outdir + "_vs_CellFractionPercentages"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs RNA alignment metrics.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz", "-cn", "all STAR metrics", "-o", self.picalo_outdir + "_vs_AllSTARMetrics"]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz", "-cn", "all STAR metrics", "-o", self.picalo_outdir + "_vs_AllSTARMetrics"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs phenotypes.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_phenotypes.txt.gz", "-cn", "phenotypes", "-o", self.picalo_outdir + "_vs_Phenotypes"]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_phenotypes.txt.gz", "-cn", "phenotypes", "-o", self.picalo_outdir + "_vs_Phenotypes"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs expression correlations.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/BIOS_CorrelationsWithAverageExpression.txt.gz", "-cn", "AvgExprCorrelation", "-o", self.picalo_outdir + "_vs_AvgExprCorrelation"]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/BIOS_CorrelationsWithAverageExpression.txt.gz", "-cn", "AvgExprCorrelation", "-o", self.picalo_outdir + "_vs_AvgExprCorrelation"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs SP140.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/SP140.txt.gz", "-cn", "SP140", "-o", self.picalo_outdir + "_vs_SP140"]
+        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/SP140.txt.gz", "-cn", "SP140", "-o", self.picalo_outdir + "_vs_SP140"]
         self.run_command(command)
 
     @staticmethod
@@ -677,6 +721,11 @@ class main():
         for group_index, group_indices in pic_groups.items():
             info_df_m.loc[info_df_m["covariate"].isin(group_indices), "group"] = group_index
 
+        palette = {key: self.palette[-1] for key in pic_groups.keys()}
+        palette[-1] = self.palette[-1]
+        if len(pic_groups.keys()) <= 8:
+            palette = self.palette
+
         for variable in info_df_m["variable"].unique():
             print("\t{}".format(variable))
 
@@ -686,7 +735,7 @@ class main():
 
             self.lineplot(df_m=subset_m, x="index", y="value",
                           units="covariate", hue="group",
-                          palette=self.palette,
+                          palette=palette,
                           xlabel="iteration", ylabel=variable,
                           filename=name + "-" + variable.replace(" ", "_").lower() + "_lineplot",
                           outdir=outdir)
@@ -694,7 +743,7 @@ class main():
             if "Likelihood" in variable:
                 self.lineplot(df_m=subset_m, x="index", y="log10 value",
                               units="covariate", hue="group",
-                              palette=self.palette,
+                              palette=palette,
                               xlabel="iteration", ylabel="log10 " + variable,
                               filename=name + "-" + variable.replace(" ", "_").lower() + "_lineplot_log10",
                               outdir=outdir)
@@ -740,6 +789,11 @@ class main():
         for group_index, group_indices in pic_groups.items():
             summary_stats_df.loc[summary_stats_df["covariate"].isin(group_indices), "group"] = group_index
 
+        palette = {key: self.palette[-1] for key in pic_groups.keys()}
+        palette[-1] = self.palette[-1]
+        if len(pic_groups.keys()) <= 8:
+            palette = self.palette
+
         for y in ["start", "end"]:
             print("\t{}".format(y))
 
@@ -747,7 +801,7 @@ class main():
                          x="covariate",
                          y=y,
                          hue="group",
-                         palette=self.palette,
+                         palette=palette,
                          xlabel="start position",
                          ylabel="#ieQTLs (FDR<0.05)",
                          title=y,
@@ -796,8 +850,10 @@ class main():
         for group_index, group_indices in pic_groups.items():
             annot_df.loc[group_indices, "group"] = group_index
 
-        colors = [self.palette[group] for group in annot_df["group"]]
-        corr_df = self.correlate(df=pics_df)
+        colors = [self.palette[-1]] * annot_df.shape[0]
+        if len(pic_groups.keys()) <= 8:
+            colors = [self.palette[group] for group in annot_df["group"]]
+        corr_df = self.correlate_single(df=pics_df)
 
         self.plot_clustermap(df=corr_df,
                              colors=colors,
@@ -805,7 +861,7 @@ class main():
                              filename=name + "_correlation_clustermap")
 
     @staticmethod
-    def correlate(df):
+    def correlate_single(df):
         out_df = pd.DataFrame(np.nan, index=df.index, columns=df.index)
 
         for i, index1 in enumerate(df.index):
@@ -821,11 +877,13 @@ class main():
         return out_df
 
     @staticmethod
-    def plot_clustermap(df, colors=None, outdir=None, filename=""):
+    def plot_clustermap(df, colors=None, outdir=None, row_cluster=True,
+                        col_cluster=True, filename=""):
         cmap = sns.diverging_palette(246, 24, as_cmap=True)
         sns.set(color_codes=True)
         g = sns.clustermap(df, cmap=cmap, vmin=-1, vmax=1, center=0,
                            row_colors=colors, col_colors=colors,
+                           row_cluster=row_cluster, col_cluster=col_cluster,
                            yticklabels=True, xticklabels=True,
                            annot=df.round(2), dendrogram_ratio=(.1, .1),
                            figsize=(df.shape[0], df.shape[1]))
@@ -838,6 +896,33 @@ class main():
             outpath = os.path.join(outdir, outpath)
         g.savefig(outpath)
         plt.close()
+
+    def plot_compare_top_pics_per_group(self, current_pics_df, previous_pics_df, outdir, name):
+        if current_pics_df.shape[0] <= 1 and previous_pics_df.shape[0] <= 1:
+            return
+        corr_df = self.correlate_double(df1=current_pics_df,
+                                        df2=previous_pics_df)
+        self.plot_clustermap(df=corr_df,
+                             row_cluster=False,
+                             col_cluster=False,
+                             outdir=outdir,
+                             filename=name + "_TopPICSPerGroupComparison")
+
+    @staticmethod
+    def correlate_double(df1, df2):
+        out_df = pd.DataFrame(np.nan, index=df1.index, columns=df2.index)
+
+        for i, index1 in enumerate(df1.index):
+            for j, index2 in enumerate(df2.index):
+                corr_data = df1.loc[[index1], :].T.merge(df2.loc[[index2], :].T, left_index=True, right_index=True)
+                corr_data.dropna(inplace=True)
+                coef = np.nan
+                if corr_data.std(axis=0).min() > 0:
+                    coef, _ = stats.pearsonr(corr_data.iloc[:, 1], corr_data.iloc[:, 0])
+
+                out_df.loc[index1, index2] = coef
+
+        return out_df
 
     def print_arguments(self):
         print("Arguments:")

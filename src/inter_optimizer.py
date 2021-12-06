@@ -236,6 +236,7 @@ class InteractionOptimizer:
                        header=True,
                        index=True,
                        log=self.log)
+        del iteration_df, iterations_m
 
         if n_iterations_performed > 0:
             n_ieqtls_per_sample_df = pd.DataFrame(n_ieqtls_per_sample_m[:n_iterations_performed, :],
@@ -259,7 +260,7 @@ class InteractionOptimizer:
                            index=True,
                            log=self.log)
 
-        del iteration_df, iterations_m, n_ieqtls_per_sample_df, n_ieqtls_per_sample_m, info_df, info_m
+            del n_ieqtls_per_sample_df, n_ieqtls_per_sample_m, info_df, info_m
 
         return context_a, n_ieqtls, stop
 

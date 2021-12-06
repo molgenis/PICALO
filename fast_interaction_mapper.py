@@ -303,11 +303,17 @@ class main():
         # for eqtl_index in range(geno_m.shape[0]):
         #     snp, gene = eqtl_m[eqtl_index, :]
         #
-        #     if snp + gene != "rs1131017ENSG00000197728":
+        #     if snp + gene not in ["rs7029206ENSG00000204711",
+        #                           "rs62147573ENSG00000003137",
+        #                           "rs909987ENSG00000226454",
+        #                           "rs964611ENSG00000259235"]:
         #         continue
         #
         #     for cov_index, cov in enumerate(covariates):
-        #         if cov != "PIC1":
+        #         if snp + gene + cov not in ["rs7029206ENSG00000204711PIC2",
+        #                                     "rs62147573ENSG00000003137PIC2",
+        #                                     "rs909987ENSG00000226454PIC13",
+        #                                     "rs964611ENSG00000259235PIC13"]:
         #             continue
         #
         #         ieqtl = IeQTL(snp=snp,
