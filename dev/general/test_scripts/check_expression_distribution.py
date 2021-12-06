@@ -111,7 +111,7 @@ class main():
 
         describe_df_m_list = []
         x_order = []
-        for i in range(1, 25):
+        for i in range(1, 50):
             pic = "PIC{}".format(i)
             if pic not in self.interaction_paths.keys():
                 continue

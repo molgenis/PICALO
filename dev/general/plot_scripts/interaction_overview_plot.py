@@ -118,7 +118,7 @@ class main():
         print("Loading data")
         pics = []
         pic_dfs = []
-        for i in range(1, 35):
+        for i in range(1, 50):
             pic = "PIC{}".format(i)
 
             fpath = os.path.join(self.input_directory, "PIC_interactions", "{}.txt.gz".format(pic))

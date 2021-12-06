@@ -116,7 +116,7 @@ class main():
 
         print("Loading data")
         df_list = []
-        for i in range(1, 23):
+        for i in range(1, 50):
             fpath = os.path.join(self.input_directory, "PIC{}".format(i), "covariate_selection.txt.gz")
             if os.path.exists(fpath):
                 df = self.load_file(fpath, header=0, index_col=None)

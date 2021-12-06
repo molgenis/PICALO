@@ -118,7 +118,7 @@ class main():
         info_dict = {}
         df_m_list = []
         # column_data = {}
-        for i in range(1, 23):
+        for i in range(1, 50):
             fpath = os.path.join(self.input_directory, "PIC{}".format(i), "info.txt.gz")
             if os.path.exists(fpath):
                 df = self.load_file(fpath, header=0, index_col=0)

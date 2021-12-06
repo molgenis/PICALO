@@ -118,7 +118,7 @@ class main():
         print("Loading data")
         pics = []
         pic_df_m_collection = []
-        for i in range(1, 11):
+        for i in range(1, 50):
             pic = "PIC{}".format(i)
             data_path = os.path.join(self.input_directory, pic, "n_ieqtls_per_sample.txt.gz")
 

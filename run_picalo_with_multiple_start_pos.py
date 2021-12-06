@@ -435,7 +435,6 @@ class main():
             print("")
 
             print("  Selecting top PIC per group")
-            current_top_pics_per_group = []
             for group_index, group_indices in pic_groups.items():
                 group_summary_stats_df = summary_stats_df.loc[summary_stats_df["covariate"].isin(group_indices), :]
                 print("\tGroup{}:\tavg. start: {:.2f}\tavg. end: {:.2f}".format(group_index, group_summary_stats_df["start"].mean(), group_summary_stats_df["end"].mean()))
@@ -449,9 +448,6 @@ class main():
                 group_top_pic.index = [label]
                 top_pics_per_group_summary_stats.append([label, group_summary_stats_df.loc[group_top_covariate_index, "start"], group_summary_stats_df.loc[group_top_covariate_index, "end"]])
                 top_pics_per_group.append(group_top_pic)
-                current_top_pics_per_group.append(group_top_pic)
-            current_top_pics_per_group_df = pd.concat(current_top_pics_per_group, axis=0)
-            del current_top_pics_per_group
 
             print("\tSaving results.")
             top_pics_per_group_df = pd.concat(top_pics_per_group, axis=0)
@@ -523,37 +519,64 @@ class main():
         print("")
 
         print("Plotting.")
-        # Plot correlation_heatmap of components.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-o", self.picalo_outdir]
-        self.run_command(command)
+        plot_scripts_dir = None
+        decon_path = None
+        rna_alignment_path = None
+        phenotype_path = None
+        avg_expr_corr_path = None
+        if "BIOS" in self.picalo_outdir:
+            plot_scripts_dir = "/groups/umcg-bios/tmp01/projects/PICALO/dev/plot_scripts"
+            decon_path = "/groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz"
+            rna_alignment_path = "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz"
+            phenotype_path = "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_phenotypes.txt.gz"
+            avg_expr_corr_path = "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/BIOS_CorrelationsWithAverageExpression.txt.gz"
+        elif "MetaBrain" in self.picalo_outdir:
+            plot_scripts_dir = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts"
+            decon_path = "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/partial_deconvolution/PSYCHENCODE_PROFILE_METABRAIN_AND_PSYCHENCODE_EXON_TPM_LOG2_NODEV/IHC_0CPM_LOG2/deconvolution.txt.gz"
+            rna_alignment_path = "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz"
+            phenotype_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_phenotypes.txt.gz"
+            avg_expr_corr_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/MetaBrain_CorrelationsWithAverageExpression.txt.gz"
+        else:
+            print("Not sure if BIOS or MetaBrain")
+            exit()
 
-        # Plot correlation_heatmap of components vs Sex.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz", "-cn", "Sex", "-o", self.picalo_outdir + "_vs_Sex"]
+        # Plot correlation_heatmap of components.
+        command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-o", self.picalo_outdir]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs decon.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz", "-cn", "Decon-Cell cell fractions", "-o", self.picalo_outdir + "_vs_decon"]
-        self.run_command(command)
-
-        # Plot correlation_heatmap of components vs cell fraction %.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz", "-cn", "cell fractions %", "-o", self.picalo_outdir + "_vs_CellFractionPercentages"]
+        command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", decon_path, "-cn", "Decon-Cell cell fractions", "-o", self.picalo_outdir + "_vs_decon"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs RNA alignment metrics.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz", "-cn", "all STAR metrics", "-o", self.picalo_outdir + "_vs_AllSTARMetrics"]
+        command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", rna_alignment_path , "-cn", "RNAseq alignment metrics", "-o", self.picalo_outdir + "_vs_AllSTARMetrics"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs phenotypes.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_phenotypes.txt.gz", "-cn", "phenotypes", "-o", self.picalo_outdir + "_vs_Phenotypes"]
+        command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", phenotype_path, "-cn", "phenotypes", "-o", self.picalo_outdir + "_vs_Phenotypes"]
         self.run_command(command)
 
         # Plot correlation_heatmap of components vs expression correlations.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/BIOS_CorrelationsWithAverageExpression.txt.gz", "-cn", "AvgExprCorrelation", "-o", self.picalo_outdir + "_vs_AvgExprCorrelation"]
+        command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", avg_expr_corr_path, "-cn", "AvgExprCorrelation", "-o", self.picalo_outdir + "_vs_AvgExprCorrelation"]
         self.run_command(command)
 
-        # Plot correlation_heatmap of components vs SP140.
-        command = ['python3', '/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/create_correlation_heatmap.py', '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/SP140.txt.gz", "-cn", "SP140", "-o", self.picalo_outdir + "_vs_SP140"]
-        self.run_command(command)
+        if "BIOS" in self.picalo_outdir:
+            # Plot correlation_heatmap of components vs cell fraction %.
+            command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz", "-cn", "cell fractions %", "-o", self.picalo_outdir + "_vs_CellFractionPercentages"]
+            self.run_command(command)
+
+            # Plot correlation_heatmap of components vs SP140.
+            command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/SP140.txt.gz", "-cn", "SP140", "-o", self.picalo_outdir + "_vs_SP140"]
+            self.run_command(command)
+
+        if "MetaBrain" in self.picalo_outdir:
+            # Plot correlation_heatmap of components vs IHC.
+            command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/IHC_counts.txt.gz", "-cn", "IHC", "-o", self.picalo_outdir + "_vs_decon"]
+            self.run_command(command)
+
+            # Plot correlation_heatmap of components vs single cell counts.
+            command = ['python3', os.path.join(plot_scripts_dir, 'create_correlation_heatmap.py'), '-rd', top_unique_pics_per_group_path, "-rn", self.picalo_outdir, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/single_cell_counts.txt.gz", "-cn", "SCC", "-o", self.picalo_outdir + "_vs_SCC"]
+            self.run_command(command)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,

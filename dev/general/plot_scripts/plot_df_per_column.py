@@ -54,6 +54,10 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./plot_df_per_column.py -h
+
+./plot_df_per_column.py -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz -o MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter -e png pdf
+
+./plot_df_per_column.py -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz -o MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter -e png pdf
 """
 
 
@@ -75,23 +79,28 @@ class main():
             os.makedirs(self.outdir)
 
         self.palette = {
-           "GTE-EUR-AMPAD-MAYO-V2": "#9c9fa0",
-           "GTE-EUR-CMC_HBCC_set2": "#0877b4",
-           "GTE-EUR-GTEx": "#0fa67d",
-           "GTE-EUR-AMPAD-ROSMAP-V2": "#6950a1",
-           "GTE-EUR-BrainGVEX-V2": "#48b2e5",
-           "GTE-EUR-TargetALS": "#d5c77a",
-           "GTE-EUR-AMPAD-MSBB-V2": "#5cc5bf",
-           "GTE-EUR-NABEC-H610": "#6d743a",
-           "GTE-EUR-LIBD_1M": "#e49d26",
-           "GTE-EUR-ENA": "#d46727",
-           "GTE-EUR-LIBD_h650": "#e49d26",
-           "GTE-EUR-GVEX": "#000000",
-           "GTE-EUR-NABEC-H550": "#6d743a",
-           "GTE-EUR-CMC_HBCC_set3": "#0877b4",
-           "GTE-EUR-UCLA_ASD": "#f36d2a",
-           "GTE-EUR-CMC": "#eae453",
-           "GTE-EUR-CMC_HBCC_set1": "#eae453",
+            "AMPAD-MAYO-V2": "#9C9FA0",
+            "CMC_HBCC_set2": "#0877B4",
+            "GTEx": "#0FA67D",
+            "AMPAD-ROSMAP-V2": "#6950A1",
+            "BrainGVEX-V2": "#48B2E5",
+            "TargetALS": "#D5C77A",
+            "AMPAD-MSBB-V2": "#5CC5BF",
+            "NABEC-H610": "#6D743A",
+            "LIBD_1M": "#808080",
+            "LIBD_5M": "#808080",
+            "ENA": "#D46727",
+            "LIBD_h650": "#808080",
+            "GVEX": "#48B2E5",
+            "NABEC-H550": "#6D743A",
+            "CMC_HBCC_set3": "#0877B4",
+            "UCLA_ASD": "#F36D2A",
+            "CMC": "#EAE453",
+            "CMC_HBCC_set1": "#0877B4",
+            "Braineac": "#E49D26",
+            "Bipseq_1M": "#000000",
+            "Bipseq_h650": "#000000",
+            "Brainseq": "#C778A6",
             "LL": "#0fa67d",
             "RS": "#d46727",
             "LLS_660Q": "#000000",
@@ -204,35 +213,10 @@ class main():
                   hue="dataset",
                   palette=self.palette,
                   name=self.output_filename)
-        exit()
 
         print("\tAdding z-score color")
         for name in columns:
             df["{} z-score".format(name)] = (df[name] - df[name].mean()) / df[name].std()
-
-        # df["outlier"] = "False"
-        # for sample in [
-        #         "BD1P0GACXX-8-11_BC52YAACXX-5-11",
-        #         "AC1C14ACXX-8-8",
-        #         "AC1C40ACXX-8-6",
-        #         "AC1C14ACXX-8-6",
-        #         "AC1C14ACXX-7-22",
-        #         "AC1C40ACXX-7-13",
-        #         "AC1C14ACXX-7-13",
-        #         "AC1C40ACXX-6-4",
-        #         "AC1C40ACXX-8-8",
-        #         "AC1C14ACXX-7-18",
-        #         "AC1C40ACXX-7-18",
-        #         "AC1C40ACXX-7-22",
-        #         "AC1C14ACXX-6-4",
-        #         "AD1NFNACXX-7-19",
-        #         "AD1NAMACXX-7-14"
-        #         ]:
-        #     if sample in df.index:
-        #         df.loc[sample, "outlier"] = "True"
-        #     else:
-        #         print(sample)
-        # print("sd")
 
         df["outlier"] = "False"
         df.loc[(df["{} z-score".format(columns[0])].abs() > self.sd) | (df["{} z-score".format(columns[1])].abs() > self.sd) | (df["{} z-score".format(columns[2])].abs() > self.sd) | (df["{} z-score".format(columns[3])].abs() > self.sd), "outlier"] = "True"

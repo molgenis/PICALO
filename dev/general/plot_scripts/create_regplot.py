@@ -3,7 +3,7 @@
 """
 File:         create_regplot.py
 Created:      2021/11/09
-Last Changed:
+Last Changed: 2021/12/06
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -184,6 +184,17 @@ class main():
 
         print(x_df)
         print(y_df)
+
+        if self.x_index not in x_df.index:
+            for index in x_df.index:
+                if index.startswith(self.x_index):
+                    self.x_index = index
+                    break
+        if self.y_index not in y_df.index:
+            for index in y_df.index:
+                if index.startswith(self.y_index):
+                    self.y_index = index
+                    break
 
         x_subset_df = x_df.loc[[self.x_index], :].T
         y_subset_df = y_df.loc[[self.y_index], :].T

@@ -343,7 +343,7 @@ class main():
         for end_pos in np.arange(self.step_size, tcov_df.shape[0] + self.step_size, self.step_size):
             label = "{}ExpressionPCs".format(end_pos)
             outpath = os.path.join(self.technical_covariates_outdir, "{}.txt.gz".format(label))
-            self.save_file(df=tcov_df.iloc[:end_pos, :], outpath=outpath)
+            # self.save_file(df=tcov_df.iloc[:end_pos, :], outpath=outpath)
             pcs[label] = outpath
 
         n_jobs = len(pcs.keys())
@@ -361,45 +361,46 @@ class main():
                                                 jobs_output_dir=self.jobs_output_dir)
             jobfile_paths.append(jobfile_path)
             job_names.append(job_name)
-
-        print("  Starting job files.")
-        start_time = int(time.time())
-        for jobfile_path in jobfile_paths:
-            command = ['sbatch', jobfile_path]
-            self.run_command(command)
-
-        print("  Waiting for jobs to finish.")
-        last_print_time = None
-        completed_jobs = set()
-        while True:
-            # Check how many jobs are done.
-            n_completed = 0
-            for job_name in job_names:
-                if os.path.exists(os.path.join(self.picalo_path, "output", job_name, "SummaryStats.txt.gz")):
-                    if job_name not in completed_jobs:
-                        print("\t  '{}' finished".format(job_name))
-                        completed_jobs.add(job_name)
-
-                    n_completed += 1
-
-            # Update user on progress.
-            now_time = int(time.time())
-            if last_print_time is None or (now_time - last_print_time) >= self.print_interval or n_completed == n_jobs:
-                print("\t{:,}/{:,} jobs finished [{:.2f}%]".format(n_completed, n_jobs, (100 / n_jobs) * n_completed))
-                last_print_time = now_time
-
-            if time.time() > self.max_end_time:
-                print("\tMax end time reached.")
-                break
-
-            if n_completed == n_jobs:
-                rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
-                print("\t\tAll jobs are finished in {} minute(s) and "
-                      "{} second(s)".format(int(rt_min),
-                                            int(rt_sec)))
-                break
-
-            time.sleep(self.sleep_time)
+        #
+        # print("  Starting job files.")
+        # start_time = int(time.time())
+        # for job_name, jobfile_path in zip(job_names, jobfile_paths):
+        #     if not os.path.exists(os.path.join(self.picalo_path, "output", job_name, "SummaryStats.txt.gz")):
+        #         command = ['sbatch', jobfile_path]
+        #         self.run_command(command)
+        #
+        # print("  Waiting for jobs to finish.")
+        # last_print_time = None
+        # completed_jobs = set()
+        # while True:
+        #     # Check how many jobs are done.
+        #     n_completed = 0
+        #     for job_name in job_names:
+        #         if os.path.exists(os.path.join(self.picalo_path, "output", job_name, "SummaryStats.txt.gz")):
+        #             if job_name not in completed_jobs:
+        #                 print("\t  '{}' finished".format(job_name))
+        #                 completed_jobs.add(job_name)
+        #
+        #             n_completed += 1
+        #
+        #     # Update user on progress.
+        #     now_time = int(time.time())
+        #     if last_print_time is None or (now_time - last_print_time) >= self.print_interval or n_completed == n_jobs:
+        #         print("\t{:,}/{:,} jobs finished [{:.2f}%]".format(n_completed, n_jobs, (100 / n_jobs) * n_completed))
+        #         last_print_time = now_time
+        #
+        #     if time.time() > self.max_end_time:
+        #         print("\tMax end time reached.")
+        #         break
+        #
+        #     if n_completed == n_jobs:
+        #         rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
+        #         print("\t\tAll jobs are finished in {} minute(s) and "
+        #               "{} second(s)".format(int(rt_min),
+        #                                     int(rt_sec)))
+        #         break
+        #
+        #     time.sleep(self.sleep_time)
 
         print("  Loading info files.")
         info_df_m, summary_stats_df = self.combine_picalo_info_files(job_names=job_names)
@@ -543,7 +544,7 @@ class main():
         # Merge info stats.
         info_df_m = pd.concat(info_df_m_list, axis=0)
         info_df_m["log10 value"] = np.nan
-        info_df_m.loc[info_df_m["value"] > 0, "log10 value"] = np.log10(info_df_m.loc[info_df_m["value"] > 0, "value"])
+        info_df_m.loc[info_df_m["value"] > 0, "log10 value"] = np.log10(info_df_m.loc[info_df_m["value"] > 0, "value"].astype(float))
 
         # Construct summary stats df.
         summary_stats_df = pd.DataFrame(summary_stats,
@@ -559,7 +560,7 @@ class main():
             covariate = job_name.split("-")[-1].replace("AsCov", "")
             if not os.path.exists(fpath):
                 print("{} does not exist".format(fpath))
-                exit()
+                continue
 
             pic_df = self.load_file(inpath=fpath, header=0, index_col=0).T
             pic_df.columns = [covariate]

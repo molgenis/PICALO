@@ -200,7 +200,7 @@ class main():
         del eqtl_df, filtered_component_data, counts, eqtl_level_counts_data
 
         pic_data = {}
-        for i in range(1, 25):
+        for i in range(1, 11):
             pic = "PIC{}".format(i)
 
             fpath = os.path.join(self.input_directory, "PIC_interactions", "{}.txt.gz".format(pic))

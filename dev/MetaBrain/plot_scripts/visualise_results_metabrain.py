@@ -168,7 +168,7 @@ class main():
             print("Components file does not exists, loading iteration files")
             data = []
             columns = []
-            for i in range(1, 25):
+            for i in range(1, 50):
                 pic = "PIC{}".format(i)
                 comp_iterations_path = os.path.join(self.input_data_path, pic, "iteration.txt.gz")
                 if os.path.exists(comp_iterations_path):
@@ -191,7 +191,7 @@ class main():
         # Check for which PICs we have the interaction stats.
         pics = []
         pic_interactions_fpaths = []
-        for i in range(1, 25):
+        for i in range(1, 50):
             pic = "PIC{}".format(i)
             fpath = os.path.join(self.input_data_path, "PIC_interactions", "{}.txt.gz".format(pic))
             if os.path.exists(fpath):
@@ -235,7 +235,7 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs PCA without cov correction.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.expression_preprocessing_path, 'data', 'MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.g'), "-cn", "PCA before cov. corr.", "-o", self.outname + "_vs_PCABeforeCorrection"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.expression_preprocessing_path, 'data', 'MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.PCAOverSamplesEigenvectors.txt.gz'), "-cn", "PCA before cov. corr.", "-o", self.outname + "_vs_PCABeforeCorrection"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs PCA with cov correction.
@@ -255,11 +255,11 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs MetaBrain phenotype.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "", "-cn", "phenotypes", "-o", self.outname + "_vs_Phenotypes"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_phenotypes.txt.gz", "-cn", "phenotypes", "-o", self.outname + "_vs_Phenotypes"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs expression correlations.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "", "-cn", "AvgExprCorrelation", "-o", self.outname + "_vs_AvgExprCorrelation"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/MetaBrain_CorrelationsWithAverageExpression.txt.gz", "-cn", "AvgExprCorrelation", "-o", self.outname + "_vs_AvgExprCorrelation"]
             self.run_command(command)
 
     @staticmethod
