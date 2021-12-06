@@ -220,7 +220,7 @@ class main():
         allele_df = allele_df.loc[mask, :]
         expr_df = expr_df.loc[mask, :].loc[:, rnaseq_ids]
 
-        self.save_file(df=present_eqtl_df, outpath=os.path.join(self.outdir, "BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
+        self.save_file(df=present_eqtl_df, outpath=os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
         self.save_file(df=geno_df, outpath=os.path.join(self.outdir, "genotype_table.txt.gz"))
         self.save_file(df=allele_df, outpath=os.path.join(self.outdir, "genotype_alleles_table.txt.gz"))
         self.save_file(df=expr_df, outpath=os.path.join(self.outdir, "expression_table.txt.gz"))

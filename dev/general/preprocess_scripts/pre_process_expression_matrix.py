@@ -87,8 +87,8 @@ class main():
         # Set variables.
         if outdir is None:
             outdir = str(Path(__file__).parent.parent)
-        self.plot_outdir = os.path.join(outdir, 'pre_process_bios_expression_matrix', outfolder, 'plot')
-        self.file_outdir = os.path.join(outdir, 'pre_process_bios_expression_matrix', outfolder, 'data')
+        self.plot_outdir = os.path.join(outdir, 'pre_process_expression_matrix', outfolder, 'plot')
+        self.file_outdir = os.path.join(outdir, 'pre_process_expression_matrix', outfolder, 'data')
         for outdir in [self.plot_outdir, self.file_outdir]:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)

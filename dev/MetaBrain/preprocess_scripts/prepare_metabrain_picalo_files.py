@@ -51,7 +51,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./prepare_metabrain_picalo_files.py -h
 
-./prepare_metabrain_picalo_files.py -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_eqtl_file/MetaBrain_eQTLProbesFDR0.05-ProbeLevel_GT1.0AvgExprFilter.txt.gz -ge /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR/genotypedump/GenotypeData.txt.gz -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_bios_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -s /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_sex.txt.gz -m /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz -pcpc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_bios_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/filter_gte_file/MetaBrain_CortexEUR_NoENA_NoMDSOutlier/GenotypeToExpression.txt.gz -o MetaBrain-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter
+./prepare_metabrain_picalo_files.py -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_eqtl_file/MetaBrain_eQTLProbesFDR0.05-ProbeLevel_GT1.0AvgExprFilter.txt.gz -ge /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR/genotypedump/GenotypeData.txt.gz -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz -s /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_sex.txt.gz -m /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz -pcpc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/filter_gte_file/MetaBrain_CortexEUR_NoENA_NoMDSOutlier/GenotypeToExpression.txt.gz -o MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter
 """
 
 
@@ -70,7 +70,7 @@ class main():
         outdir = getattr(arguments, 'outdir')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bios_picalo_files', outdir)
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_metabrain_picalo_files', outdir)
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -213,7 +213,7 @@ class main():
         allele_df = allele_df.loc[mask, :]
         expr_df = expr_df.loc[mask, :].loc[:, rnaseq_ids]
 
-        self.save_file(df=present_eqtl_df, outpath=os.path.join(self.outdir, "BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
+        self.save_file(df=present_eqtl_df, outpath=os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
         self.save_file(df=geno_df, outpath=os.path.join(self.outdir, "genotype_table.txt.gz"))
         self.save_file(df=allele_df, outpath=os.path.join(self.outdir, "genotype_alleles_table.txt.gz"))
         self.save_file(df=expr_df, outpath=os.path.join(self.outdir, "expression_table.txt.gz"))
