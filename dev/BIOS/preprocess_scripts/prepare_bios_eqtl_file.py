@@ -51,9 +51,11 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./prepare_bios_eqtl_file.py -h
 
-./prepare_bios_eqtl_file.py -e /groups/umcg-bios/tmp01/projects/PICALO/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p EQTLGen_
+./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p EQTLGen_
 
-./prepare_bios_eqtl_file.py -e /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p BIOS_
+./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p BIOS_
+
+./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -mae 1 -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -p BIOS_All_
 
 ./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -mae 1 -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -p BIOS_
 
@@ -193,6 +195,7 @@ class main():
 
         # Removing rows with a too high iteration.
         eqtl_df = eqtl_df.loc[eqtl_df["Iteration"] <= self.n_iterations, :]
+        print(eqtl_df["Iteration"].value_counts())
 
         # Calculating the number of samples and datasets per SNP.
         snps_df["N datasets"] = snps_df.sum(axis=1).to_frame()
@@ -203,21 +206,22 @@ class main():
 
         print("Parsing eQTL file.")
         mask = np.zeros(eqtl_df.shape[0], dtype=bool)
-        found_genes = set()
+        found_genes = {i: set() for i in range(1, self.n_iterations+1)}
         for i, (_, row) in enumerate(eqtl_df.iterrows()):
             if (i == 0) or (i % 5000 == 0):
                 print("\tprocessed {} lines".format(i))
 
-            if "," not in row["ProbeName"] and row["ProbeName"] not in found_genes and row["SNPName"] in present_snps:
+            if "," not in row["ProbeName"] and row["ProbeName"] not in found_genes[row["Iteration"]] and row["SNPName"] in present_snps:
                 mask[i] = True
-                found_genes.add(row["ProbeName"])
+                found_genes[row["Iteration"]].add(row["ProbeName"])
 
         top_eqtl_df = eqtl_df.loc[mask, :]
         top_eqtl_df = top_eqtl_df.merge(snps_df, left_on="SNPName", right_index=True, how="left")
         top_eqtl_df["index"] = top_eqtl_df.index
+        print(top_eqtl_df["Iteration"].value_counts())
 
         # Filter on having enough datasets.
-        top_eqtl_df = top_eqtl_df.loc[top_eqtl_df["N datasets"] >= 2, :]
+        top_eqtl_df = top_eqtl_df.loc[top_eqtl_df["N datasets"] >= self.n_datasets, :]
 
         # Filter on having high enough expression.
         file_appendix = ""
@@ -289,7 +293,7 @@ class main():
         print("  > SNPs: {}".format(self.snps_path))
         print("  > Prefix: {}".format(self.prefix))
         print("  > N-iterations: {}".format(self.n_iterations))
-        print("  > N-datasets: {}".format(self.n_iterations))
+        print("  > N-datasets: {}".format(self.n_datasets))
         print("  > Minimal average expression: >{}".format(self.min_avg_expression))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Expression: {}".format(self.expression_path))
