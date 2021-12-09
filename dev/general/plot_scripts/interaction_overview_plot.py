@@ -136,6 +136,15 @@ class main():
             pics.append(pic)
 
         pic_df = pd.concat(pic_dfs, axis=1)
+        # eqtl_df = self.load_file("/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-AlleQTLs/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz", header=0, index_col=None)
+        # eqtl_df.index = eqtl_df["SNPName"] + ":" + eqtl_df["ProbeName"]
+        # eqtl_df = eqtl_df.loc[pic_df.index, :]
+        # if eqtl_df.index.tolist() != pic_df.index.tolist():
+        #     print('indices do not match')
+        #     exit()
+        # non_primary_mask = (eqtl_df["Iteration"] != 1).to_numpy()
+        # pic_df = pic_df.loc[non_primary_mask, :]
+        # print(pic_df)
 
         # Split data.
         no_interaction_df = pic_df.loc[pic_df.sum(axis=1) == 0, :]
