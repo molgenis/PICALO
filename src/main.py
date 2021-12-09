@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/12/03
+Last Changed: 2021/12/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -41,26 +41,24 @@ from src.utilities import load_dataframe, save_dataframe, get_ieqtls
 class Main:
     def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
                  tech_covariate_path, tech_covariate_with_inter_path,
-                 covariate_path, sample_dataset_path,
+                 covariate_path, sample_dataset_path, min_dataset_size,
                  eqtl_alpha, ieqtl_alpha, call_rate, hw_pval, maf, mgs,
                  n_components, min_iter, max_iter, tol, force_continue,
-                 verbose, outdir):
+                 outdir, verbose):
         # Safe arguments.
         self.genotype_na = genotype_na
+        self.min_dataset_sample_size = min_dataset_size
         self.eqtl_alpha = eqtl_alpha
-        self.ieqtl_alpha = ieqtl_alpha
         self.call_rate = call_rate
         self.hw_pval = hw_pval
         self.maf = maf
         self.mgs = mgs
+        self.ieqtl_alpha = ieqtl_alpha
         self.n_components = n_components
         self.min_iter = min_iter
         self.max_iter = max_iter
         self.tol = tol
         self.force_continue = force_continue
-
-        # Other global variables.
-        self.min_dataset_sample_size = 30
 
         # Define the current directory.
         current_dir = str(Path(__file__).parent.parent)
@@ -146,8 +144,9 @@ class Main:
                                                          dataset_df=dataset_df)
         call_rate_n_skipped = (call_rate_df.min(axis=1) < self.call_rate).sum()
         if call_rate_n_skipped > 0:
-            self.log.warning("\t  {:,} eQTLs have had dataset(s) filled with NaN "
-                             "values due to call rate threshold ".format(call_rate_n_skipped))
+            self.log.warning("\t  {:,} eQTLs have had dataset(s) filled with "
+                             "NaN values due to call rate "
+                             "threshold ".format(call_rate_n_skipped))
 
         save_dataframe(df=call_rate_df,
                        outpath=os.path.join(self.outdir, "call_rate.txt.gz"),
@@ -157,7 +156,7 @@ class Main:
         self.log.info("")
 
         self.log.info("\tCalculating genotype stats for inclusing criteria")
-        cr_keep_mask = ~(geno_df == -1).all(axis=1).to_numpy(dtype=bool)
+        cr_keep_mask = ~(geno_df == self.genotype_na).all(axis=1).to_numpy(dtype=bool)
         geno_stats_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["N", "NaN", "0", "1", "2", "min GS", "HW pval", "allele1", "allele2", "MA", "MAF"])
         geno_stats_df["N"] = 0
         geno_stats_df["NaN"] = geno_df.shape[1]
@@ -211,8 +210,14 @@ class Main:
         covs_df = self.data.get_covs_df()
 
         # Check for nan values.
+        if geno_df.isna().values.sum() > 0:
+            self.log.error("\t  Genotype file contains NaN values")
+            exit()
+        if expr_df.isna().values.sum() > 0:
+            self.log.error("\t  Expression file contains NaN values")
+            exit()
         if covs_df.isna().values.sum() > 0:
-            self.log.error("\t  Covariate file contains nan values")
+            self.log.error("\t  Covariate file contains NaN values")
             exit()
 
         # Transpose if need be.
@@ -243,6 +248,10 @@ class Main:
         self.log.info("")
         del eqtl_df, geno_df, expr_df, dataset_df, covs_df
 
+        # Fill the missing values with NaN.
+        expr_m[geno_m == self.genotype_na] = np.nan
+        geno_m[geno_m == self.genotype_na] = np.nan
+
         ########################################################################
 
         self.log.info("Loading technical covariates")
@@ -260,18 +269,19 @@ class Main:
                                             tcov_inter_m=tcov_inter_m,
                                             tcov_inter_labels=tcov_inter_labels)
 
-        self.log.info("\tCorrection matrix includes the following columns [N={}]: {}".format(len(correction_m_labels), ", ".join(correction_m_labels)))
+        self.log.info("\tCorrection matrix includes the following columns "
+                      "[N={}]: {}".format(len(correction_m_labels),
+                                          ", ".join(correction_m_labels)))
         self.log.info("")
         del tcov_m, tcov_labels, tcov_inter_m, tcov_inter_labels, correction_m_labels
 
         ########################################################################
 
-        self.log.info("Starting identifying interaction components")
+        self.log.info("Starting PIC identification")
 
         io = InteractionOptimizer(covariates=covariates,
                                   dataset_m=dataset_m,
                                   samples=samples,
-                                  genotype_na=self.genotype_na,
                                   ieqtl_alpha=self.ieqtl_alpha,
                                   min_iter=self.min_iter,
                                   max_iter=self.max_iter,
@@ -291,7 +301,8 @@ class Main:
             if stop:
                 self.log.warning("Last component did not converge")
                 if not self.force_continue:
-                    self.log.warning("Stop further identification of components")
+                    self.log.warning("Stop further identification of "
+                                     "components")
                     break
 
             self.log.info("\tIdentifying PIC {}".format(comp_count + 1))
@@ -316,18 +327,20 @@ class Main:
             component_path = os.path.join(comp_outdir, "component.npy")
             if os.path.exists(component_path):
                 self.log.info("\t  PIC has already been identified")
+
+                # Loading previous run PIC.
                 with open(component_path, 'rb') as f:
                     pic_a = np.load(f)
                 f.close()
+                self.log.info("\t  Loaded dataframe: {} with shape: {}".format(os.path.basename(component_path), pic_a.shape))
                 pic_m[comp_count, :] = pic_a
 
+                # Loading #ieQTLs this PIC had.
                 info_df_path = os.path.join(comp_outdir, "info.txt.gz")
                 if os.path.exists(info_df_path):
-                    info_df = load_dataframe(info_df_path, header=0, index_col=0)
+                    info_df = load_dataframe(info_df_path, header=0, index_col=0, log=self.log)
                     summary_stats_m[comp_count, 0] = info_df.loc[info_df.index[-1], "N"]
             else:
-                self.log.info("\t  Optimizing interaction component")
-
                 # Remove tech. covs. + components from expression matrix.
                 self.log.info("\t  Correcting expression matrix")
                 comp_expr_m = remove_covariates(y_m=expr_m,
@@ -337,6 +350,7 @@ class Main:
                                                 log=self.log)
 
                 # Optimize the cell fractions in X iterations.
+                self.log.info("\t  Optimizing interaction component")
                 pic_a, n_ieqtls, stop = io.process(eqtl_m=eqtl_m,
                                                    geno_m=geno_m,
                                                    expr_m=comp_expr_m,
@@ -346,12 +360,12 @@ class Main:
                 # Save #ieQTLs to summary stats.
                 summary_stats_m[comp_count, 0] = n_ieqtls
 
+                # Stop if the returned component is None.
                 if pic_a is None:
                     break
 
                 # Save.
                 pic_m[comp_count, :] = pic_a
-
                 with open(component_path, 'wb') as f:
                     np.save(f, pic_a)
                 f.close()
@@ -396,7 +410,8 @@ class Main:
 
         ########################################################################
 
-        self.log.info("Map interactions with PICs on original expression data")
+        self.log.info("Map interactions with PICs without correcting previous "
+                      "PICs.")
         self.log.info("\t  Correcting expression matrix")
         # Prepare output directory.
         pic_ieqtl_outdir = os.path.join(self.outdir, "PIC_interactions")
@@ -569,6 +584,8 @@ class Main:
         exact SNP test of Hardy-Weinberg Equilibrium as described in Wigginton,
         JE, Cutler, DJ, and Abecasis, GR (2005) A Note on Exact Tests of
         Hardy-Weinberg Equilibrium. AJHG 76: 887-893
+
+        Adapted by M.Vochteloo to work on matrices.
         """
         if not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype):
             obs_hets = np.rint(obs_hets)
@@ -725,15 +742,16 @@ class Main:
     def print_arguments(self):
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
+        self.log.info("  > Minimal dataset size: >={}".format(self.genotype_na))
         self.log.info("  > eQTL alpha: <{}".format(self.eqtl_alpha))
         self.log.info("  > SNP call rate: >{}".format(self.call_rate))
-        self.log.info("  > Hardy-Weinberg p-value: >{}".format(self.hw_pval))
+        self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
         self.log.info("  > MAF: >{}".format(self.maf))
-        self.log.info("  > Minimal group size: >{}".format(self.mgs))
+        self.log.info("  > Minimal group size: >={}".format(self.mgs))
         self.log.info("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))
         self.log.info("  > N components: {}".format(self.n_components))
-        self.log.info("  > Min iterations: {}".format(self.min_iter))
-        self.log.info("  > Max iterations: {}".format(self.max_iter))
+        self.log.info("  > Minimal iterations: {}".format(self.min_iter))
+        self.log.info("  > Maximum iterations: {}".format(self.max_iter))
         self.log.info("  > Tolerance: {}".format(self.tol))
         self.log.info("  > Force continue: {}".format(self.force_continue))
         self.log.info("  > Output directory: {}".format(self.outdir))

@@ -3,7 +3,7 @@
 """
 File:         picalo.py
 Created:      2020/11/16
-Last Changed: 2021/11/25
+Last Changed: 2021/12/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -61,6 +61,7 @@ if __name__ == '__main__':
     TECH_COVARIATE_WITH_INTERACTION_PATH = CLA.get_argument('tech_covariate_with_inter')
     COVARIATE_PATH = CLA.get_argument('covariate')
     SAMPLE_DATASET_PATH = CLA.get_argument('sample_to_dataset')
+    MIN_DATASET_SIZE = CLA.get_argument('min_dataset_size')
     EQTL_ALPHA = CLA.get_argument('eqtl_alpha')
     IEQTL_ALPHA = CLA.get_argument('ieqtl_alpha')
     CALL_RATE = CLA.get_argument('call_rate')
@@ -72,8 +73,8 @@ if __name__ == '__main__':
     MAX_ITER = CLA.get_argument('max_iter')
     TOL = CLA.get_argument('tol')
     FORCE_CONTINUE = CLA.get_argument('force_continue')
-    VERBOSE = CLA.get_argument('verbose')
     OUTDIR = CLA.get_argument('outdir')
+    VERBOSE = CLA.get_argument('verbose')
 
     if MAX_ITER <= MIN_ITER:
         MAX_ITER = MIN_ITER + 1
@@ -87,6 +88,7 @@ if __name__ == '__main__':
                    tech_covariate_with_inter_path=TECH_COVARIATE_WITH_INTERACTION_PATH,
                    covariate_path=COVARIATE_PATH,
                    sample_dataset_path=SAMPLE_DATASET_PATH,
+                   min_dataset_size=MIN_DATASET_SIZE,
                    eqtl_alpha=EQTL_ALPHA,
                    ieqtl_alpha=IEQTL_ALPHA,
                    call_rate=CALL_RATE,
@@ -98,7 +100,7 @@ if __name__ == '__main__':
                    max_iter=MAX_ITER,
                    tol=TOL,
                    force_continue=FORCE_CONTINUE,
-                   verbose=VERBOSE,
-                   outdir=OUTDIR
+                   outdir=OUTDIR,
+                   verbose=VERBOSE
                    )
     PROGRAM.start()

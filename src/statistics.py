@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/11/23
+Last Changed: 2021/12/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -76,16 +76,24 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None, log=None):
                                                                       (100 / (n_rows - 1)) * i))
             last_print_time = now_time
 
+        # Mask the Nan values.
+        sample_mask = ~np.isnan(y_m[i, :])
+
         # Initialize the correction matrix.
-        X = np.copy(correction_matrix)
+        X = np.copy(correction_matrix[sample_mask, :])
 
         # Add the covariates with interaction termn.
         if X_inter_m_tmp is not None:
-            X_inter_times_inter_m = X_inter_m_tmp * inter_m[i, :][:, np.newaxis]
+            X_inter_times_inter_m = X_inter_m_tmp[sample_mask, :] * inter_m[i, sample_mask][:, np.newaxis]
             X = np.hstack((X, X_inter_times_inter_m))
 
+        # Mask the features with 0 std except for the first one.
+        feature_mask = np.std(X, axis=0) != 0
+        feature_mask[0] = True
+
         # Calculate residuals using OLS.
-        y_corrected_m[i, :] = calculate_residuals_ols(X=X, y=y_m[i, :])
+        y_corrected_m[i, ~sample_mask] = np.nan
+        y_corrected_m[i, sample_mask] = calculate_residuals_ols(X=X[:, feature_mask], y=y_m[i, sample_mask])
 
     del X_m_tmp, X_inter_m_tmp
 
@@ -93,17 +101,32 @@ def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None, log=None):
 
 
 def remove_covariates_elementwise(y_m, X_m, a):
-    y_m_corrected = np.empty(y_m.shape, dtype=np.float64)
+    y_corrected_m = np.empty(y_m.shape, dtype=np.float64)
 
+    # Construct the feature matrix. Only fill in the intercept and
+    # the static covariate.
     X = np.empty((X_m.shape[1], 3), dtype=np.float64)
     X[:, 0] = 1
     X[:, 2] = a
 
     for i in range(y_m.shape[0]):
+        # Fill in the variable covariate (i.e. genotype).
         X[:, 1] = X_m[i, :]
-        y_m_corrected[i, :] = calc_residuals(y=y_m[i, :], y_hat=fit_and_predict(X=X, y=y_m[i, :]))
 
-    return y_m_corrected
+        # Mask the Nan values.
+        sample_mask = ~np.isnan(y_m[i, :])
+
+        # Mask the features with 0 std except for the first one.
+        feature_mask = np.std(X[sample_mask, :], axis=0) != 0
+        feature_mask[0] = True
+
+        # Calculate residuals using OLS.
+        y_corrected_m[i, ~sample_mask] = np.nan
+        y_corrected_m[i, sample_mask] = calc_residuals(y=y_m[i, sample_mask],
+                                                       y_hat=fit_and_predict(X=X[sample_mask, :][:, feature_mask],
+                                                                             y=y_m[i, sample_mask]))
+
+    return y_corrected_m
 
 
 def inverse(X):

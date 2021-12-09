@@ -1,7 +1,7 @@
 """
 File:         ieqtl.py
 Created:      2021/04/08
-Last Changed: 2021/11/19
+Last Changed: 2021/12/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -40,7 +40,7 @@ class IeQTL:
         self.is_analyzed = False
 
         # Save data.
-        self.mask = genotype != -1
+        self.mask = ~np.isnan(genotype)
         self.n = np.sum(self.mask)
         self.X = self.construct_model_matrix(genotype=genotype,
                                              covariate=covariate)

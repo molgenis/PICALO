@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2021/11/25
+Last Changed: 2021/12/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -55,12 +55,12 @@ class CommandLineArguments:
                             "--eqtl",
                             type=str,
                             required=True,
-                            help="The path to the eqtl matrix")
+                            help="The path to the eqtl matrix.")
         parser.add_argument("-ge",
                             "--genotype",
                             type=str,
                             required=True,
-                            help="The path to the genotype matrix")
+                            help="The path to the genotype matrix.")
         parser.add_argument("-na",
                             "--genotype_na",
                             type=int,
@@ -72,25 +72,28 @@ class CommandLineArguments:
                             "--expression",
                             type=str,
                             required=True,
-                            help="The path to the expression matrix")
+                            help="The path to the expression matrix.")
         parser.add_argument("-tc",
                             "--tech_covariate",
                             type=str,
                             default=None,
-                            help="The path to the technical covariate matrix. "
+                            help="The path to the technical covariate matrix "
+                                 "(excluding an interaction with genotype). "
                                  "Default: None.")
         parser.add_argument("-tci",
                             "--tech_covariate_with_inter",
                             type=str,
                             default=None,
                             help="The path to the technical covariate matrix"
-                                 "to correct for with an interaction term. "
+                                 "(including an interaction with genotype). "
                                  "Default: None.")
         parser.add_argument("-co",
                             "--covariate",
                             type=str,
                             required=True,
-                            help="The path to the covariate matrix")
+                            help="The path to the covariate matrix (i.e. the"
+                                 "matrix used as starting vector for the "
+                                 "interaction term).")
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
@@ -98,19 +101,19 @@ class CommandLineArguments:
                             default=None,
                             help="The path to the sample-dataset link matrix."
                                  "Default: None.")
+        parser.add_argument("-mds",
+                            "--min_dataset_size",
+                            type=int,
+                            required=False,
+                            default=30,
+                            help="The minimal number of samples per dataset. "
+                                 "Default: >=30.")
         parser.add_argument("-ea",
                             "--eqtl_alpha",
                             type=float,
                             required=False,
                             default=0.05,
                             help="The eQTL significance cut-off. "
-                                 "Default: <0.05.")
-        parser.add_argument("-iea",
-                            "--ieqtl_alpha",
-                            type=float,
-                            required=False,
-                            default=0.05,
-                            help="The interaction eQTL significance cut-off. "
                                  "Default: <0.05.")
         parser.add_argument("-cr",
                             "--call_rate",
@@ -140,6 +143,13 @@ class CommandLineArguments:
                             default=2,
                             help="The minimal number of samples per genotype "
                                  "group. Default: >= 2.")
+        parser.add_argument("-iea",
+                            "--ieqtl_alpha",
+                            type=float,
+                            required=False,
+                            default=0.05,
+                            help="The interaction eQTL significance cut-off. "
+                                 "Default: <0.05.")
         parser.add_argument("-n_components",
                             type=int,
                             required=False,
@@ -151,13 +161,15 @@ class CommandLineArguments:
                             required=False,
                             default=5,
                             help="The minimum number of optimization "
-                                 "iterations per component. Default: 5.")
+                                 "iterations to perform per component. "
+                                 "Default: 5.")
         parser.add_argument("-max_iter",
                             type=int,
                             required=False,
                             default=100,
                             help="The maximum number of optimization "
-                                 "iterations per component. Default: 100.")
+                                 "iterations to perform per component. "
+                                 "Default: 100.")
         parser.add_argument("-tol",
                             type=float,
                             required=False,
@@ -168,18 +180,18 @@ class CommandLineArguments:
                                  "Default: 1e-3.")
         parser.add_argument("-force_continue",
                             action='store_true',
-                            help="Force to identify more PICs even if the "
-                                 "previous one did not converge."
+                            help="Force to identify more components even if "
+                                 "the previous one did not converge."
                                  " Default: False.")
-        parser.add_argument("-verbose",
-                            action='store_true',
-                            help="Enable verbose output. Default: False.")
         parser.add_argument("-o",
                             "--outdir",
                             type=str,
                             required=False,
                             default="output",
                             help="The name of the output folder.")
+        parser.add_argument("-verbose",
+                            action='store_true',
+                            help="Enable verbose output. Default: False.")
 
         return parser
 

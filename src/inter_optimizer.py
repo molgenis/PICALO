@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/12/03
+Last Changed: 2021/12/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -35,11 +35,10 @@ from src.utilities import save_dataframe, get_ieqtls
 
 
 class InteractionOptimizer:
-    def __init__(self, covariates, dataset_m, samples, genotype_na,
-                 ieqtl_alpha, min_iter, max_iter, tol, log):
+    def __init__(self, covariates, dataset_m, samples, ieqtl_alpha, min_iter,
+                 max_iter, tol, log):
         self.covariates = covariates
         self.samples = samples
-        self.genotype_na = genotype_na
         self.ieqtl_alpha = ieqtl_alpha
         self.min_iter = min_iter
         self.max_iter = max_iter
@@ -71,7 +70,8 @@ class InteractionOptimizer:
 
             # Find the significant ieQTLs.
             if context_a is None:
-                self.log.info("\t\t  Finding covariate with most ieQTLs")
+                self.log.info("\t\t  Finding the covariate that has the most "
+                              "ieQTLs without optimization")
 
                 cov = None
                 n_hits = 0
@@ -103,7 +103,7 @@ class InteractionOptimizer:
                         alpha=self.ieqtl_alpha)
 
                     # Save hits.
-                    self.log.info("\t\t\tCovariate: '{}' has {} significant ieQTLs".format(self.covariates[cov_index], cov_hits))
+                    self.log.info("\t\t\tCovariate: '{}' has {:,} significant ieQTLs".format(self.covariates[cov_index], cov_hits))
                     hits_per_cov_data.append([self.covariates[cov_index], cov_hits])
 
                     if cov_hits > n_hits:
@@ -152,7 +152,7 @@ class InteractionOptimizer:
 
             # Save results.
             save_dataframe(df=results_df,
-                           outpath=os.path.join(outdir, "results_iteration{}{}.txt.gz".format("0" * (len(str(self.max_iter)) - len(str(iteration))), iteration)),
+                           outpath=os.path.join(outdir, "results_iteration{}{}.txt.gz".format("0" * (len(str(self.max_iter)) - len(str(iteration)) - 1), iteration)),
                            header=True,
                            index=False,
                            log=self.log)
