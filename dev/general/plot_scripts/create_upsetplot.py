@@ -128,10 +128,10 @@ class main():
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
         eqtl_df.index = eqtl_df["SNPName"] + ":" + eqtl_df["ProbeName"]
 
-        has_Iteration = True
+        has_iteration = True
         if "Iteration" not in eqtl_df.columns:
             eqtl_df["Iteration"] = 1
-            has_Iteration = False
+            has_iteration = False
 
         eqtl_df = eqtl_df[["Iteration"]].astype(str)
         eqtl_df.columns = ["eQTL level"]
@@ -167,7 +167,7 @@ class main():
                     eqtl_hlines = {a: (b / overlap_df.shape[0]) * 100 for a, b in eqtl_hlines}
 
             # plot lineplot.
-            if has_Iteration and len(eqtl_level_counts_data.keys()) > 0:
+            if has_iteration and len(eqtl_level_counts_data.keys()) > 0:
                 level_df = pd.DataFrame(eqtl_level_counts_data)
                 level_df = (level_df / level_df.sum(axis=0)) * 100
                 level_df.reset_index(drop=False, inplace=True)

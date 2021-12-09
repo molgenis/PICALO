@@ -3,7 +3,7 @@
 """
 File:         fast_interaction_mapper.py
 Created:      2021/11/16
-Last Changed: 2021/11/26
+Last Changed: 2021/12/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -174,7 +174,7 @@ class main():
         self.log.info("")
 
         self.log.info("\tCalculating genotype stats for inclusing criteria")
-        cr_keep_mask = ~(geno_df == -1).all(axis=1).to_numpy(dtype=bool)
+        cr_keep_mask = ~(geno_df == self.genotype_na).all(axis=1).to_numpy(dtype=bool)
         geno_stats_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["N", "NaN", "0", "1", "2", "min GS", "HW pval", "allele1", "allele2", "MA", "MAF"])
         geno_stats_df["N"] = 0
         geno_stats_df["NaN"] = geno_df.shape[1]

@@ -63,6 +63,7 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
+        self.nrows = getattr(arguments, 'n_rows')
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.palette_path = getattr(arguments, 'palette')
         self.out_filename = getattr(arguments, 'outfile')
@@ -96,6 +97,12 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the data matrix.")
+        parser.add_argument("-n",
+                            "--n_rows",
+                            type=int,
+                            required=False,
+                            default=None,
+                            help="The number of rows to plot. Default: all.")
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
@@ -122,7 +129,7 @@ class main():
         self.print_arguments()
 
         print("Loading data.")
-        df = self.load_file(self.data_path, header=0, index_col=0)
+        df = self.load_file(self.data_path, header=0, index_col=0, nrows=self.nrows)
         df = df.T
         columns = df.columns.tolist()
 
@@ -216,6 +223,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Data path: {}".format(self.data_path))
+        print("  > N-rows: {}".format(self.nrows))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))

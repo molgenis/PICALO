@@ -3,7 +3,7 @@
 """
 File:         visualise_results_bios.py
 Created:      2021/11/09
-Last Changed: 2021/12/06
+Last Changed: 2021/12/08
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -52,9 +52,13 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./visualise_results_bios.py -h
 
-./visualise_results_bios.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o 2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics
+./visualise_results_bios.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o 2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics
 
-./visualise_results_bios.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o 2021-12-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter
+./visualise_results_bios.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o 2021-12-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter
+
+./visualise_results_bios.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-07-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o 2021-12-07-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
+
+./visualise_results_bios.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-07-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-AlleQTLs -pf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-AlleQTLs -ep /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o 2021-12-07-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-AlleQTLs
 """
 
 
@@ -130,7 +134,7 @@ class main():
         self.run_command(command)
 
         # Plot eQTL upsetplot.
-        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.pf_path, "BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), '-p', self.palette_path, '-o', self.outname]
+        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.pf_path, "eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         # Plot interaction overview plot.
@@ -163,7 +167,7 @@ class main():
                 # self.run_command(command)
 
         # Compare iterative t-values .
-        command = ['python3', 'compare_tvalues.py', '-d'] + last_iter_fpaths + ['-n'] + pics + ['-o', self.outname + '_IterativeTValuesOverview']
+        command = ['python3', 'compare_tvalues.py', '-d'] + last_iter_fpaths[:5] + ['-n'] + pics[:5] + ['-o', self.outname + '_IterativeTValuesOverview']
         self.run_command(command)
 
         # Create components_df if not exists.
@@ -195,7 +199,7 @@ class main():
         # Check for which PICs we have the interaction stats.
         pics = []
         pic_interactions_fpaths = []
-        for i in range(1, 50):
+        for i in range(1, 6):
             pic = "PIC{}".format(i)
             fpath = os.path.join(self.input_data_path, "PIC_interactions", "{}.txt.gz".format(pic))
             if os.path.exists(fpath):
@@ -209,12 +213,12 @@ class main():
 
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
-                   '-std', os.path.join(self.pf_path, "sample_to_dataset.txt.gz"), '-p', self.palette_path, '-o', self.outname + "_ColoredByDataset"]
+                   '-std', os.path.join(self.pf_path, "sample_to_dataset.txt.gz"), '-n', '5', '-p', self.palette_path, '-o', self.outname + "_ColoredByDataset"]
         self.run_command(command)
 
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
-                   '-std', "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz", '-p', self.palette_path, '-o', self.outname + "_ColoredBySex"]
+                   '-std', "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz", '-n', '5', '-p', self.palette_path, '-o', self.outname + "_ColoredBySex"]
         self.run_command(command)
 
         if os.path.exists(components_path):
@@ -223,7 +227,7 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs datasets.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "datasets_table.txt.gz"), "-cn", "phenotypes", "-o", self.outname + "_vs_Datasets"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "datasets_table.txt.gz"), "-cn", "datasets", "-o", self.outname + "_vs_Datasets"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs included RNA alignment metrics.
@@ -271,7 +275,7 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs SP140.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/SP140.txt.gz", "-cn", "SP140", "-o", self.outname + "_vs_SP140"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/SP140.txt.gz", "-cn", "SP140", "-o", self.outname + "_vs_SP140"]
             self.run_command(command)
 
     @staticmethod
