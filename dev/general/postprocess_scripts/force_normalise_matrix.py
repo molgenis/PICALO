@@ -51,6 +51,20 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./force_normalise_matrix.py -h
+
+### MetaBrain ###
+./force_normalise_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/partial_deconvolution/PSYCHENCODE_PROFILE_METABRAIN_AND_PSYCHENCODE_EXON_TPM_LOG2_NODEV/IHC_0CPM_LOG2/deconvolution.txt.gz -transpose -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -o 2021-12-10-CellFractions_MetaBrain_CortexEUR_ExonTPM_Log2_NoDev_SubCellTypes
+
+./force_normalise_matrix.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2021-12-07-CortexEUR-cis-ProbesWithZeroVarianceRemoved/perform_deconvolution/deconvolution_table.txt.gz -transpose -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -o 2021-12-10-CellFractions_MetaBrain_CortexEUR_ExonTPM_Log2_NoDev_MajorCellTypes
+
+./force_normalise_matrix.py -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -o 2021-12-10-MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS
+
+### BIOS ###
+
+./force_normalise_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz -transpose -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -o 2021-12-10-CellFractionPercentages_BIOS
+
+./force_normalise_matrix.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -o 2021-12-10-gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS
+
 """
 
 
@@ -114,6 +128,14 @@ class main():
         if self.transpose:
             data_df = data_df.T
 
+        print("Subset samples")
+        samples = [x for x in list(std_df.iloc[:, 0].values) if x in set(data_df.columns)]
+        data_df = data_df.loc[:, samples]
+        std_df = std_df.loc[std_df.iloc[:, 0].isin(samples), :]
+        print(data_df)
+        print(std_df)
+
+        print("Construct dataset matrix")
         dataset_df = self.construct_dataset_df(std_df=std_df)
         dataset_m = dataset_df.to_numpy(bool)
         del std_df
@@ -127,7 +149,7 @@ class main():
 
         print("Save file")
         self.save_file(df=normal_data_df,
-                       outpath=os.path.join(self.outdir, self.out_filename + ".ForceNormalisePerDataset.txt.gz")
+                       outpath=os.path.join(self.outdir,  "{}_ForceNormalised.txt.gz".format(self.out_filename))
                        )
 
     @staticmethod

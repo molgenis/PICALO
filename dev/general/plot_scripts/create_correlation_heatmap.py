@@ -55,6 +55,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_correlation_heatmap.py -h
+
+./create_correlation_heatmap.py -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -rn PICs -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/force_normalise_matrix/2021-12-10-CellFractions_MetaBrain_CortexEUR_ExonTPM_Log2_NoDev_SubCellTypes.txt.gz -cn Decon Cell Fractions % FNPPD -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_vs_DeconCellFractions_SubCT_FNPD
 """
 
 
@@ -150,10 +152,6 @@ class main():
         if col_df.shape[1] > col_df.shape[0]:
             col_df = col_df.T
 
-        print("Removing columns without variance.")
-        row_df = row_df.loc[:, row_df.std(axis=0) != 0]
-        col_df = col_df.loc[:, col_df.std(axis=0) != 0]
-
         print("Getting overlap.")
         overlap = set(row_df.index).intersection(set(col_df.index))
         print("\tN = {}".format(len(overlap)))
@@ -162,6 +160,10 @@ class main():
             exit()
         row_df = row_df.loc[overlap, :]
         col_df = col_df.loc[overlap, :]
+
+        print("Removing columns without variance.")
+        row_df = row_df.loc[:, row_df.std(axis=0) != 0]
+        col_df = col_df.loc[:, col_df.std(axis=0) != 0]
 
         print("\tCorrelating.")
         corr_df, pvalue_df = self.correlate(index_df=row_df, columns_df=col_df, triangle=triangle)

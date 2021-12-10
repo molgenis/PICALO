@@ -3,7 +3,7 @@
 """
 File:         visualise_results_metabrain.py
 Created:      2021/05/06
-Last Changed: 2021/12/06
+Last Changed: 2021/12/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -51,6 +51,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./visualise_results_metabrain.py -h
+
+./visualise_results_metabrain.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs -pf /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs -ep /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs
 """
 
 
@@ -126,7 +128,7 @@ class main():
         self.run_command(command)
 
         # Plot eQTL upsetplot.
-        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.pf_path, "BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), '-p', self.palette_path, '-o', self.outname]
+        command = ['python3', 'create_upsetplot.py', '-i', self.input_data_path, '-e', os.path.join(self.pf_path, "eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), '-p', self.palette_path, '-o', self.outname]
         self.run_command(command)
 
         # Plot interaction overview plot.
@@ -159,7 +161,7 @@ class main():
                 # self.run_command(command)
 
         # Compare iterative t-values .
-        command = ['python3', 'compare_tvalues.py', '-d'] + last_iter_fpaths + ['-n'] + pics + ['-o', self.outname + '_IterativeTValuesOverview']
+        command = ['python3', 'compare_tvalues.py', '-d'] + last_iter_fpaths[:5] + ['-n'] + pics[:5] + ['-o', self.outname + '_IterativeTValuesOverview']
         self.run_command(command)
 
         # Create components_df if not exists.
@@ -191,7 +193,7 @@ class main():
         # Check for which PICs we have the interaction stats.
         pics = []
         pic_interactions_fpaths = []
-        for i in range(1, 50):
+        for i in range(1, 6):
             pic = "PIC{}".format(i)
             fpath = os.path.join(self.input_data_path, "PIC_interactions", "{}.txt.gz".format(pic))
             if os.path.exists(fpath):
@@ -205,12 +207,12 @@ class main():
 
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
-                   '-std', os.path.join(self.pf_path, "sample_to_dataset.txt.gz"), '-p', self.palette_path, '-o', self.outname + "_ColoredByDataset"]
+                   '-std', os.path.join(self.pf_path, "sample_to_dataset.txt.gz"), '-n', '5', '-p', self.palette_path, '-o', self.outname + "_ColoredByDataset"]
         self.run_command(command)
 
         # Plot comparison scatterplot.
         command = ['python3', 'create_comparison_scatterplot.py', '-d', components_path,
-                   '-std', "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_sex.txt.gz", '-p', self.palette_path, '-o', self.outname + "_ColoredBySex"]
+                   '-std', "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_sex.txt.gz", '-n', '5', '-p', self.palette_path, '-o', self.outname + "_ColoredBySex"]
         self.run_command(command)
 
         if os.path.exists(components_path):
@@ -219,11 +221,11 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs datasets.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "datasets_table.txt.gz"), "-cn", "phenotypes", "-o", self.outname + "_vs_Datasets"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", os.path.join(self.pf_path, "datasets_table.txt.gz"), "-cn", "datasets", "-o", self.outname + "_vs_Datasets"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs RNA alignment metrics.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz", "-cn", "RNAseq alignment metrics", "-o", self.outname + "_vs_IncludedSTARMetrics"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz", "-cn", "RNAseq alignment metrics", "-o", self.outname + "_vs_RNASeqAlignmentMetrics"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs Sex.
@@ -247,14 +249,14 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs IHC.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/IHC_counts.txt.gz", "-cn", "IHC", "-o", self.outname + "_vs_decon"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/IHC_counts.txt.gz", "-cn", "IHC", "-o", self.outname + "_vs_IHC"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs single cell counts.
             command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/AMP-AD/single_cell_counts.txt.gz", "-cn", "SCC", "-o", self.outname + "_vs_SCC"]
             self.run_command(command)
 
-            # Plot correlation_heatmap of components vs MetaBrain phenotype.
+            # Plot correlation_heatmap of components vs phenotypes.
             command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_phenotypes.txt.gz", "-cn", "phenotypes", "-o", self.outname + "_vs_Phenotypes"]
             self.run_command(command)
 

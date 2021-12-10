@@ -56,6 +56,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_regplot.py -h
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -xi PIC1 -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/MetaBrain_CorrelationsWithAverageExpression.txt.gz -y_transpose -yi AvgExprCorrelation -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_PIC1_vs_AvgExprCorrelation
 """
 
 
@@ -249,7 +251,7 @@ class main():
         sns.set(rc={'figure.figsize': (12, 9)})
         sns.set_style("ticks")
         fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2,
-                                       gridspec_kw={"width_ratios": [0.9, 0.1]})
+                                       gridspec_kw={"width_ratios": [0.8, 0.2]})
         sns.despine(fig=fig, ax=ax1)
         ax2.axis('off')
 
@@ -303,7 +305,7 @@ class main():
                 if hue_group in palette:
                     handles.append(mpatches.Patch(color=palette[hue_group],
                                                   label="{} [n={:,}; r={:.2f}]".format(hue_group, group_sizes[hue_group],group_corr_coef[hue_group])))
-            ax2.legend(handles=handles, loc="center")
+            ax2.legend(handles=handles, loc="center", fontsize=8)
 
         ax1.set_xlabel(xlabel,
                        fontsize=14,

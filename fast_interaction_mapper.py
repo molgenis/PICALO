@@ -3,10 +3,11 @@
 """
 File:         fast_interaction_mapper.py
 Created:      2021/11/16
-Last Changed: 2021/12/09
+Last Changed: 2021/12/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -69,15 +70,13 @@ class main():
                                    version=__version__,
                                    description=__description__)
         self.genotype_na = cla.get_argument('genotype_na')
+        self.min_dataset_sample_size = cla.get_argument('min_dataset_size')
         self.eqtl_alpha = cla.get_argument('eqtl_alpha')
         self.ieqtl_alpha = cla.get_argument('ieqtl_alpha')
         self.call_rate = cla.get_argument('call_rate')
         self.hw_pval = cla.get_argument('hardy_weinberg_pvalue')
         self.maf = cla.get_argument('minor_allele_frequency')
         self.mgs = cla.get_argument('min_group_size')
-
-        # Other global variables.
-        self.min_dataset_sample_size = 30
 
         # Define the current directory.
         current_dir = str(Path(__file__).parent.parent)
@@ -163,8 +162,9 @@ class main():
                                                          dataset_df=dataset_df)
         call_rate_n_skipped = (call_rate_df.min(axis=1) < self.call_rate).sum()
         if call_rate_n_skipped > 0:
-            self.log.warning("\t  {:,} eQTLs have had dataset(s) filled with NaN "
-                             "values due to call rate threshold ".format(call_rate_n_skipped))
+            self.log.warning("\t  {:,} eQTLs have had dataset(s) filled with "
+                             "NaN values due to call rate "
+                             "threshold ".format(call_rate_n_skipped))
 
         save_dataframe(df=call_rate_df,
                        outpath=os.path.join(self.outdir, "call_rate.txt.gz"),
@@ -228,8 +228,14 @@ class main():
         covs_df = self.data.get_covs_df()
 
         # Check for nan values.
+        if geno_df.isna().values.sum() > 0:
+            self.log.error("\t  Genotype file contains NaN values")
+            exit()
+        if expr_df.isna().values.sum() > 0:
+            self.log.error("\t  Expression file contains NaN values")
+            exit()
         if covs_df.isna().values.sum() > 0:
-            self.log.error("\t  Covariate file contains nan values")
+            self.log.error("\t  Covariate file contains NaN values")
             exit()
 
         # Transpose if need be.
@@ -260,6 +266,10 @@ class main():
         self.log.info("")
         del eqtl_df, geno_df, expr_df, dataset_df, covs_df
 
+        # Fill the missing values with NaN.
+        expr_m[geno_m == self.genotype_na] = np.nan
+        geno_m[geno_m == self.genotype_na] = np.nan
+
         ########################################################################
 
         self.log.info("Loading technical covariates")
@@ -277,7 +287,9 @@ class main():
                                             tcov_inter_m=tcov_inter_m,
                                             tcov_inter_labels=tcov_inter_labels)
 
-        self.log.info("\tCorrection matrix includes the following columns [N={}]: {}".format(len(correction_m_labels), ", ".join(correction_m_labels)))
+        self.log.info("\tCorrection matrix includes the following columns "
+                      "[N={}]: {}".format(len(correction_m_labels),
+                                          ", ".join(correction_m_labels)))
         self.log.info("")
         del tcov_m, tcov_labels, tcov_inter_m, tcov_inter_labels, correction_m_labels
 
@@ -342,7 +354,7 @@ class main():
             genotype = geno_m[eqtl_index, :]
 
             # Construct the mask to remove missing values.
-            mask = genotype != self.genotype_na
+            mask = ~np.isnan(genotype)
             n = np.sum(mask)
 
             # Create the matrices. Note that only the first two columns
@@ -456,7 +468,6 @@ class main():
 
     def validate_data(self, std_df, eqtl_df=None, geno_df=None,
                       expr_df=None, covs_df=None, tcovs_df=None):
-
         # Check the samples.
         samples = std_df.iloc[:, 0].values.tolist()
         if geno_df is not None and geno_df.columns.tolist() != samples:
@@ -561,6 +572,8 @@ class main():
         exact SNP test of Hardy-Weinberg Equilibrium as described in Wigginton,
         JE, Cutler, DJ, and Abecasis, GR (2005) A Note on Exact Tests of
         Hardy-Weinberg Equilibrium. AJHG 76: 887-893
+
+        Adapted by M.Vochteloo to work on matrices.
         """
         if not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype):
             obs_hets = np.rint(obs_hets)
@@ -676,8 +689,7 @@ class main():
         return m, covariates
 
     @staticmethod
-    def construct_correct_matrices(dataset_m, dataset_labels, tcov_m,
-                                   tcov_labels,
+    def construct_correct_matrices(dataset_m, dataset_labels, tcov_m, tcov_labels,
                                    tcov_inter_m, tcov_inter_labels):
         # Create the correction matrices.
         corr_m = None
@@ -691,8 +703,7 @@ class main():
             corr_m_columns.extend(dataset_labels[1:])
 
             corr_inter_m = np.copy(dataset_m)
-            corr_inter_m_columns.extend(
-                ["{} x Genotype".format(label) for label in dataset_labels])
+            corr_inter_m_columns.extend(["{} x Genotype".format(label) for label in dataset_labels])
 
         if tcov_m is not None:
             corr_m_columns.extend(tcov_labels)
@@ -708,8 +719,7 @@ class main():
             else:
                 corr_m = tcov_inter_m
 
-            corr_inter_m_columns.extend(
-                ["{} x Genotype".format(label) for label in tcov_inter_labels])
+            corr_inter_m_columns.extend(["{} x Genotype".format(label) for label in tcov_inter_labels])
             if corr_inter_m is not None:
                 corr_inter_m = np.hstack((corr_inter_m, tcov_inter_m))
             else:
@@ -720,11 +730,12 @@ class main():
     def print_arguments(self):
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
+        self.log.info("  > Minimal dataset size: >={}".format(self.genotype_na))
         self.log.info("  > eQTL alpha: <{}".format(self.eqtl_alpha))
         self.log.info("  > SNP call rate: >{}".format(self.call_rate))
-        self.log.info("  > Hardy-Weinberg p-value: >{}".format(self.hw_pval))
+        self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
         self.log.info("  > MAF: >{}".format(self.maf))
-        self.log.info("  > Minimal group size: >{}".format(self.mgs))
+        self.log.info("  > Minimal group size: >={}".format(self.mgs))
         self.log.info("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")

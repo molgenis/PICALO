@@ -3,7 +3,7 @@
 """
 File:         pre_process_expression_matrix.py
 Created:      2021/10/22
-Last Changed: 2021/11/11
+Last Changed: 2021/12/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -43,7 +43,7 @@ import matplotlib.patches as mpatches
 # Local application imports.
 
 # Metadata
-__program__ = "Pre-process BIOS Expression Matrix"
+__program__ = "Pre-process Expression Matrix"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -264,6 +264,9 @@ class main():
 
         print("Step 8: remove technical covariates OLS.")
         corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
+
+        print("\tSaving file.")
+        self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
 
         print("Step 9: PCA analysis.")
         self.pca(df=corrected_df,
