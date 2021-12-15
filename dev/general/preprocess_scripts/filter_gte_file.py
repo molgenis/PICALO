@@ -51,11 +51,18 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 
-### MetaBrain ###
+### MetaBrain EUR ###
 
 ./filter_gte_file.py -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_ENASamples.txt.gz -o MetaBrain_CortexEUR_NoENA
 
 ./filter_gte_file.py -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_ENASamples_andMDSOutlierSample.txt.gz -o MetaBrain_CortexEUR_NoENA_NoMDSOutlier
+
+### MetaBrain AFR ###
+
+./filter_gte_file.py -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_AFR.txt.gz -o MetaBrain_CortexAFR
+
+./filter_gte_file.py -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_AFR.txt.gz -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CortexAFR_MDSOutlierSample.txt.gz -o MetaBrain_CortexAFR_NoMDSOutlier
+
 
 #### BIOS ####
 
@@ -106,7 +113,7 @@ class main():
         parser.add_argument("-e",
                             "--exclude_genotype_to_expression",
                             type=str,
-                            required=True,
+                            default=None,
                             help="The path to the samples to remove"
                                  "in GTE format.")
         parser.add_argument("-ns",
@@ -128,21 +135,23 @@ class main():
 
         print("Loading data.")
         gte_df = self.load_file(self.gte_path, header=0, index_col=None)
-        se_df = self.load_file(self.e_gte_path, header=0, index_col=None)
         print(gte_df)
-        print(se_df)
-        print(se_df["dataset"].value_counts())
+        se_df = None
+        if self.e_gte_path is not None:
+            se_df = self.load_file(self.e_gte_path, header=0, index_col=None)
+            print(se_df)
+            print(se_df["dataset"].value_counts())
 
         ########################################################################
 
-        print("Removing samples.")
-        remove_rnaseq_ids = set(se_df["rnaseq_id"])
-        mask = [False if sample in remove_rnaseq_ids else True for sample in gte_df["rnaseq_id"]]
-        subset_gte_df = gte_df.loc[mask, :]
-        del gte_df
+        if se_df is not None:
+            print("Removing samples.")
+            remove_rnaseq_ids = set(se_df["rnaseq_id"])
+            mask = [False if sample in remove_rnaseq_ids else True for sample in gte_df["rnaseq_id"]]
+            gte_df = gte_df.loc[mask, :]
 
         print("Filtering on dataset sample size")
-        dataset_sizes = subset_gte_df["dataset"].value_counts().to_frame()
+        dataset_sizes = gte_df["dataset"].value_counts().to_frame()
         remove_datasets = []
         for dataset, row in dataset_sizes.iterrows():
             if row["dataset"] < self.n_samples:
@@ -150,24 +159,24 @@ class main():
                 remove_datasets.append(dataset)
 
         if len(remove_datasets) > 0:
-            subset_gte_df = subset_gte_df[~subset_gte_df['dataset'].isin(remove_datasets)]
+            subset_gte_df = gte_df[~gte_df['dataset'].isin(remove_datasets)]
 
-        dataset_sizes = subset_gte_df["dataset"].value_counts().to_frame()
+        dataset_sizes = gte_df["dataset"].value_counts().to_frame()
         print(dataset_sizes)
 
         ########################################################################
 
         print("Saving files.")
         # Gene-to-expression file.
-        self.save_file(df=subset_gte_df, outpath=os.path.join(self.outdir, "GenotypeToExpression.txt.gz"), index=False)
+        self.save_file(df=gte_df, outpath=os.path.join(self.outdir, "GenotypeToExpression.txt.gz"), index=False)
 
         # Sample-to-dataset file.
-        std_df = subset_gte_df.loc[:, ["rnaseq_id", "dataset"]]
+        std_df = gte_df.loc[:, ["rnaseq_id", "dataset"]]
         std_df.columns = ["sample", "dataset"]
         self.save_file(df=std_df, outpath=os.path.join(self.outdir, "SampleToDataset.txt.gz"), index=False)
 
         # Family-genotype file (for MDS analyses).
-        gte_fid_df = subset_gte_df.loc[:, ["genotype_id"]].copy()
+        gte_fid_df = gte_df.loc[:, ["genotype_id"]].copy()
         gte_fid_df.insert(0, "family_id", 0)
         self.save_file(df=gte_fid_df, outpath=os.path.join(self.outdir, "FamilyToGenotype.txt"), header=False, index=False)
 

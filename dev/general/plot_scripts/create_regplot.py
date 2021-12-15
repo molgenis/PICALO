@@ -58,6 +58,12 @@ Syntax:
 ./create_regplot.py -h
 
 ./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -xi PIC1 -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/MetaBrain_CorrelationsWithAverageExpression.txt.gz -y_transpose -yi AvgExprCorrelation -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_PIC1_vs_AvgExprCorrelation
+
+./create_regplot.py -xd /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-GeneExpressionFNPD_gene_correlations_cleaned.txt.gz -x_transpose -xi PIC1 -xl BIOS -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-GeneExpressionFNPD_gene_correlations_cleaned.txt.gz -y_transpose -yi PIC1 -yl MetaBrainCortexEUR -o 2021-12-09-PrimaryeQTLs-BIOS_vs_MetaBrainEUR_PIC1
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -xi PIC3 -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_phenotypes.txt.gz -y_transpose -yi Modifier_of_ALS_Spectrum_MND_-_FTD? -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_PIC3_vs_Modifier_of_ALS_Spectrum_MND_-_FTD
+
+./create_regplot.py -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -xi PIC3 -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_phenotypes.txt.gz -y_transpose -yi Antipsychotics -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_PIC3_vs_Antipsychotics
 """
 
 
@@ -281,6 +287,8 @@ class main():
         group_sizes = {}
         for i, hue_group in enumerate(df[group_column].unique()):
             subset = df.loc[df[group_column] == hue_group, :]
+            if subset.shape[0] < 2:
+                continue
 
             facecolors = "#000000"
             color = "#b22222"
@@ -303,8 +311,14 @@ class main():
             handles = []
             for hue_group in df[group_column].unique():
                 if hue_group in palette:
+                    n = "0"
+                    if hue_group in group_sizes:
+                        n = "{:,}".format(group_sizes[hue_group])
+                    r = "NA"
+                    if hue_group in group_corr_coef:
+                        n = "{:.2f}".format(group_corr_coef[hue_group])
                     handles.append(mpatches.Patch(color=palette[hue_group],
-                                                  label="{} [n={:,}; r={:.2f}]".format(hue_group, group_sizes[hue_group],group_corr_coef[hue_group])))
+                                                  label="{} [n={}; r={}]".format(hue_group, n, r)))
             ax2.legend(handles=handles, loc="center", fontsize=8)
 
         ax1.set_xlabel(xlabel,

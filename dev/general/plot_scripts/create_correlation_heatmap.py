@@ -57,6 +57,12 @@ Syntax:
 ./create_correlation_heatmap.py -h
 
 ./create_correlation_heatmap.py -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -rn PICs -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/force_normalise_matrix/2021-12-10-CellFractions_MetaBrain_CortexEUR_ExonTPM_Log2_NoDev_SubCellTypes.txt.gz -cn Decon Cell Fractions % FNPPD -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_vs_DeconCellFractions_SubCT_FNPD
+
+./create_correlation_heatmap.py -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -rn PICs -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/force_normalise_matrix/2021-12-10-CellFractions_MetaBrain_CortexEUR_ExonTPM_Log2_NoDev_SubCellTypes.txt.gz -cn Decon Cell Fractions % FNPPD -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_vs_DeconCellFractions_SubCT_FNPD
+
+./create_correlation_heatmap.py -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -rn PICs -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_phenotypes.txt.gz -cn phenotypes -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_vs_Phenotypes
+
+./create_correlation_heatmap.py -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/components.txt.gz -rn PICs -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_phenotypes.txt.gz -cn phenotypes -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_vs_Phenotypes
 """
 
 
@@ -68,6 +74,7 @@ class main():
         self.row_name = " ".join(getattr(arguments, 'row_name'))
         self.col_data_path = getattr(arguments, 'col_data')
         self.col_name = " ".join(getattr(arguments, 'col_name'))
+        self.std_path = getattr(arguments, 'sample_to_dataset')
         self.method = getattr(arguments, 'method')
         self.out_filename = getattr(arguments, 'outfile')
 
@@ -119,6 +126,12 @@ class main():
                             choices=[0, 1],
                             help="The axis that denotes the samples. "
                                  "Default: 0")
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the sample-dataset link matrix.")
         parser.add_argument("-m",
                             "--method",
                             type=str,
@@ -153,7 +166,7 @@ class main():
             col_df = col_df.T
 
         print("Getting overlap.")
-        overlap = set(row_df.index).intersection(set(col_df.index))
+        overlap = list(set(row_df.index).intersection(set(col_df.index)))
         print("\tN = {}".format(len(overlap)))
         if len(overlap) == 0:
             print("No data overlapping.")
@@ -161,20 +174,47 @@ class main():
         row_df = row_df.loc[overlap, :]
         col_df = col_df.loc[overlap, :]
 
-        print("Removing columns without variance.")
-        row_df = row_df.loc[:, row_df.std(axis=0) != 0]
-        col_df = col_df.loc[:, col_df.std(axis=0) != 0]
+        std_df = pd.DataFrame({"sample": overlap, "dataset": ""})
+        if self.std_path is not None:
+            print("Loading sample-to-dataset data")
+            std_df = self.load_file(self.std_path, header=0, index_col=None)
 
-        print("\tCorrelating.")
-        corr_df, pvalue_df = self.correlate(index_df=row_df, columns_df=col_df, triangle=triangle)
-        print(corr_df)
-        print(pvalue_df)
+        dataset_row_df = row_df
+        dataset_col_df = col_df
+        for dataset in std_df["dataset"].unique():
+            appendix = ""
+            if dataset != "":
+                print("Working on dataset: {}".format(dataset))
+                print("Selecting dataset samples")
+                dataset_samples = std_df.loc[std_df["dataset"] == dataset, "sample"].unique()
+                dataset_row_df = row_df.loc[dataset_samples, :]
+                dataset_col_df = col_df.loc[dataset_samples, :]
+                appendix = "_{}".format(dataset)
 
-        print("\tMasking non-significant")
-        signif_df = self.mask_non_significant(df=corr_df, pvalue_df=pvalue_df)
+            print("Removing columns without variance.")
+            dataset_row_df = dataset_row_df.loc[:, dataset_row_df.std(axis=0) != 0]
+            dataset_col_df = dataset_col_df.loc[:, dataset_col_df.std(axis=0) != 0]
 
-        print("\tPlotting.")
-        self.plot_heatmap(df=signif_df, annot_df=corr_df.round(2), xlabel=self.col_name, ylabel=self.row_name, appendix="correlations")
+            print(dataset_row_df)
+            print(dataset_col_df)
+
+            print("Correlating.")
+            corr_df, pvalue_df = self.correlate(index_df=dataset_row_df,
+                                                columns_df=dataset_col_df,
+                                                triangle=triangle)
+            print(corr_df)
+            print(pvalue_df)
+
+            print("Masking non-significant")
+            signif_df = self.mask_non_significant(df=corr_df,
+                                                  pvalue_df=pvalue_df)
+
+            print("Plotting.")
+            self.plot_heatmap(df=signif_df,
+                              annot_df=corr_df.round(2),
+                              xlabel=self.col_name,
+                              ylabel=self.row_name,
+                              appendix="correlations{}".format(appendix))
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -275,6 +315,7 @@ class main():
         print("  > Row name: {}".format(self.row_name))
         print("  > Col data path: {}".format(self.col_data_path))
         print("  > Col name: {}".format(self.col_name))
+        print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Correlation method: {}".format(self.method))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))

@@ -61,6 +61,9 @@ Syntax:
 
 class main():
     def __init__(self):
+        self.d_fim_indir = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-InteractionsWithPICs/"
+        self.r_fim_indir = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-14-MetaBrain-CortexAFR-CortexEURReplication-cis-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/"
+        self.out_filename = "2021-12-14-MetaBrain-CortexAFR-CortexEURReplication-cis-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs"
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
@@ -68,94 +71,124 @@ class main():
             os.makedirs(self.outdir)
 
     def start(self):
-        print("Loading eQTL file.")
-        eqtl_df = self.load_file("/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/cortex_eur_cis_NoENA_NoGVEX_NoCorrection/combine_eqtlprobes/eQTLprobes_combined.txt.gz", header=0, index_col=None)
-        eqtl_df.index = eqtl_df["SNPName"] + eqtl_df["ProbeName"]
-        print(eqtl_df)
+        print("Loading data")
+        d_tvalue_df, d_pvalue_df = self.load_pic_interaction_data(indir=self.d_fim_indir)
+        r_tvalue_df, r_pvalue_df = self.load_pic_interaction_data(indir=self.r_fim_indir)
+        print(d_tvalue_df)
+        print(r_tvalue_df)
 
-        print("Loading alleles")
-        geno_eur_df = self.load_file("/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/cortex_eur_cis_NoENA_NoGVEX_NoCorrection/create_matrices/genotype_alleles.txt.gz",
-            header=0, index_col=None)
-        geno_afr_df = self.load_file(
-            "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/cortex_afr_cis_NoENA_NoCorrection_EURReplication/create_matrices/genotype_alleles.txt.gz"
-            , header=0, index_col=None)
+        if list(d_tvalue_df.columns) != list(d_pvalue_df.columns):
+            print("Columns do not match.")
+            exit()
+        if list(r_tvalue_df.columns) != list(r_pvalue_df.columns):
+            print("Columns do not match.")
+            exit()
+        if list(d_pvalue_df.columns) != list(r_pvalue_df.columns):
+            print("Columns do not match.")
+            exit()
 
-        flip = np.empty(geno_eur_df.shape[0])
-        flip[:] = -1
-        mask = geno_eur_df["MinorAllele"] == geno_afr_df["MinorAllele"]
-        flip[mask] = 1
+        print("Overlapping data")
+        eqtls = list(set(d_pvalue_df.index).intersection(set(r_pvalue_df.index)))
+        d_tvalue_df = d_tvalue_df.loc[eqtls, :]
+        d_pvalue_df = d_pvalue_df.loc[eqtls, :]
+        r_tvalue_df = r_tvalue_df.loc[eqtls, :]
+        r_pvalue_df = r_pvalue_df.loc[eqtls, :]
+        print("\tN-overlap: {}".format(len(eqtls)))
 
-        eur_iter_df = {"component0": "iteration27",
-                       "component1": "iteration23",
-                       "component2": "iteration22",
-                       "component3": "iteration28",
-                       "component4": "iteration99",
-                       }
-        afr_iter_fdr = {"component0": "iteration0",
-                        "component1": "iteration0",
-                        "component2": "iteration0",
-                        "component3": "iteration0",
-                        "component4": "iteration0",
-                       }
+        print("Calculating FDR")
+        d_fdr_df = pd.DataFrame(np.nan, index=d_pvalue_df.index, columns=d_pvalue_df.columns)
+        for colname in d_pvalue_df.columns:
+            d_fdr_df.loc[:, colname] = multitest.multipletests(d_pvalue_df.loc[:, colname], method='fdr_bh')[1]
 
-        data = {}
-        signif_cutoffs = {}
-        print("Loading components")
-        for idx in range(5):
-            component = "component{}".format(idx)
+        r_fdr_df = pd.DataFrame(np.nan, index=r_pvalue_df.index, columns=r_pvalue_df.columns)
+        for colname in r_pvalue_df.columns:
+            mask = d_fdr_df.loc[:, colname] < 0.05
+            r_fdr_df.loc[mask, colname] = multitest.multipletests(r_pvalue_df.loc[mask, colname], method='fdr_bh')[1]
+        del d_pvalue_df, r_pvalue_df
 
-            comp_eur_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output_CortexEUR_woENA_woGVEX_PCs/{}/results_{}.txt.gz".format(component, eur_iter_df[component])
-            print("\t{}".format(comp_eur_path))
-            if not os.path.exists(comp_eur_path):
-                continue
-            comp_eur_df = self.load_file(comp_eur_path, header=0, index_col=None)
+        print("Merging data.")
+        d_df_m = self.melt_and_merge(tvalue_df=d_tvalue_df,
+                                     fdr_df=d_fdr_df,
+                                     name="discovery")
+        r_df_m = self.melt_and_merge(tvalue_df=r_tvalue_df,
+                                     fdr_df=r_fdr_df,
+                                     name="replication")
+        df_m = d_df_m.merge(r_df_m, on=["index", "variable"])
+        print(df_m)
 
-            comp_afr_path = "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/MetaBrain_CortexAFR_woENA_PICReplication/{}/results_{}.txt.gz".format(component, afr_iter_fdr[component])
-            print("\t{}".format(comp_afr_path))
-            if not os.path.exists(comp_afr_path):
-                continue
-            comp_afr_df = self.load_file(comp_afr_path, header=0, index_col=None)
+        print("Selecting significant results")
+        df_m = df_m.loc[(df_m["discovery FDR"] < 0.05) & (df_m["replication FDR"] < 0.05), :]
+        print(df_m)
+        pic_replicating_interaction_counts = list(zip(*np.unique(df_m["variable"], return_counts=True)))
+        pic_replicating_interaction_counts.sort(key=lambda x: -x[1])
+        pics_with_replication_interactions = [x[0] for x in pic_replicating_interaction_counts if x[1] > 2]
+        columns = ["PIC{}".format(i) for i in range(1, 50) if "PIC{}".format(i) in pics_with_replication_interactions]
 
-            merged_df = eqtl_df[["SNPName", "ProbeName"]].copy()
-            comp_signif_cutoff = {}
-            for df, etnicity in zip([comp_eur_df, comp_afr_df], ["EUR", "AFR"]):
-                df["t-value"] = df["beta-interaction"] / df["std-interaction"]
-                # df["z-score"] = stats.norm.isf(df["p-value"])
-                # df.loc[df["p-value"] > (1.0 - 1e-16), "z-score"] = -8.209536151601387
-                # df.loc[df["p-value"] < 1e-323, "z-score"] = 38.44939448087599
+        print("Plotting data")
+        self.replication_regplot(df=df_m,
+                                 col=columns,
+                                 x="discovery t-value",
+                                 y="replication t-value",
+                                 xlabel="MetaBrain CortexEUR",
+                                 ylabel="MetaBrain CortexAFR",
+                                 filename=self.out_filename)
 
-                comp_signif_cutoff[etnicity] = df.loc[df["FDR"] < 0.05, "t-value"].min()
-                #comp_signif_cutoff[etnicity] = df.loc[df["FDR"] < 0.05, "z-score"].min()
+    def load_pic_interaction_data(self, indir):
+        tvalue_list = []
+        pvalue_list = []
+        for i in range(1, 50):
+            fpath = os.path.join(indir, "PIC{}.txt.gz".format(i))
+            if os.path.exists(fpath):
+                df = self.load_file(fpath, header=0, index_col=None)
+                df.index = df["gene"] + "_" + df["snp"]
 
-                df.index = df["SNP"] + df["gene"]
+                df["ieQTL tvalue-interaction"] = df["ieQTL beta-interaction"] / df["ieQTL std-interaction"]
+                tvalue_df = df[["ieQTL tvalue-interaction"]].copy()
+                tvalue_df.columns = ["PIC{}".format(i)]
+                tvalue_list.append(tvalue_df)
 
-                merged_df = merged_df.merge(df[["t-value", "p-value", "FDR"]], how="left", left_index=True, right_index=True)
-                #merged_df = merged_df.merge(df[["z-score"]], how="left", left_index=True, right_index=True)
-            merged_df.columns = ["SNPName", "ProbeName", "EUR t-value", "EUR p-value", "EUR FDR", "AFR t-value", "AFR p-value", "AFR FDR"]
+                df["ieQTL tvalue-interaction"] = df["ieQTL beta-interaction"] / df["ieQTL std-interaction"]
+                pvalue_df = df[["ieQTL p-value"]].copy()
+                pvalue_df.columns = ["PIC{}".format(i)]
+                pvalue_list.append(pvalue_df)
+        tvalue_df = pd.concat(tvalue_list, axis=1)
+        pvalue_df = pd.concat(pvalue_list, axis=1)
+        return tvalue_df, pvalue_df
 
-            # Flip.
-            merged_df["AFR t-value"] = merged_df["AFR t-value"] * flip
+    @staticmethod
+    def load_file(inpath, header, index_col, sep="\t", low_memory=True,
+                  nrows=None, skiprows=None):
+        df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
+                         low_memory=low_memory, nrows=nrows, skiprows=skiprows)
+        print("\tLoaded dataframe: {} "
+              "with shape: {}".format(os.path.basename(inpath),
+                                      df.shape))
+        return df
 
-            # Drop NA.
-            merged_df.dropna(inplace=True)
+    @staticmethod
+    def melt_and_merge(tvalue_df, fdr_df, name):
+        tvalue_df.reset_index(drop=False, inplace=True)
+        tvalue_df_m = tvalue_df.melt(id_vars=["index"], value_name="{} t-value".format(name))
+        fdr_df.reset_index(drop=False, inplace=True)
+        fdr_df_m = fdr_df.melt(id_vars=["index"], value_name="{} FDR".format(name))
+        df_m = tvalue_df_m.merge(fdr_df_m, on=["index", "variable"])
+        return df_m
 
-            # Save.
-            data[component] = merged_df
-            signif_cutoffs[component] = comp_signif_cutoff
+    def replication_regplot(self, df, col, col_colname="variable", x="x", y="y",
+                            xlabel="", ylabel="", filename=""):
 
-        x = "EUR t-value"
-        y = "AFR t-value"
+        if df.shape[0] <= 2:
+            return
 
-        print("Plotting interaction comparison")
-        components = list(data.keys())
-        components.sort()
-        nplots = len(components)
+        nplots = len(col)
         ncols = math.ceil(np.sqrt(nplots))
         nrows = math.ceil(nplots / ncols)
 
         sns.set_style("ticks")
         fig, axes = plt.subplots(nrows=nrows,
                                  ncols=ncols,
+                                 sharex='none',
+                                 sharey='none',
                                  figsize=(12 * ncols, 12 * nrows))
         sns.set(color_codes=True)
 
@@ -172,102 +205,83 @@ class main():
                 ax = axes[row_index, col_index]
 
             if i < nplots:
-                plot_df = data[components[i]]
-                eur_signif_df = plot_df.loc[plot_df["EUR FDR"] < 0.05, :].copy()
-                eur_signif_df["AFR adj FDR"] = multitest.multipletests(eur_signif_df["AFR p-value"], method='fdr_bh')[1]
-                both_signif_df = eur_signif_df.loc[eur_signif_df["AFR adj FDR"] < 0.05, :].copy()
-                plot_df["hue"] = "#000000"
-                plot_df.loc[both_signif_df.index.tolist(), "hue"] = "#0072B2"
+                plot_df = df.loc[df[col_colname] == col[i], [x, y]]
+                if plot_df.shape[0] <= 2:
+                    continue
 
-                # Filter significant.
-                #plot_df = plot_df.loc[plot_df["EUR FDR"] < 0.05, :]
-                #plot_df = plot_df.loc[(plot_df["EUR FDR"] < 0.05) & (plot_df["AFR FDR"] < 0.05), :]
-                #plot_df = plot_df.loc[plot_df[x].abs() > 2, :]
-                plot_df = plot_df.loc[(plot_df[x].abs() > 2) & (plot_df[y].abs() > 2), :]
-                #plot_df = subset_plot_df.loc[(subset_plot_df["EUR FDR"] < 0.05) & (subset_plot_df["AFR FDR2"] < 0.05), :]
-                print(plot_df)
+                sns.despine(fig=fig, ax=ax)
 
-                # calculate concordance.
                 lower_quadrant = plot_df.loc[(plot_df[x] < 0) & (plot_df[y] < 0), :]
                 upper_quadrant = plot_df.loc[(plot_df[x] > 0) & (plot_df[y] > 0), :]
                 concordance = (100 / plot_df.shape[0]) * (lower_quadrant.shape[0] + upper_quadrant.shape[0])
 
-                signif_lower_quadrant = both_signif_df.loc[(both_signif_df[x] < 0) & (both_signif_df[y] < 0), :]
-                signif_upper_quadrant = both_signif_df.loc[(both_signif_df[x] > 0) & (both_signif_df[y] > 0), :]
-                signif_concordance = (100 / both_signif_df.shape[0]) * (signif_lower_quadrant.shape[0] + signif_upper_quadrant.shape[0])
-
-                sns.despine(fig=fig, ax=ax)
-
                 coef, _ = stats.spearmanr(plot_df[y], plot_df[x])
 
-                sns.regplot(x=x, y=y, data=plot_df, ci=95,
-                            scatter_kws={'facecolors': plot_df["hue"],
+                sns.regplot(x=x, y=y, data=plot_df, ci=None,
+                            scatter_kws={'facecolors': "#808080",
                                          'linewidth': 0,
                                          'alpha': 0.75},
                             line_kws={"color": "#b22222",
                                       'linewidth': 5},
                             ax=ax)
 
+                ax.axhline(0, ls='--', color="#000000", zorder=-1)
+                ax.axvline(0, ls='--', color="#000000", zorder=-1)
+
                 ax.annotate(
                     'N = {}'.format(plot_df.shape[0]),
-                    xy=(0.03, 0.22),
+                    xy=(0.03, 0.94),
                     xycoords=ax.transAxes,
-                    color="#b22222",
-                    alpha=1,
-                    fontsize=18,
-                    fontweight='bold')
-                ax.annotate(
-                    'N signif. in both = {}'.format(both_signif_df.shape[0]),
-                    xy=(0.03, 0.18),
-                    xycoords=ax.transAxes,
-                    color="#b22222",
+                    color="#000000",
                     alpha=1,
                     fontsize=18,
                     fontweight='bold')
                 ax.annotate(
                     'r = {:.2f}'.format(coef),
-                    xy=(0.03, 0.14),
+                    xy=(0.03, 0.90),
                     xycoords=ax.transAxes,
-                    color="#b22222",
+                    color="#000000",
                     alpha=1,
                     fontsize=18,
                     fontweight='bold')
                 ax.annotate(
                     'concordance = {:.0f}%'.format(concordance),
-                    xy=(0.03, 0.1),
+                    xy=(0.03, 0.86),
                     xycoords=ax.transAxes,
-                    color="#b22222",
-                    alpha=1,
-                    fontsize=18,
-                    fontweight='bold')
-                ax.annotate(
-                    'signif. concordance = {:.0f}%'.format(signif_concordance),
-                    xy=(0.03, 0.06),
-                    xycoords=ax.transAxes,
-                    color="#b22222",
+                    color="#000000",
                     alpha=1,
                     fontsize=18,
                     fontweight='bold')
 
-                ax.axhline(0, ls='--', color="#b22222", zorder=-1)
-                ax.axvline(0, ls='--', color="#b22222", zorder=-1)
-
-                xlabel = ""
+                tmp_xlabel = ""
                 if row_index == (nrows - 1):
-                    xlabel = x
-                ax.set_xlabel(xlabel,
+                    tmp_xlabel = xlabel
+                ax.set_xlabel(tmp_xlabel,
                               fontsize=20,
                               fontweight='bold')
-                ylabel = ""
+                tmp_ylabel = ""
                 if col_index == 0:
-                    ylabel = y
-                ax.set_ylabel(ylabel,
+                    tmp_ylabel = ylabel
+                ax.set_ylabel(tmp_ylabel,
                               fontsize=20,
                               fontweight='bold')
 
-                ax.set_title(components[i],
+                ax.set_title(col[i],
                              fontsize=25,
                              fontweight='bold')
+
+                # Change margins.
+                xlim = ax.get_xlim()
+                ylim = ax.get_ylim()
+
+                xmargin = (xlim[1] - xlim[0]) * 0.05
+                ymargin = (ylim[1] - ylim[0]) * 0.05
+
+                new_xlim = (xlim[0] - xmargin, xlim[1] + xmargin)
+                new_ylim = (ylim[0] - ymargin, ylim[1] + ymargin)
+
+                ax.set_xlim(new_xlim[0], new_xlim[1])
+                ax.set_ylim(new_ylim[0], new_ylim[1])
             else:
                 ax.set_axis_off()
 
@@ -276,18 +290,10 @@ class main():
                 col_index = 0
                 row_index += 1
 
-        fig.savefig(os.path.join(self.outdir, "MetaBrain_PICA_replication_EURtoAFR.png"))
+        outpath = os.path.join(self.outdir, "replication_plot{}.png".format(filename))
+        fig.savefig(outpath)
         plt.close()
-
-    @staticmethod
-    def load_file(inpath, header, index_col, sep="\t", low_memory=True,
-                  nrows=None, skiprows=None):
-        df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
-                         low_memory=low_memory, nrows=nrows, skiprows=skiprows)
-        print("\tLoaded dataframe: {} "
-              "with shape: {}".format(os.path.basename(inpath),
-                                      df.shape))
-        return df
+        print("\tSaved: {}".format(outpath))
 
 
 if __name__ == '__main__':

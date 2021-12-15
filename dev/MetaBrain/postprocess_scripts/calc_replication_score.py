@@ -50,6 +50,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./calc_replication_score.py -h
+
+./calc_replication_score.py -pec /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_gene_correlations.txt.gz -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -o 2021-12-13-MetaBrain-CortexAFR-ReplicationScore-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs
 """
 
 
@@ -57,14 +59,14 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.cgc_path = getattr(arguments, 'comp_gene_corr')
+        self.pec_path = getattr(arguments, 'pic_expr_corr')
         self.expr_path = getattr(arguments, 'expression')
+        self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'calc_replication_score')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
-
 
     @staticmethod
     def create_argument_parser():
@@ -78,8 +80,8 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit.")
-        parser.add_argument("-cgc",
-                            "--comp_gene_corr",
+        parser.add_argument("-pec",
+                            "--pic_expr_corr",
                             type=str,
                             required=True,
                             help="The path to the component ~ gene correlation"
@@ -89,6 +91,11 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the expression matrix")
+        parser.add_argument("-o",
+                            "--outfile",
+                            type=str,
+                            default="output",
+                            help="The name of the outfile. Default: output.")
 
         return parser.parse_args()
 
@@ -97,40 +104,44 @@ class main():
 
         print("### Step1 ###")
         print("Loading data")
-        cgc_df_m = self.load_file(self.cgc_path, header=0, index_col=None)
-        expr_df = self.load_file(self.expr_path, header=0, index_col=0)
+        pec_df = self.load_file(self.pec_path, header=0, index_col=None)
+        expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=None)
 
         print("### Step2 ###")
         print("Pre-processing data")
-        cgc_df_m.drop(['abs correlation'], axis=1, inplace=True)
-        cgc_df = cgc_df_m.pivot_table(index='gene', columns='component')
-        cgc_df.columns = cgc_df.columns.droplevel().rename(None)
-        cgc_df.index.name = "-"
-        del cgc_df_m
-        print(cgc_df)
+        pec_df.index = pec_df["ProbeName"]
+        pec_df.drop(["index", "ProbeName", "HGNCName"], axis=1, inplace=True)
+
+        print("### Step3 ###")
+        print("Subsetting overlap and converting data to numpy matrix")
+        overlap = set(pec_df.index.tolist()).intersection(set(expr_df.index.tolist()))
+        pec_df = pec_df.loc[overlap, :]
+        expr_df = expr_df.loc[overlap, :]
+        print(pec_df)
         print(expr_df)
 
-        print("### Step4 ###")
-        print("Subsetting overlap and converting data to numpy matrix")
-        overlap = set(cgc_df.index.tolist()).intersection(set(expr_df.index.tolist()))
-        cgc_m = cgc_df.loc[overlap, :].to_numpy()
-        expr_m = expr_df.loc[overlap, :].to_numpy()
-        components = cgc_df.columns.tolist()
+        print("### Step3 ###")
+        print("Converting data to numpy matrix")
+        pec_m = pec_df.to_numpy()
+        expr_m = expr_df.to_numpy()
+        components = pec_df.columns.tolist()
         samples = expr_df.columns.tolist()
-        del cgc_df, expr_df
+        del pec_df, expr_df
 
-        print("### Step5 ###")
+        print("### Step4 ###")
         print("Calculating score")
         score_m = np.empty((len(components), len(samples)), dtype=np.float64)
         for i, component in enumerate(components):
             comp_score = np.empty(len(samples), dtype=np.float64)
             for j, sample in enumerate(samples):
-                comp_score[j] = np.dot(cgc_m[:, i], expr_m[:, j])
+                comp_score[j] = np.dot(pec_m[:, i], expr_m[:, j])
             score_m[i, :] = comp_score
-
         score_df = pd.DataFrame(score_m, index=components, columns=samples)
         print(score_df)
-        score_df.to_csv("replication_scores.txt.gz", sep="\t", header=True, index=True, compression="gzip")
+
+        print("### Step5 ###")
+        print("Saving results")
+        self.save_file(df=score_df, outpath=os.path.join(self.outdir, "{}.txt.gz".format(self.out_filename)))
 
     @staticmethod
     def load_file(inpath, header=None, index_col=None, sep="\t", low_memory=True,
@@ -145,11 +156,24 @@ class main():
                                       df.shape))
         return df
 
+    @staticmethod
+    def save_file(df, outpath, header=True, index=True, sep="\t"):
+        compression = 'infer'
+        if outpath.endswith('.gz'):
+            compression = 'gzip'
+
+        df.to_csv(outpath, sep=sep, index=index, header=header,
+                  compression=compression)
+        print("\tSaved dataframe: {} "
+              "with shape: {}".format(os.path.basename(outpath),
+                                      df.shape))
+
     def print_arguments(self):
         print("Arguments:")
-        print("  > Component ~ gene correlation path: {}".format(self.cgc_path))
+        print("  > PIC ~ gene expression correlation path: {}".format(self.pec_path))
         print("  > Expression path: {}".format(self.expr_path))
-        print("  > Output directory: {}".format(self.outdir))
+        print("  > Output directory {}".format(self.outdir))
+        print("  > Output filename: {}".format(self.out_filename))
         print("")
 
 

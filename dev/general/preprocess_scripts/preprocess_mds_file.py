@@ -50,13 +50,19 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-### MetaBrain ###
+### MetaBrain EUR ###
 
-./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-dupsremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-
+./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-dupsremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-CortexEUR
 
 ./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-
 
-./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-
+./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz -op MetaBrain-CortexEUR-
+
+### MetaBrain AFR ###
+
+./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/input/GENOTYPES/2021-08-31-Cortex-AFR-vcf/2021-12-13-PICALO-MetaBrain-CortexAFR-GenotypeMDS-analysis/allchr-mds-dupsremoved-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_AFR.txt.gz -op MetaBrain-CortexAFR-
+
+./preprocess_mds_file.py -d /groups/umcg-biogen/tmp01/input/GENOTYPES/2021-08-31-Cortex-AFR-vcf/2021-12-13-PICALO-MetaBrain-CortexAFR-NoMDSOutliers-GenotypeMDS-analysis/allchr-mds-dupsremoved-nonoOutlier-VariantFilter.mds -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_AFR.txt.gz -op MetaBrain-CortexAFR-
 
 #### BIOS ####
 
