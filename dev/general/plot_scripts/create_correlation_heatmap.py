@@ -204,6 +204,13 @@ class main():
                                                 triangle=triangle)
             print(corr_df)
             print(pvalue_df)
+            if triangle:
+                corr_m = corr_df.to_numpy()
+                np.fill_diagonal(corr_m, np.nan)
+                print(corr_m)
+                print(corr_m[np.tril_indices(corr_m.shape[0])])
+                print(np.nanmean(np.abs(corr_m[np.tril_indices(corr_m.shape[0])])))
+
 
             print("Masking non-significant")
             signif_df = self.mask_non_significant(df=corr_df,

@@ -450,6 +450,12 @@ class main():
             print(pics_df)
             print("")
 
+            print("  Loading interaction stats.")
+            interaction_df = self.combine_interaction_stats(job_names=job_names)
+            print("Interaction stats:")
+            print(interaction_df)
+            print("")
+
             print("  Saving results.")
             self.save_file(df=summary_stats_df, outpath=os.path.join(pic_output_dir, "SummaryStats.txt.gz"))
             self.save_file(df=pics_df, outpath=os.path.join(pic_output_dir, "PICBasedOnPCX.txt.gz"))
@@ -466,6 +472,10 @@ class main():
             pic_groups = self.group_pics(df=pics_df)
             for group_index, group_indices in pic_groups.items():
                 print("\tGroup{}: {}".format(group_index, ", ".join(group_indices)))
+                if len(group_indices) > 1:
+                    group_interaction_df = interaction_df.loc[:, group_indices]
+                    overlapping_ieqtls = list(group_interaction_df.loc[group_interaction_df.max(axis=1) < 0.05, :].index)
+                    print("\t\tOverlapping ieQTLs: {} [N={:,}]".format(", ".join(overlapping_ieqtls), len(overlapping_ieqtls)))
             print("")
 
             print("  Selecting top PIC per group")
@@ -740,6 +750,24 @@ class main():
         pic_df = pd.concat(pic_df_list, axis=1).T
 
         return pic_df
+
+    def combine_interaction_stats(self, job_names):
+        interaction_df_list = []
+        for job_name in job_names:
+            fpath = os.path.join(self.picalo_path, "output", job_name, "PIC1", "results_iteration00.txt.gz")
+            covariate = job_name.split("-")[-1].replace("AsCov", "")
+            if not os.path.exists(fpath):
+                print("{} does not exist".format(fpath))
+                continue
+
+            interaction_df = self.load_file(inpath=fpath, header=0, index_col=None)
+            interaction_df.index = interaction_df["gene"] + "_" + interaction_df["SNP"]
+            interaction_df = interaction_df[["FDR"]]
+            interaction_df.columns = [covariate]
+            interaction_df_list.append(interaction_df)
+        interaction_df = pd.concat(interaction_df_list, axis=1)
+
+        return interaction_df
 
     @staticmethod
     def group_pics(df):
