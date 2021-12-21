@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-File:         count_n_ieqtls.py
-Created:      2021/12/20
+File:         compare_conditional_vs_unconditional.py
+Created:      2021/12/21
 Last Changed:
 Author:       M.Vochteloo
 
@@ -24,6 +24,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 import argparse
+import glob
 import os
 
 # Third party imports.
@@ -32,8 +33,9 @@ import pandas as pd
 
 # Local application imports.
 
+
 # Metadata
-__program__ = "Count N-ieQTLs"
+__program__ = "Compare Conditional vs Unconditional"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -48,9 +50,9 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-./count_n_ieqtls.py -h
+./compare_conditional_to_unconditional.py -h
 
-./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov/
+./compare_conditional_to_unconditional.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
 """
 
 
@@ -84,22 +86,55 @@ class main():
         self.print_arguments()
 
         print("### Step1 ###")
-        print("Loading PICALO results")
-        n_signif_data = []
+        print("Loading conditional results")
+        conditional_fdr_data = []
         for i in range(101):
-            covariate = "Comp{}.txt.gz".format(i)
-            fpath = os.path.join(self.indir, covariate)
-            print(fpath)
+            pic = "PIC{}".format(i)
+
+            fpaths = glob.glob(os.path.join(self.indir, pic, "results_*.txt.gz"))
+            fpaths.sort()
+            if len(fpaths) > 0:
+                fpath = fpaths[-1]
+
+                if os.path.exists(fpath):
+                    df = pd.read_csv(fpath, sep="\t", header=0, index_col=None)
+                    fdr_df = df[["FDR"]]
+                    fdr_df.columns = [pic]
+                    conditional_fdr_data.append(fdr_df)
+        conditional_fdr_df = pd.concat(conditional_fdr_data, axis=1)
+        print(conditional_fdr_df)
+
+        print("### Step2 ###")
+        print("Loading unconditional results")
+        unconditional_fdr_data = []
+        for i in range(101):
+            pic = "PIC{}".format(i)
+
+            fpath = os.path.join(self.indir, "PIC_interactions", "{}.txt.gz".format(pic))
             if os.path.exists(fpath):
                 df = pd.read_csv(fpath, sep="\t", header=0, index_col=None)
-                n_signif = df.loc[df["ieQTL FDR"] < 0.05, :].shape[0]
-                print(covariate, n_signif)
-                n_signif_data.append(n_signif)
-        n_signif_a = np.array(n_signif_data)
-        print(np.sum(n_signif_a))
-        print(np.mean(n_signif_a))
-        print(np.std(n_signif_a))
-        print(np.max(n_signif_a))
+                fdr_df = df[["FDR"]]
+                fdr_df.columns = [pic]
+                unconditional_fdr_data.append(fdr_df)
+        unconditional_fdr_df = pd.concat(unconditional_fdr_data, axis=1)
+        print(unconditional_fdr_df)
+
+        print("### Step3 ###")
+        print("Compare")
+        conditional_total_ieqtls = 0
+        unconditional_total_ieqtls = 0
+        for i in range(101):
+            pic = "PIC{}".format(i)
+            if pic in conditional_fdr_df.columns and pic in unconditional_fdr_df.columns:
+                n_conditional_ieqtls = conditional_fdr_df.loc[conditional_fdr_df[pic] < 0.05, :].shape[0]
+                n_unconditional_ieqtls = unconditional_fdr_df.loc[unconditional_fdr_df[pic] < 0.05, :].shape[0]
+                print("{}:\tconditional: {:,}\tunconditional: {:,}".format(pic, n_conditional_ieqtls, n_unconditional_ieqtls))
+
+                conditional_total_ieqtls += n_conditional_ieqtls
+                unconditional_total_ieqtls += n_unconditional_ieqtls
+        print("------------------------")
+        print("Total:\tconditional: {:,}\tunconditional: {:,}".format(conditional_total_ieqtls, unconditional_total_ieqtls))
+
 
     def print_arguments(self):
         print("Arguments:")
