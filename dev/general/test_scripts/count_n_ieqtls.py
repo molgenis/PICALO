@@ -23,6 +23,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
+from pathlib import Path
 import argparse
 import os
 
@@ -51,6 +52,10 @@ Syntax:
 ./count_n_ieqtls.py -h
 
 ./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov/
+
+./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICsAsCov
+
+./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-First33ExprPCsAsCov
 """
 
 
@@ -59,6 +64,10 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.indir = getattr(arguments, 'indir')
+
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'count_n_ieqtls')
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
 
     @staticmethod
     def create_argument_parser():
@@ -86,8 +95,9 @@ class main():
         print("### Step1 ###")
         print("Loading PICALO results")
         n_signif_data = []
+        indices = []
         for i in range(101):
-            covariate = "Comp{}.txt.gz".format(i)
+            covariate = "PIC{}.txt.gz".format(i)
             fpath = os.path.join(self.indir, covariate)
             print(fpath)
             if os.path.exists(fpath):
@@ -95,6 +105,12 @@ class main():
                 n_signif = df.loc[df["ieQTL FDR"] < 0.05, :].shape[0]
                 print(covariate, n_signif)
                 n_signif_data.append(n_signif)
+                indices.append(covariate)
+        df = pd.DataFrame(n_signif_data, indices)
+        print(df)
+        print(os.path.join(self.outdir, "{}.xlsx".format(os.path.basename(self.indir))))
+        df.to_excel(os.path.join(self.outdir, "{}.xlsx".format(os.path.basename(self.indir))))
+
         n_signif_a = np.array(n_signif_data)
         print(np.sum(n_signif_a))
         print(np.mean(n_signif_a))
