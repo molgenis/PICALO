@@ -53,9 +53,23 @@ Syntax:
 
 ./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov/
 
+./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov-PICsNotRemoved/
+
+./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-100TMMLog2ExprPCs-PICsNotRemoved/
+
+./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov/
+
+./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov-PICsNotRemoved/
+
+./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-100TMMLog2ExprPCs-PICsNotRemoved/
+
 ./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICsAsCov
 
 ./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-First33ExprPCsAsCov
+
+./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PIC_interactions
+
+./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/PIC_interactions
 """
 
 
@@ -94,28 +108,58 @@ class main():
 
         print("### Step1 ###")
         print("Loading PICALO results")
-        n_signif_data = []
-        indices = []
+        ieqtl_df_list = []
         for i in range(101):
-            covariate = "PIC{}.txt.gz".format(i)
-            fpath = os.path.join(self.indir, covariate)
+            covariate = "PIC{}".format(i)
+            filename = "{}.txt.gz".format(covariate)
+            fpath = os.path.join(self.indir, filename)
             print(fpath)
             if os.path.exists(fpath):
                 df = pd.read_csv(fpath, sep="\t", header=0, index_col=None)
-                n_signif = df.loc[df["ieQTL FDR"] < 0.05, :].shape[0]
-                print(covariate, n_signif)
-                n_signif_data.append(n_signif)
-                indices.append(covariate)
-        df = pd.DataFrame(n_signif_data, indices)
-        print(df)
-        print(os.path.join(self.outdir, "{}.xlsx".format(os.path.basename(self.indir))))
-        df.to_excel(os.path.join(self.outdir, "{}.xlsx".format(os.path.basename(self.indir))))
 
-        n_signif_a = np.array(n_signif_data)
-        print(np.sum(n_signif_a))
-        print(np.mean(n_signif_a))
-        print(np.std(n_signif_a))
-        print(np.max(n_signif_a))
+                signif_col = None
+                if "ieQTL FDR" in df.columns:
+                    signif_col = "ieQTL FDR"
+                    df.index = df["snp"] + "_" + df["gene"]
+                elif "FDR" in df.columns:
+                    signif_col = "FDR"
+                    df.index = df["SNP"] + "_" + df["gene"]
+                else:
+                    print("No signif column found")
+                    exit()
+
+                ieqtls = df.loc[df[signif_col] < 0.05, :].index
+                ieqtl_df = pd.DataFrame(0, index=df.index, columns=[covariate])
+                ieqtl_df.loc[ieqtls, covariate] = 1
+
+                ieqtl_df_list.append(ieqtl_df)
+
+                del ieqtl_df
+        ieqtl_df = pd.concat(ieqtl_df_list, axis=1)
+
+        bla = ieqtl_df.copy()
+        bla["snp"] = [x.split("_")[0] for x in bla.index]
+        bla["gene"] = [x.split("_")[1] for x in bla.index]
+        bla.to_excel("PICs.xlsx")
+        del bla
+        cov_sum = ieqtl_df.sum(axis=0)
+        print(cov_sum)
+        exit()
+
+        print("Stats per covariate:")
+        print("\tSum: {:,}".format(cov_sum.sum()))
+        print("\tMean: {:.1f}".format(cov_sum.mean()))
+        print("\tSD: {:.2f}".format(cov_sum.std()))
+        print("\tMax: {:.2f}".format(cov_sum.max()))
+
+        print("Stats per eQTL")
+        counts = dict(zip(*np.unique(ieqtl_df.sum(axis=1), return_counts=True)))
+        eqtls_w_inter = ieqtl_df.loc[ieqtl_df.sum(axis=1) > 0, :].shape[0]
+        total_eqtls = ieqtl_df.shape[0]
+        for value, n in counts.items():
+            if value != 0:
+                print("\tN-eQTLs with {} interaction: {:,} [{:.2f}%]".format(value, n, (100 / eqtls_w_inter) * n))
+        print("\tUnique: {:,} / {:,} [{:.2f}%]".format(eqtls_w_inter, total_eqtls, (100 / total_eqtls) * eqtls_w_inter))
 
     def print_arguments(self):
         print("Arguments:")

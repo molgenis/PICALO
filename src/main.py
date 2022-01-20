@@ -61,7 +61,7 @@ class Main:
         self.force_continue = force_continue
 
         # Define the current directory.
-        current_dir = str(Path(__file__).parent.parent)
+        current_dir = str(os.path.dirname(os.path.abspath(__file__)))
 
         # Prepare an output directory.
         self.outdir = os.path.join(current_dir, "output", outdir)

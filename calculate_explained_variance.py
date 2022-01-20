@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         fast_interaction_mapper.py
-Created:      2021/11/16
-Last Changed: 2021/12/10
+File:         calculate_explained_variance.py
+Created:      2022/01/18
+Last Changed:
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -31,20 +31,17 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
-from statsmodels.stats import multitest
+from statsmodels.regression.linear_model import OLS
 
 # Local application imports.
 from src.cmd_line_arguments import CommandLineArguments
 from src.logger import Logger
 from src.objects.data import Data
 from src.utilities import save_dataframe
-from src.statistics import remove_covariates, inverse, fit, predict, calc_rss, fit_and_predict, calc_std, calc_p_value
-from src.force_normaliser import ForceNormaliser
-from src.objects.ieqtl import IeQTL
-from src.visualiser import Visualiser
+from src.statistics import remove_covariates
 
 # Metadata
-__program__ = "Fast Interaction Mapper"
+__program__ = "Calculate Explained Variance"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -59,7 +56,35 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./fast_interaction_mapper.py -h
+./calculate_explained_variance.py -h
+
+
+### BIOS ###
+
+./calculate_explained_variance.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/genotype_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/first60ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PICs.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -o 2022-01-18-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICsAsCov \
+    -verbose
+    
+./calculate_explained_variance.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/genotype_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/first60ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics-TMMLog2PCA/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.PCAOverSamplesEigenvectors.top33.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -o 2022-01-18-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-33TMMLog2ExprPCsAsCov \
+    -verbose
+    
 """
 
 
@@ -82,7 +107,7 @@ class main():
         current_dir = str(Path(__file__).parent.parent)
 
         # Prepare an output directory.
-        self.outdir = os.path.join(current_dir, "fast_interaction_mapper", cla.get_argument('outdir'))
+        self.outdir = os.path.join(current_dir, "calculate_explained_variance", cla.get_argument('outdir'))
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -304,45 +329,19 @@ class main():
                                              log=self.log)
         del expr_m, corr_m, corr_inter_m
 
-        self.log.info("Force normalise the expression matrix and covariates.")
-        fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
-        corrected_expr_m = fn.process(data=corrected_expr_m)
-        covs_m = fn.process(data=covs_m)
-
         ########################################################################
 
-        # visualiser = Visualiser()
-        # for eqtl_index in range(geno_m.shape[0]):
-        #     snp, gene = eqtl_m[eqtl_index, :]
-        #
-        #     if snp + gene not in ["rs7029206ENSG00000204711",
-        #                           "rs62147573ENSG00000003137",
-        #                           "rs909987ENSG00000226454",
-        #                           "rs964611ENSG00000259235"]:
-        #         continue
-        #
-        #     for cov_index, cov in enumerate(covariates):
-        #         if snp + gene + cov not in ["rs7029206ENSG00000204711PIC2",
-        #                                     "rs62147573ENSG00000003137PIC2",
-        #                                     "rs909987ENSG00000226454PIC13",
-        #                                     "rs964611ENSG00000259235PIC13"]:
-        #             continue
-        #
-        #         ieqtl = IeQTL(snp=snp,
-        #                       gene=gene,
-        #                       cov=cov,
-        #                       genotype=geno_m[eqtl_index, :],
-        #                       covariate=covs_m[cov_index, :],
-        #                       expression=corrected_expr_m[eqtl_index, :]
-        #                       )
-        #         visualiser.plot_overview(ieqtl, out_path=self.outdir, label="AfterFN")
-
-        ########################################################################
-
-        self.log.info("Mapping interactions")
+        self.log.info("Calculating squared-residuals")
         n_eqtls = geno_m.shape[0]
-        eqtl_results_m = np.empty((n_eqtls, 8), dtype=np.float64)
-        ieqtl_results = {cov: np.empty((n_eqtls, 11), dtype=np.float64) for cov in covariates}
+        n_samples = geno_m.shape[1]
+        n_covariates = covs_m.shape[0]
+
+        # Construct the base matrix.
+        X = np.empty((n_samples, 2 + (n_covariates * 2)), np.float32)
+        X[:, 0] = 1
+        X[:, 2:(n_covariates + 2)] = covs_m.T
+
+        results_m = np.empty((n_eqtls, (X.shape[1] * 2) + 2), dtype=np.float64)
         last_print_time = None
         for eqtl_index in range(n_eqtls):
             now_time = int(time.time())
@@ -350,116 +349,44 @@ class main():
                 last_print_time = now_time
                 self.log.info("\t{:,}/{:,} eQTLs analysed [{:.2f}%]".format(eqtl_index, n_eqtls - 1, (100 / (n_eqtls - 1)) * eqtl_index))
 
-            # Get the genotype.
-            genotype = geno_m[eqtl_index, :]
+            # Fill in the genotype.
+            X[:, 1] = geno_m[eqtl_index, :]
 
-            # Construct the mask to remove missing values.
-            mask = ~np.isnan(genotype)
+            # Fill in the interaction terms.
+            X[:, (n_covariates + 2):] = X[:, 2:(n_covariates + 2)] * X[:, [1]]
+
+            # Filter missing values.
+            mask = ~np.isnan(X[:, 1])
             n = np.sum(mask)
 
-            # Create the matrices. Note that only the first two columns
-            # are filled in.
-            base_matrix = np.empty((n, 4), np.float32)
-            base_matrix[:, 0] = 1
-            base_matrix[:, 1] = genotype[mask]
-
-            # Get the expression.
-            y = corrected_expr_m[eqtl_index, mask]
-
-            # Compute the rss for just the intercept.
-            rss_model1 = calc_rss(y=y, y_hat=np.mean(y))
-
-            # Compute the rss for the main eQTL effect.
-            eqtl_inv_m = inverse(X=base_matrix[:, :2])
-            eqtl_betas = fit(X=base_matrix[:, :2], y=y, inv_m=eqtl_inv_m)
-            rss_model2 = calc_rss(y=y, y_hat=predict(X=base_matrix[:, :2], betas=eqtl_betas))
-            eqtl_std = calc_std(rss=rss_model2, n=n, df=2, inv_m=eqtl_inv_m)
-
-            # Calculate eQTL p-value.
-            eqtl_p_value = calc_p_value(rss1=rss_model1, rss2=rss_model2, df1=1, df2=2, n=n)
+            # Calculate the R^2 using OLS.
+            ols = OLS(corrected_expr_m[eqtl_index, mask], X[mask, :])
+            results = ols.fit()
 
             # Save results.
-            eqtl_results_m[eqtl_index, :] = np.hstack((np.array([n, rss_model1]),
-                                                       eqtl_betas,
-                                                       np.array([rss_model2]),
-                                                       eqtl_std,
-                                                       np.array([eqtl_p_value])))
-
-            for cov_index, cov in enumerate(covariates):
-                # Fill in the last two columns.
-                X = base_matrix
-                X[:, 2] = covs_m[cov_index, mask]
-                X[:, 3] = X[:, 1] * X[:, 2]
-
-                # First calculate the rss for the matrix minux the interaction
-                # term.
-                rss_model3 = calc_rss(y=y, y_hat=fit_and_predict(X=X[:, :3], y=y))
-
-                # Calculate the rss for the interaction model.
-                ieqtl_inv_m = inverse(X)
-                ieqtl_betas = fit(X=X, y=y, inv_m=ieqtl_inv_m)
-                rss_model4 = calc_rss(y=y, y_hat=predict(X=X, betas=ieqtl_betas))
-                ieqtl_std = calc_std(rss=rss_model4, n=n, df=4, inv_m=ieqtl_inv_m)
-
-                # Calculate interaction p-value.
-                ieqtl_p_value = calc_p_value(rss1=rss_model3, rss2=rss_model4, df1=3, df2=4, n=n)
-
-                # Save results.
-                ieqtl_results[cov][eqtl_index, :] = np.hstack((np.array([rss_model3]),
-                                                               ieqtl_betas,
-                                                               np.array([rss_model4]),
-                                                               ieqtl_std,
-                                                               np.array([ieqtl_p_value])))
+            results_m[eqtl_index, :] = np.hstack((np.array([n, results.rsquared]), results.params, results.bse))
 
         ########################################################################
 
         self.log.info("Saving results")
-        for cov_index, cov in enumerate(covariates):
-            # Combine result matrices.
-            output_m = np.hstack((eqtl_results_m, ieqtl_results[cov]))
+        # Convert to pandas data frame.
+        df = pd.DataFrame(results_m, columns=["n", "r-squared"] +
+                                             ["intercept coef", "genotype coef"] +
+                                             ["{} coef".format(cov) for cov in covariates] +
+                                             ["{}xSNP coef".format(cov) for cov in covariates] +
+                                             ["intercept std err", "genotype std err"] +
+                                             ["{} std err".format(cov) for cov in covariates] +
+                                             ["{}xSNP std err".format(cov) for cov in covariates]
+                          )
+        df.insert(0, "gene", eqtl_m[:, 1])
+        df.insert(0, "snp", eqtl_m[:, 0])
 
-            # Convert to pandas data frame.
-            df = pd.DataFrame(output_m, columns=["n",
-                                                 "rss model1",
-                                                 "eQTL beta-intercept",
-                                                 "eQTL beta-genotype",
-                                                 "rss model2",
-                                                 "eQTL std-intercept",
-                                                 "eQTL std-genotype",
-                                                 "eQTL p-value",
-                                                 "rss model3",
-                                                 "ieQTL beta-intercept",
-                                                 "ieQTL beta-genotype",
-                                                 "ieQTL beta-covariate",
-                                                 "ieQTL beta-interaction",
-                                                 "rss model4",
-                                                 "ieQTL std-intercept",
-                                                 "ieQTL std-genotype",
-                                                 "ieQTL std-covariate",
-                                                 "ieQTL std-interaction",
-                                                 "ieQTL p-value"])
-            df.insert(0, "cov", cov)
-            df.insert(0, "gene", eqtl_m[:, 1])
-            df.insert(0, "snp", eqtl_m[:, 0])
-            df["ieQTL FDR"] = multitest.multipletests(df["ieQTL p-value"], method='fdr_bh')[1]
-
-            if cov_index == 0:
-                # Print the number of eQTLs.
-                n_hits = np.sum(df["eQTL p-value"] < self.eqtl_alpha)
-                self.log.info("There are {:,} significant eQTLs (p-value <{})".format(n_hits, self.eqtl_alpha))
-
-            # Print the number of interactions.
-            n_hits = np.sum(df["ieQTL FDR"] < self.ieqtl_alpha)
-            self.log.info("  {} has {:,} significant ieQTLs (FDR <{})".format(cov, n_hits, self.ieqtl_alpha))
-
-            # Save results.
-            save_dataframe(df=df,
-                           outpath=os.path.join(self.outdir, "{}.txt.gz".format(cov)),
-                           header=True,
-                           index=False,
-                           log=self.log)
-
-            del df, n_hits
+        # Save results.
+        save_dataframe(df=df,
+                       outpath=os.path.join(self.outdir, "results.txt.gz"),
+                       header=True,
+                       index=False,
+                       log=self.log)
 
         ########################################################################
 
