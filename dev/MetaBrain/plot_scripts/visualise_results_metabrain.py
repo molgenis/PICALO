@@ -3,7 +3,7 @@
 """
 File:         visualise_results_metabrain.py
 Created:      2021/05/06
-Last Changed: 2021/12/10
+Last Changed: 2022/01/27
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -53,6 +53,13 @@ Syntax:
 ./visualise_results_metabrain.py -h
 
 ./visualise_results_metabrain.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs -pf /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs -ep /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs
+
+./visualise_results_metabrain.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-01-27-MetaBrain-Bryois-cis-Astrocyte-NoENA-NoMDSOutlier-GT1AvgExprFilter \
+    -pf /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-Bryois-cis-Astrocyte-NoENA-NoMDSOutlier-GT1AvgExprFilter \
+    -ep /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2022-01-27-MetaBrain-Bryois-cis-Astrocyte-NoENA-NoMDSOutlier-GT1AvgExprFilter
 """
 
 
@@ -245,7 +252,11 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs decon.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/partial_deconvolution/PSYCHENCODE_PROFILE_METABRAIN_AND_PSYCHENCODE_EXON_TPM_LOG2_NODEV/IHC_0CPM_LOG2/deconvolution.txt.gz", "-cn", "NNLS cell fractions", "-o", self.outname + "_vs_decon"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table_complete.txt.gz", "-cn", "NNLS cell fractions", "-o", self.outname + "_vs_deconComplete"]
+            self.run_command(command)
+
+            # Plot correlation_heatmap of components vs decon.
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table.txt.gz", "-cn", "NNLS cell fractions", "-o", self.outname + "_vs_deconSummarized"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs IHC.

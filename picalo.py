@@ -3,7 +3,7 @@
 """
 File:         picalo.py
 Created:      2020/11/16
-Last Changed: 2021/12/09
+Last Changed: 2022/01/27
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -27,6 +27,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Standard imports.
+import os
 
 # Third party imports.
 
@@ -79,8 +80,12 @@ if __name__ == '__main__':
     if MAX_ITER <= MIN_ITER:
         MAX_ITER = MIN_ITER + 1
 
+    # Define the current directory.
+    CURRENT_DIR = str(os.path.dirname(os.path.abspath(__file__)))
+
     # Start the program.
-    PROGRAM = Main(eqtl_path=EQTL_PATH,
+    PROGRAM = Main(current_dir=CURRENT_DIR,
+                   eqtl_path=EQTL_PATH,
                    genotype_path=GENOTYPE_PATH,
                    genotype_na=GENOTYPE_NA,
                    expression_path=EXPRESSION_PATH,

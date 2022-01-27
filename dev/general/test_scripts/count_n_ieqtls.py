@@ -108,7 +108,8 @@ class main():
 
         print("### Step1 ###")
         print("Loading PICALO results")
-        ieqtl_df_list = []
+        ieqtl_fdr_df_list = []
+        ieqtl_direction_df_list = []
         for i in range(101):
             covariate = "PIC{}".format(i)
             filename = "{}.txt.gz".format(covariate)
@@ -129,20 +130,27 @@ class main():
                     exit()
 
                 ieqtls = df.loc[df[signif_col] < 0.05, :].index
-                ieqtl_df = pd.DataFrame(0, index=df.index, columns=[covariate])
-                ieqtl_df.loc[ieqtls, covariate] = 1
+                ieqtl_fdr_df = pd.DataFrame(0, index=df.index, columns=[covariate])
+                ieqtl_fdr_df.loc[ieqtls, covariate] = 1
 
-                ieqtl_df_list.append(ieqtl_df)
+                pos_ieqtls = df.loc[(df[signif_col] < 0.05) & (df["beta-interaction"] > 0), :].index
+                neg_ieqtls = df.loc[(df[signif_col] < 0.05) & (df["beta-interaction"] < 0), :].index
+                ieqtl_direction_df = pd.DataFrame(0, index=df.index, columns=[covariate])
+                ieqtl_direction_df.loc[pos_ieqtls, covariate] = 1
+                ieqtl_direction_df.loc[neg_ieqtls, covariate] = 1
 
-                del ieqtl_df
-        ieqtl_df = pd.concat(ieqtl_df_list, axis=1)
+                ieqtl_fdr_df_list.append(ieqtl_fdr_df)
+                ieqtl_direction_df_list.append(ieqtl_direction_df)
 
-        bla = ieqtl_df.copy()
-        bla["snp"] = [x.split("_")[0] for x in bla.index]
-        bla["gene"] = [x.split("_")[1] for x in bla.index]
-        bla.to_excel("PICs.xlsx")
-        del bla
-        cov_sum = ieqtl_df.sum(axis=0)
+                del ieqtl_fdr_df, ieqtl_direction_df
+        ieqtl_fdr_df = pd.concat(ieqtl_fdr_df_list, axis=1)
+        ieqtl_direction_df = pd.concat(ieqtl_direction_df_list, axis=1)
+
+        ieqtl_direction_df["snp"] = ["_".join(x.split("_")[:-1]) for x in ieqtl_direction_df.index]
+        ieqtl_direction_df["gene"] = [x.split("_")[-1].split(".")[0] for x in ieqtl_direction_df.index]
+        ieqtl_direction_df.to_excel("PICs.xlsx", index=False)
+        del ieqtl_direction_df
+        cov_sum = ieqtl_fdr_df.sum(axis=0)
         print(cov_sum)
         exit()
 
@@ -153,9 +161,9 @@ class main():
         print("\tMax: {:.2f}".format(cov_sum.max()))
 
         print("Stats per eQTL")
-        counts = dict(zip(*np.unique(ieqtl_df.sum(axis=1), return_counts=True)))
-        eqtls_w_inter = ieqtl_df.loc[ieqtl_df.sum(axis=1) > 0, :].shape[0]
-        total_eqtls = ieqtl_df.shape[0]
+        counts = dict(zip(*np.unique(ieqtl_fdr_df.sum(axis=1), return_counts=True)))
+        eqtls_w_inter = ieqtl_fdr_df.loc[ieqtl_fdr_df.sum(axis=1) > 0, :].shape[0]
+        total_eqtls = ieqtl_fdr_df.shape[0]
         for value, n in counts.items():
             if value != 0:
                 print("\tN-eQTLs with {} interaction: {:,} [{:.2f}%]".format(value, n, (100 / eqtls_w_inter) * n))

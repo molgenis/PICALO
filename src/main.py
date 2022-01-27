@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2021/12/09
+Last Changed: 2022/01/27
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -39,12 +39,12 @@ from src.utilities import load_dataframe, save_dataframe, get_ieqtls
 
 
 class Main:
-    def __init__(self, eqtl_path, genotype_path, genotype_na, expression_path,
-                 tech_covariate_path, tech_covariate_with_inter_path,
-                 covariate_path, sample_dataset_path, min_dataset_size,
-                 eqtl_alpha, ieqtl_alpha, call_rate, hw_pval, maf, mgs,
-                 n_components, min_iter, max_iter, tol, force_continue,
-                 outdir, verbose):
+    def __init__(self, current_dir, eqtl_path, genotype_path, genotype_na,
+                 expression_path, tech_covariate_path,
+                 tech_covariate_with_inter_path, covariate_path,
+                 sample_dataset_path, min_dataset_size, eqtl_alpha,
+                 ieqtl_alpha, call_rate, hw_pval, maf, mgs, n_components,
+                 min_iter, max_iter, tol, force_continue, outdir, verbose):
         # Safe arguments.
         self.genotype_na = genotype_na
         self.min_dataset_sample_size = min_dataset_size
@@ -59,9 +59,6 @@ class Main:
         self.max_iter = max_iter
         self.tol = tol
         self.force_continue = force_continue
-
-        # Define the current directory.
-        current_dir = str(os.path.dirname(os.path.abspath(__file__)))
 
         # Prepare an output directory.
         self.outdir = os.path.join(current_dir, "output", outdir)
