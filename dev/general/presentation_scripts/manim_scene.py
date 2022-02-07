@@ -730,6 +730,7 @@ class GraphicalAbstractPart2(Scene):
                   FadeOut(example_parabola1_left),
                   FadeOut(example_parabola2_left),
                   run_time=1.5)
+        self.wait()
 
         self.play(FadeOut(VGroup(example_dot_graph1,
                                  example_dot_graph2,
@@ -764,7 +765,7 @@ class GraphicalAbstractPart2(Scene):
             elif ieqltl_row["genotype"] == 2:
                 color = RED
 
-            dot = Dot(color=color, opacity=0.5)
+            dot = Dot(color=color, fill_opacity=0.5).scale(0.5)
             dot.move_to(scatter_axes1.c2p(ieqltl_row["context"], ieqltl_row["expression"]))
             scatter_dots1.append(dot)
 
@@ -785,7 +786,7 @@ class GraphicalAbstractPart2(Scene):
             elif ieqltl_row["genotype"] == 2:
                 color = RED
 
-            dot = Dot(color=color, opacity=0.5)
+            dot = Dot(color=color, fill_opacity=0.5).scale(0.5)
             dot.move_to(scatter_axes2.c2p(ieqltl_row["context"], ieqltl_row["expression"]))
             scatter_dots2.append(dot)
 
@@ -797,7 +798,7 @@ class GraphicalAbstractPart2(Scene):
             FadeIn(VGroup(*scatter_dots2))
         )
         self.wait()
-        self.play(*animations1, *animations2)
+        self.play(*animations1, *animations2, run_time=3)
         self.wait()
 
 
