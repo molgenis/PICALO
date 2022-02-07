@@ -57,52 +57,58 @@ class GraphicalAbstract(Scene):
         n_points = 500
         context_sd = 1
 
-        X = self.generate_base_model(example_index=example_index,
-                                     example_name=example_name,
-                                     n_points=n_points,
-                                     context_sd=context_sd
-                                     )
+        base_model1 = self.generate_base_model(example_index=example_index,
+                                               example_name=example_name,
+                                               n_points=n_points,
+                                               context_sd=context_sd
+                                               )
 
         # Generate ieQTL model.
-        ieqtl, betas = self.generate_ieqtl_model(maf=0.41,
-                                                 base_matrix=X,
-                                                 error_sd=0.4,
-                                                 betas=np.array([-2.5, 2.1, 0.5, 0.6]),
-                                                 base_seed=1,
-                                                 )
-        regression_lines = self.calc_regression_lines(ieqtl=ieqtl)
+        ieqtl1, betas1 = self.generate_ieqtl_model(maf=0.41,
+                                                   base_matrix=base_model1,
+                                                   error_sd=0.4,
+                                                   betas=np.array([-2.5, 2.1, 0.5, 0.6]),
+                                                   base_seed=1,
+                                                   )
+        regression_lines1 = self.calc_regression_lines(ieqtl=ieqtl1)
 
-        example_genotype = ieqtl.loc[example_name, "genotype"]
+        # Determine the range of the plot axes.
+        context_range1 = (math.floor(ieqtl1["context"].min()) - 1, math.ceil(ieqtl1["context"].max()) + 1, 1)
+        scatter_y_range1 = (math.floor(ieqtl1["expression"].min()), math.ceil(ieqtl1["expression"].max()), 2)
 
-        x_range = (math.floor(ieqtl["context"].min()) - 1, math.ceil(ieqtl["context"].max()) + 1, 1)
-        y_range = (math.floor(ieqtl["expression"].min()), math.ceil(ieqtl["expression"].max()), 1)
-
-        axes = Axes(
-            x_range=x_range,
-            y_range=y_range,
+        # Construct the axis for the scatterplot.
+        scatter_axes1 = Axes(
+            x_range=context_range1,
+            y_range=scatter_y_range1,
             axis_config={
                 "include_tip": False,
                 "numbers_to_exclude": [0],
                 "stroke_width": 1,
             }
-        )
-        axes.add_coordinate_labels(
+        ).set_color(GREY)
+        scatter_axes1.add_coordinate_labels(
             font_size=20,
             num_decimal_places=0,
-        )
-        axis_labels = axes.get_axis_labels(x_label_tex='context',
-                                           y_label_tex='expression').set_color(GREY)
+        ).set_color(GREY)
+        scatter_axis_labels1 = scatter_axes1.get_axis_labels(
+            x_label_tex='context',
+            y_label_tex='expression'
+        ).set_color(GREY)
 
+        # Draw the axes.
         self.play(
-            DrawBorderThenFill(axes),
-            Write(axis_labels)
+            DrawBorderThenFill(scatter_axes1),
+            Write(scatter_axis_labels1)
         )
 
-        genotype_groups = [0, 1, 2]
-        example_dot = None
-        example_text = None
-        dots = {x: [] for x in genotype_groups}
-        for i, row in ieqtl.iterrows():
+        # Create a dot for each sample on x-axis = context and y-axis =
+        # expression.
+        context_value = ValueTracker(ieqtl1.loc[example_name, "context"])
+        example_dot_scatter1 = None
+        example_text_scatter1 = None
+        example_color1 = None
+        scatter_dots1 = []
+        for i, row in ieqtl1.iterrows():
             color = BLACK
             if row["genotype"] == 0:
                 color = GREEN
@@ -111,19 +117,25 @@ class GraphicalAbstract(Scene):
             elif row["genotype"] == 2:
                 color = RED
 
-            dot = Dot(color=color, opacity=0.5)
-            dot.move_to(axes.c2p(row["context"], row["expression"]))
-
             if i == example_name:
-                example_dot = dot
+                example_color1 = color
+                example_dot_scatter1 = always_redraw(
+                    lambda: Dot(color=example_color1).move_to(
+                        scatter_axes1.c2p(context_value.get_value(),
+                                          ieqtl1.loc[example_name, "expression"])
+                    )
+                )
 
-                example_text = Text(example_name).scale(0.3)
-                example_text.move_to(axes.c2p(row["context"], row["expression"] + 0.5))
+                example_text_scatter1 = Text(example_name).scale(0.3)
+                example_text_scatter1.move_to(scatter_axes1.c2p(row["context"], row["expression"] + 0.5))
             else:
-                dots[row["genotype"]].append(dot)
+                dot = Dot(color=color, fill_opacity=0.5)
+                dot.move_to(scatter_axes1.c2p(row["context"], row["expression"]))
+                scatter_dots1.append(dot)
 
-        lines = {}
-        for genotype_group, (start, end) in regression_lines.items():
+        # Construct the regression lines for each genotype group.
+        scatter_lines1 = []
+        for genotype_group, (start, end) in regression_lines1.items():
             color = BLACK
             if genotype_group == 0:
                 color = GREEN
@@ -133,78 +145,172 @@ class GraphicalAbstract(Scene):
                 color = RED
 
             start_dot = Dot()
-            start_dot.move_to(axes.c2p(start[0], start[1]))
+            start_dot.move_to(scatter_axes1.c2p(start[0], start[1]))
 
             end_dot = Dot()
-            end_dot.move_to(axes.c2p(end[0], end[1]))
+            end_dot.move_to(scatter_axes1.c2p(end[0], end[1]))
 
-            lines[genotype_group] = Line(start_dot, end_dot, color=color)
+            scatter_lines1.append(Line(start_dot, end_dot, color=color))
 
+        # Show the interaction eQTL regression plot.
         self.play(
-            FadeIn(VGroup(*dots[0])),
-            FadeIn(VGroup(*dots[1])),
-            FadeIn(VGroup(*dots[2])),
-            FadeIn(lines[0]),
-            FadeIn(lines[1]),
-            FadeIn(lines[2]),
-            FadeIn(example_dot)
+            FadeIn(VGroup(*scatter_dots1)),
+            FadeIn(VGroup(*scatter_lines1)),
+            FadeIn(example_dot_scatter1)
         )
-        self.wait(2)
+        self.wait()
 
+        # Remove the individual dots except the example dot.
         self.play(
-            FadeOut(VGroup(*dots[0])),
-            FadeOut(VGroup(*dots[1])),
-            FadeOut(VGroup(*dots[2]))
+            FadeOut(VGroup(*scatter_dots1)),
+            FadeIn(example_text_scatter1)
         )
-        del dots
+        self.remove(*scatter_dots1)
+        self.wait()
         self.play(
-            FadeIn(example_text)
+            FadeOut(example_text_scatter1),
         )
-        self.wait(2)
+        self.remove(example_text_scatter1)
+        self.wait()
+
+        # Zoom out and add a second graph for the log likelihood.
+        self.play(
+            VGroup(scatter_axes1,
+                   scatter_axis_labels1,
+                   *scatter_lines1, example_dot_scatter1).animate.scale(0.5).shift(LEFT * 3.5),
+            run_time=2
+        )
+        self.wait()
 
         ########################################################################
 
-        # Optimize.
-        coef_a, coef_b = self.optimize_ieqtl(X=ieqtl, betas=betas)
-        opt_context = self.calc_vertex_xpos(a=coef_a, b=coef_b)
+        # Calculate the optimum for this ieQTL.
+        coef_a1, coef_b1, coef_c1 = self.optimize_ieqtl(X=ieqtl1, betas=betas1)
+        opt_context1 = self.calc_vertex_xpos(a=coef_a1, b=coef_b1)
 
-        ieqtl_opt = ieqtl.copy()
-        ieqtl_opt["context"] = opt_context
-        ieqtl_opt["interaction"] = ieqtl_opt["context"] * ieqtl_opt["genotype"]
-        ieqtl_opt["y_hat"] = self.predict(X=ieqtl_opt[["intercept", "genotype", "context", "interaction"]], betas=betas)
+        ieqtl_opt1 = ieqtl1.copy()
+        ieqtl_opt1["context"] = opt_context1
+        ieqtl_opt1["interaction"] = ieqtl_opt1["context"] * ieqtl_opt1["genotype"]
+        ieqtl_opt1["y_hat"] = self.predict(X=ieqtl_opt1[["intercept", "genotype", "context", "interaction"]], betas=betas1)
 
-        example_optimal = ieqtl_opt.loc[example_name, "context"]
+        print("{}x^2 + {}x + {}".format(coef_a1[example_name],
+                                        coef_b1[example_name],
+                                        coef_c1[example_name]))
 
         ########################################################################
 
-        x_tracker = ValueTracker(ieqtl.loc[example_name, "context"])
-        f_always(
-            example_dot.move_to,
-            lambda: axes.c2p(x_tracker.get_value(), ieqtl.loc[example_name, "expression"])
+        # Determine log likelihood values.
+        example_ll_values = []
+        for x in np.arange(context_range1[0], context_range1[1], 0.01):
+            example_ll_values.append(coef_a1[example_name] * x ** 2 + coef_b1[example_name] * x + coef_c1[example_name])
+        example_ll_values = np.array(example_ll_values)
+
+        # Determine the lowest value and set that to 0.
+        example_ll_values_min = math.floor(np.min(example_ll_values))
+
+        # Determine the range of the plot axes.
+        graph_y_range1 = (0, math.ceil(np.max(example_ll_values)) + (example_ll_values_min * -1), 5)
+
+        graph_axes1 = Axes(
+            x_range=context_range1,
+            y_range=graph_y_range1,
+            axis_config={
+                "include_tip": False,
+                "stroke_width": 1,
+            }
+        ).set_color(GREY)
+        graph_axes1.add_coordinate_labels(
+            font_size=20,
+            num_decimal_places=0,
+        ).set_color(GREY)
+        graph_axes_labels1 = graph_axes1.get_axis_labels(
+            x_label_tex='context',
+            y_label_tex='log(likelihood)'
+        ).set_color(GREY)
+
+        example_x_start1 = ieqtl1.loc[example_name, "context"]
+        example_x_optimal1 = ieqtl_opt1.loc[example_name, "context"]
+
+        # Construct the log likelihood parabola.
+        example_parabola1_left = graph_axes1.get_graph(lambda x: coef_a1[example_name] * x ** 2 + coef_b1[example_name] * x + coef_c1[example_name] + (example_ll_values_min * -1), x_range=(example_x_start1, -4))
+        example_parabola1_left.reverse_points()
+        example_parabola1_left.set_stroke(example_color1)
+        example_parabola1 = graph_axes1.get_graph(lambda x: coef_a1[example_name] * x ** 2 + coef_b1[example_name] * x + coef_c1[example_name] + (example_ll_values_min * -1))
+        example_parabola1.set_stroke(example_color1)
+
+        example_dot_graph1 = always_redraw(
+            lambda: Dot(color=example_color1).move_to(
+                graph_axes1.i2gp(context_value.get_value(),
+                                 example_parabola1)
+            )
         )
-        f_always(
-            example_text.move_to,
-            lambda: axes.c2p(x_tracker.get_value(), ieqtl.loc[example_name, "expression"] + 0.5)
+        value_text = always_redraw(
+            lambda: Text("[{:.2f}, {:.2f}]".format(context_value.get_value(),
+                                                   coef_a1[example_name] * context_value.get_value() ** 2 + coef_b1[example_name] * context_value.get_value() + coef_c1[example_name] + (example_ll_values_min * -1))).scale(0.3).set_color(GREY).move_to(graph_axes1.c2p(context_range1[0] + 0.5,
+                                                                                                                                                                                                                                                            coef_a1[example_name] * example_x_optimal1 ** 2 + coef_b1[example_name] * example_x_optimal1 + coef_c1[example_name] + (example_ll_values_min * -1))
+                             )
         )
 
-        self.play(x_tracker.animate.set_value(x_range[0]),
+        example_vline_graph1 = always_redraw(
+            lambda: graph_axes1.get_v_line(example_dot_graph1.get_bottom())
+        )
+
+        VGroup(graph_axes1,
+               graph_axes_labels1,
+               example_dot_graph1,
+               example_vline_graph1,
+               example_parabola1_left,
+               example_parabola1).scale(0.5).shift(RIGHT * 3.5)
+
+        # Draw the axes.
+        self.play(
+            DrawBorderThenFill(graph_axes1),
+            Write(graph_axes_labels1)
+        )
+        self.play(
+            FadeIn(example_dot_graph1),
+            FadeIn(example_vline_graph1),
+            FadeIn(value_text)
+        )
+        self.wait()
+
+        # Move the example dot along the x-axis.
+        self.play(context_value.animate.set_value(context_range1[0]),
+                  ShowCreation(example_parabola1_left),
                   run_time=2)
-        self.play(x_tracker.animate.set_value(x_range[1]),
+        self.play(context_value.animate.set_value(context_range1[1]),
+                  ShowCreation(example_parabola1),
                   run_time=3)
-        self.play(x_tracker.animate.set_value(example_optimal),
-                  run_time=2)
-        self.wait(2)
+        self.play(context_value.animate.set_value(example_x_optimal1),
+                  FadeOut(example_parabola1_left),
+                  run_time=1.5)
+        self.wait()
 
         self.play(
-            FadeOut(example_dot),
-            FadeOut(example_text)
+            FadeOut(VGroup(graph_axes1,
+                           graph_axes_labels1,
+                           example_dot_graph1,
+                           example_vline_graph1,
+                           example_parabola1_left,
+                           example_parabola1,
+                           value_text))
         )
+        self.remove(example_dot_scatter1)
+        self.wait()
 
-        dots = []
+        self.play(
+            VGroup(scatter_axes1,
+                   scatter_axis_labels1,
+                   *scatter_lines1).animate.scale(2).shift(RIGHT * 3.5),
+            run_time=2
+        )
+        self.wait()
+
+        scatter_dots1 = []
         animations = []
-        for i in range(ieqtl.shape[0]):
-            ieqltl_row = ieqtl.iloc[i, :]
-            ieqtl_opt_row = ieqtl_opt.iloc[i, :]
+        for i in range(ieqtl1.shape[0]):
+            ieqltl_row = ieqtl1.iloc[i, :]
+            ieqtl_opt_row = ieqtl_opt1.iloc[i, :]
 
             color = BLACK
             if ieqltl_row["genotype"] == 0:
@@ -215,16 +321,18 @@ class GraphicalAbstract(Scene):
                 color = RED
 
             dot = Dot(color=color, opacity=0.5)
-            dot.move_to(axes.c2p(ieqltl_row["context"], ieqltl_row["expression"]))
-            dots.append(dot)
+            dot.move_to(scatter_axes1.c2p(ieqltl_row["context"], ieqltl_row["expression"]))
+            scatter_dots1.append(dot)
 
-            animation = ApplyMethod(dot.move_to, axes.c2p(ieqtl_opt_row["context"], ieqtl_opt_row["expression"]))
+            animation = ApplyMethod(dot.move_to, scatter_axes1.c2p(ieqtl_opt_row["context"], ieqtl_opt_row["expression"]))
             animations.append(animation)
 
         self.play(
-            FadeIn(VGroup(*dots))
+            FadeIn(VGroup(*scatter_dots1))
         )
+        self.wait()
         self.play(*animations)
+        self.wait()
 
     @staticmethod
     def generate_base_model(example_index=0, example_name="Jane Doe",
@@ -315,14 +423,16 @@ class GraphicalAbstract(Scene):
             y_values_df.loc[:, eval_pos] = ll - eval_df["log_likelihood"] + eval_df["adj_log_likelihood"]
 
         # Determine the coefficients.
-        coef_a, coef_b = self.calc_parabola_vertex(x1=x1,
-                                                   x2=X["context"],
-                                                   x3=x3,
-                                                   y1=y_values_df[x1],
-                                                   y2=ll,
-                                                   y3=y_values_df[x3])
+        coef_a, coef_b, coef_c = self.calc_parabola_vertex(
+            x1=x1,
+            x2=X["context"],
+            x3=x3,
+            y1=y_values_df[x1],
+            y2=ll,
+            y3=y_values_df[x3]
+        )
 
-        return coef_a, coef_b
+        return coef_a, coef_b, coef_c
 
     @staticmethod
     def calc_parabola_vertex(x1, x2, x3, y1, y2, y3):
@@ -344,9 +454,9 @@ class GraphicalAbstract(Scene):
         denom = (x1 - x2) * (x1 - x3) * (x2 - x3)
         a = (x3 * (y2 - y1) + x2 * (y1 - y3) + x1 * (y3 - y2)) / denom
         b = (x3 * x3 * (y1 - y2) + x2 * x2 * (y3 - y1) + x1 * x1 * (y2 - y3)) / denom
-        # c = (x2 * x3 * (x2 - x3) * y1 + x3 * x1 * (x3 - x1) * y2 + x1 * x2 * (x1 - x2) * y3) / denom
+        c = (x2 * x3 * (x2 - x3) * y1 + x3 * x1 * (x3 - x1) * y2 + x1 * x2 * (x1 - x2) * y3) / denom
 
-        return a, b
+        return a, b, c
 
     @staticmethod
     def calc_vertex_xpos(a, b):
