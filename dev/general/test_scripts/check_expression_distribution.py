@@ -3,7 +3,7 @@
 """
 File:         check_expression_distribution.py
 Created:      2021/11/30
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -127,7 +127,7 @@ class main():
                 exit()
 
             describe_df[pic] = "not signif"
-            describe_df.loc[(interaction_df["FDR"] < 0.05).to_numpy(bool), pic] = "signif"
+            describe_df.loc[(interaction_df["FDR"] <= 0.05).to_numpy(bool), pic] = "signif"
 
             if pic in ["PIC1", "PIC2", "PIC15"]:
                 self.plot_overview(df=describe_df,

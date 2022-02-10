@@ -3,7 +3,7 @@
 """
 File:         overlap_pic_interactions_with_ct_interactions.py
 Created:      2021/12/13
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -173,12 +173,12 @@ class main():
                                       index=df1_subset.columns,
                                       columns=df2_subset.columns)
         for ct1 in df1_subset.columns:
-            ct1_df = df2_subset.loc[df1_subset.loc[:, ct1] < 0.05, :]
+            ct1_df = df2_subset.loc[df1_subset.loc[:, ct1] <= 0.05, :]
             for ct2 in df2_subset.columns:
-                replication_df.loc[ct1, ct2] = (ct1_df.loc[:, ct2] < 0.05).sum() / ct1_df.shape[0]
+                replication_df.loc[ct1, ct2] = (ct1_df.loc[:, ct2] <= 0.05).sum() / ct1_df.shape[0]
 
-        df1_n_signif = (df1_subset < 0.05).sum(axis=0)
-        df2_n_signif = (df2_subset < 0.05).sum(axis=0)
+        df1_n_signif = (df1_subset <= 0.05).sum(axis=0)
+        df2_n_signif = (df2_subset <= 0.05).sum(axis=0)
 
         replication_df.index = ["{} [n={}]".format(ct, df1_n_signif.loc[ct]) for ct in df1_subset.columns]
         replication_df.columns = ["{} [n={}]".format(ct, df2_n_signif.loc[ct]) for ct in df2_subset.columns]

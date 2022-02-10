@@ -3,7 +3,7 @@
 """
 File:         compare_pvalues.py
 Created:      2021/11/01
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -144,11 +144,11 @@ class main():
 
         # # # Adding color.
         # df["hue"] = self.palette["no signif"]
-        # df.loc[(df["x"] < 0.05) & (df["y"] >= 0.05), "hue"] = self.palette["x signif"]
-        # df.loc[(df["x"] >= 0.05) & (df["y"] < 0.05), "hue"] = self.palette["y signif"]
-        # df.loc[(df["x"] < 0.05) & (df["y"] < 0.05), "hue"] = self.palette["both signif"]
+        # df.loc[(df["x"] <= 0.05) & (df["y"] > 0.05), "hue"] = self.palette["x signif"]
+        # df.loc[(df["x"] > 0.05) & (df["y"] <= 0.05), "hue"] = self.palette["y signif"]
+        # df.loc[(df["x"] <= 0.05) & (df["y"] <= 0.05), "hue"] = self.palette["both signif"]
         df["hue"] = "no signif"
-        df.loc[df["z"] < 0.05, "hue"] = "both signif"
+        df.loc[df["z"] <= 0.05, "hue"] = "both signif"
 
         # Log10 transform.
         df["x"] = np.log10(df["x"]) * -1

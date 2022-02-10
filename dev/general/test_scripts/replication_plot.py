@@ -3,7 +3,7 @@
 """
 File:         replication_plot.py
 Created:      2021/06/04
-Last Changed: 2021/07/07
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -102,7 +102,7 @@ class main():
 
         r_fdr_df = pd.DataFrame(np.nan, index=r_pvalue_df.index, columns=r_pvalue_df.columns)
         for colname in r_pvalue_df.columns:
-            mask = d_fdr_df.loc[:, colname] < 0.05
+            mask = d_fdr_df.loc[:, colname] <= 0.05
             r_fdr_df.loc[mask, colname] = multitest.multipletests(r_pvalue_df.loc[mask, colname], method='fdr_bh')[1]
         del d_pvalue_df, r_pvalue_df
 
@@ -117,7 +117,7 @@ class main():
         print(df_m)
 
         print("Selecting significant results")
-        df_m = df_m.loc[(df_m["discovery FDR"] < 0.05) & (df_m["replication FDR"] < 0.05), :]
+        df_m = df_m.loc[(df_m["discovery FDR"] <= 0.05) & (df_m["replication FDR"] <= 0.05), :]
         print(df_m)
         pic_replicating_interaction_counts = list(zip(*np.unique(df_m["variable"], return_counts=True)))
         pic_replicating_interaction_counts.sort(key=lambda x: -x[1])

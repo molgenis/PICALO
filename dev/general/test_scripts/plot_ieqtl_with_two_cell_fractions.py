@@ -3,7 +3,7 @@
 """
 File:         plot_ieqtl_with_two_cell_fractions.py
 Created:      2020/11/24
-Last Changed: 2021/01/11
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -263,7 +263,7 @@ class main():
             interaction_effect = interaction_effect.to_frame()
             interaction_effect.columns = ["FDR"]
             interaction_effect = interaction_effect.loc[
-                                 interaction_effect["FDR"] < self.alpha, :]
+                                 interaction_effect["FDR"] <= self.alpha, :]
             interaction_effect = interaction_effect.reindex(
                 interaction_effect["FDR"].abs().sort_values(
                     ascending=True).index)

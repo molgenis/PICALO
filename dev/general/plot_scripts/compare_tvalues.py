@@ -3,7 +3,7 @@
 """
 File:         compare_tvalues.py
 Created:      2021/11/19
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -144,10 +144,10 @@ class main():
             # Set significance.
             if "ieQTL FDR" in df.columns:
                 df["significant"] = "False"
-                df.loc[df["ieQTL FDR"] < 0.05, "significant"] = "True"
+                df.loc[df["ieQTL FDR"] <= 0.05, "significant"] = "True"
             elif "FDR" in df.columns:
                 df["significant"] = "False"
-                df.loc[df["FDR"] < 0.05, "significant"] = "True"
+                df.loc[df["FDR"] <= 0.05, "significant"] = "True"
             else:
                 print(df.columns.tolist())
                 exit()

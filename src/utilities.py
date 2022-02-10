@@ -1,7 +1,7 @@
 """
 File:         utilities.py
 Created:      2021/04/28
-Last Changed: 2021/11/12
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -88,7 +88,7 @@ def get_ieqtls(eqtl_m, geno_m, expr_m, context_a, cov, alpha):
     fdr_values = multitest.multipletests(p_values, method='fdr_bh')[1]
 
     # Calculate the number of significant hits.
-    mask = fdr_values < alpha
+    mask = fdr_values <= alpha
     n_hits = np.sum(mask)
 
     results_df = pd.DataFrame(results,

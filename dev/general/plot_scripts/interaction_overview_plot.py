@@ -3,7 +3,7 @@
 """
 File:         interaction_overview_plot.py
 Created:      2021/10/21
-Last Changed: 2021/11/13
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -127,7 +127,7 @@ class main():
 
             df = self.load_file(fpath, header=0, index_col=None)
             df.index = df["SNP"] + ":" + df["gene"]
-            signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
+            signif_ieqtl = set(df.loc[df["FDR"] <= 0.05, :].index.tolist())
 
             signif_df = pd.DataFrame(0, index=df.index, columns=[pic])
             signif_df.loc[signif_ieqtl, pic] = 1

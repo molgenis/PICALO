@@ -3,7 +3,7 @@
 """
 File:         compare_conditional_vs_unconditional.py
 Created:      2021/12/21
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -126,8 +126,8 @@ class main():
         for i in range(101):
             pic = "PIC{}".format(i)
             if pic in conditional_fdr_df.columns and pic in unconditional_fdr_df.columns:
-                n_conditional_ieqtls = conditional_fdr_df.loc[conditional_fdr_df[pic] < 0.05, :].shape[0]
-                n_unconditional_ieqtls = unconditional_fdr_df.loc[unconditional_fdr_df[pic] < 0.05, :].shape[0]
+                n_conditional_ieqtls = conditional_fdr_df.loc[conditional_fdr_df[pic] <= 0.05, :].shape[0]
+                n_unconditional_ieqtls = unconditional_fdr_df.loc[unconditional_fdr_df[pic] <= 0.05, :].shape[0]
                 print("{}:\tconditional: {:,}\tunconditional: {:,}".format(pic, n_conditional_ieqtls, n_unconditional_ieqtls))
 
                 conditional_total_ieqtls += n_conditional_ieqtls

@@ -3,7 +3,7 @@
 """
 File:         count_n_ieqtls.py
 Created:      2021/12/20
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -129,12 +129,12 @@ class main():
                     print("No signif column found")
                     exit()
 
-                ieqtls = df.loc[df[signif_col] < 0.05, :].index
+                ieqtls = df.loc[df[signif_col] <= 0.05, :].index
                 ieqtl_fdr_df = pd.DataFrame(0, index=df.index, columns=[covariate])
                 ieqtl_fdr_df.loc[ieqtls, covariate] = 1
 
-                pos_ieqtls = df.loc[(df[signif_col] < 0.05) & (df["beta-interaction"] > 0), :].index
-                neg_ieqtls = df.loc[(df[signif_col] < 0.05) & (df["beta-interaction"] < 0), :].index
+                pos_ieqtls = df.loc[(df[signif_col] <= 0.05) & (df["beta-interaction"] > 0), :].index
+                neg_ieqtls = df.loc[(df[signif_col] <= 0.05) & (df["beta-interaction"] < 0), :].index
                 ieqtl_direction_df = pd.DataFrame(0, index=df.index, columns=[covariate])
                 ieqtl_direction_df.loc[pos_ieqtls, covariate] = 1
                 ieqtl_direction_df.loc[neg_ieqtls, covariate] = 1

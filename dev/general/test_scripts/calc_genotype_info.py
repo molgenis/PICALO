@@ -3,7 +3,7 @@
 """
 File:         calc_genotype_info.py
 Created:      2021/06/14
-Last Changed: 2021/10/21
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -107,7 +107,7 @@ class main():
                 fpath = os.path.join(self.indir, component, "results_{}.txt.gz".format(iteration))
                 if os.path.exists(fpath):
                     df = self.load_file(fpath, header=0, index_col=None)
-                    snps = list(df.loc[df["FDR"] < 0.05, "SNP"].values)
+                    snps = list(df.loc[df["FDR"] <= 0.05, "SNP"].values)
                     del df
 
                     geno_subset_df = geno_df.loc[snps, :]

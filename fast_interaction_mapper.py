@@ -3,7 +3,7 @@
 """
 File:         fast_interaction_mapper.py
 Created:      2021/11/16
-Last Changed: 2021/12/10
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -113,7 +113,7 @@ class main():
         self.log.info("Loading eQTL data and filter on FDR values of the "
                       "main eQTL effect")
         eqtl_df = self.data.get_eqtl_df()
-        eqtl_fdr_keep_mask = (eqtl_df["FDR"] < self.eqtl_alpha).to_numpy(dtype=bool)
+        eqtl_fdr_keep_mask = (eqtl_df["FDR"] <= self.eqtl_alpha).to_numpy(dtype=bool)
         eqtl_signif_df = eqtl_df.loc[eqtl_fdr_keep_mask, :]
         eqtl_signif_df.reset_index(drop=True, inplace=True)
 
@@ -315,17 +315,25 @@ class main():
         # for eqtl_index in range(geno_m.shape[0]):
         #     snp, gene = eqtl_m[eqtl_index, :]
         #
-        #     if snp + gene not in ["rs7029206ENSG00000204711",
-        #                           "rs62147573ENSG00000003137",
-        #                           "rs909987ENSG00000226454",
-        #                           "rs964611ENSG00000259235"]:
+        #     if snp + gene not in ["rs1131017ENSG00000197728",
+        #                           "rs12936231ENSG00000073605",
+        #                           "rs2070901ENSG00000158869",
+        #                           "rs2196171ENSG00000115896",
+        #                           "rs41284471ENSG00000259812",
+        #                           "rs6227ENSG00000182511",
+        #                           "rs8067378ENSG00000172057",
+        #                           "rs9688496ENSG00000080546"]:
         #         continue
         #
         #     for cov_index, cov in enumerate(covariates):
-        #         if snp + gene + cov not in ["rs7029206ENSG00000204711PIC2",
-        #                                     "rs62147573ENSG00000003137PIC2",
-        #                                     "rs909987ENSG00000226454PIC13",
-        #                                     "rs964611ENSG00000259235PIC13"]:
+        #         if snp + gene + cov not in ["rs1131017ENSG00000197728PIC3",
+        #                                     "rs12936231ENSG00000073605PIC3",
+        #                                     "rs2070901ENSG00000158869PIC3",
+        #                                     "rs2196171ENSG00000115896PIC3",
+        #                                     "rs41284471ENSG00000259812PIC3",
+        #                                     "rs6227ENSG00000182511PIC3",
+        #                                     "rs8067378ENSG00000172057PIC3",
+        #                                     "rs9688496ENSG00000080546PIC3"]:
         #             continue
         #
         #         ieqtl = IeQTL(snp=snp,
@@ -336,6 +344,7 @@ class main():
         #                       expression=corrected_expr_m[eqtl_index, :]
         #                       )
         #         visualiser.plot_overview(ieqtl, out_path=self.outdir, label="AfterFN")
+        # exit()
 
         ########################################################################
 
@@ -445,11 +454,11 @@ class main():
 
             if cov_index == 0:
                 # Print the number of eQTLs.
-                n_hits = np.sum(df["eQTL p-value"] < self.eqtl_alpha)
+                n_hits = np.sum(df["eQTL p-value"] <= self.eqtl_alpha)
                 self.log.info("There are {:,} significant eQTLs (p-value <{})".format(n_hits, self.eqtl_alpha))
 
             # Print the number of interactions.
-            n_hits = np.sum(df["ieQTL FDR"] < self.ieqtl_alpha)
+            n_hits = np.sum(df["ieQTL FDR"] <= self.ieqtl_alpha)
             self.log.info("  {} has {:,} significant ieQTLs (FDR <{})".format(cov, n_hits, self.ieqtl_alpha))
 
             # Save results.
@@ -731,12 +740,12 @@ class main():
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
         self.log.info("  > Minimal dataset size: >={}".format(self.genotype_na))
-        self.log.info("  > eQTL alpha: <{}".format(self.eqtl_alpha))
+        self.log.info("  > eQTL alpha: <={}".format(self.eqtl_alpha))
         self.log.info("  > SNP call rate: >{}".format(self.call_rate))
         self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
         self.log.info("  > MAF: >{}".format(self.maf))
         self.log.info("  > Minimal group size: >={}".format(self.mgs))
-        self.log.info("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))
+        self.log.info("  > ieQTL alpha: <={}".format(self.ieqtl_alpha))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")
 

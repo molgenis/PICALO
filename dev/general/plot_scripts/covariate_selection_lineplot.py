@@ -3,7 +3,7 @@
 """
 File:         covariate_selection_lineplot.py
 Created:      2021/12/06
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -132,7 +132,7 @@ class main():
 
         print("Plotting")
         self.lineplot(df_m=df, x="index", y="N-ieQTLs", units="Covariate",
-                      xlabel="PIC", ylabel="#ieQTLs (FDR <0.05)",
+                      xlabel="PIC", ylabel="#ieQTLs (FDR <=0.05)",
                       filename=self.out_filename + "covariate_selection_lineplot",
                       outdir=self.outdir)
 

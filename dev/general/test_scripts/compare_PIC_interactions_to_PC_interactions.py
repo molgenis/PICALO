@@ -3,7 +3,7 @@
 """
 File:         compare_PIC_interactions_to_PC_interactions.py
 Created:      2021/12/21
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -115,10 +115,10 @@ class main():
 
         print("### Step2 ###")
         print("Compare")
-        pic_n_ieqtls = (pic_df < 0.05).sum().sum()
-        pc_n_ieqtls = (pc_df < 0.05).sum().sum()
-        pic_eqtl_interaction_df = pic_df.loc[pic_df.min(axis=1) < 0.05, :]
-        pc_eqtl_interaction_df = pc_df.loc[pc_df.min(axis=1) < 0.05, :]
+        pic_n_ieqtls = (pic_df <= 0.05).sum().sum()
+        pc_n_ieqtls = (pc_df <= 0.05).sum().sum()
+        pic_eqtl_interaction_df = pic_df.loc[pic_df.min(axis=1) <= 0.05, :]
+        pc_eqtl_interaction_df = pc_df.loc[pc_df.min(axis=1) <= 0.05, :]
         print("\t{} PICs: n-ieQTLs: {:,}    {:.2f}% of eQTLs has an interaction".format(pic_df.shape[1], pic_n_ieqtls, (100 / pic_df.shape[0]) * pic_eqtl_interaction_df.shape[0]))
         print("\t{} PCs:  n-ieQTLs: {:,}    {:.2f}% of eQTLs has an interaction".format(pc_df.shape[1], pc_n_ieqtls, (100 / pc_df.shape[0]) * pc_eqtl_interaction_df.shape[0]))
 
@@ -167,12 +167,12 @@ class main():
                                       index=df1_subset.columns,
                                       columns=df2_subset.columns)
         for cov1 in df1_subset.columns:
-            cov1_signif_df = df2_subset.loc[df1_subset.loc[:, cov1] < 0.05, :]
+            cov1_signif_df = df2_subset.loc[df1_subset.loc[:, cov1] <= 0.05, :]
             for cov2 in df2_subset.columns:
-                replication_df.loc[cov1, cov2] = (cov1_signif_df.loc[:, cov2] < 0.05).sum() / cov1_signif_df.shape[0]
+                replication_df.loc[cov1, cov2] = (cov1_signif_df.loc[:, cov2] <= 0.05).sum() / cov1_signif_df.shape[0]
 
-        df1_n_signif = (df1_subset < 0.05).sum(axis=0)
-        df2_n_signif = (df2_subset < 0.05).sum(axis=0)
+        df1_n_signif = (df1_subset <= 0.05).sum(axis=0)
+        df2_n_signif = (df2_subset <= 0.05).sum(axis=0)
 
         replication_df.index = ["{} [n={}]".format(ct, df1_n_signif.loc[ct]) for ct in df1_subset.columns]
         replication_df.columns = ["{} [n={}]".format(ct, df2_n_signif.loc[ct]) for ct in df2_subset.columns]

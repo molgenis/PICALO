@@ -3,7 +3,7 @@
 """
 File:         pre_process_expression_matrix.py
 Created:      2021/10/22
-Last Changed: 2021/12/10
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -419,7 +419,6 @@ class main():
         zscores = (df - df.mean(axis=0)) / df.std(axis=0)
         pca = PCA(n_components=100)
         pca.fit(zscores)
-        expl_variance = {"PC{}".format(i+1): pca.explained_variance_ratio_[i] * 100 for i in range(25)}
         components_df = pd.DataFrame(pca.components_)
         components_df.index = ["Comp{}".format(i + 1) for i, _ in enumerate(components_df.index)]
         components_df.columns = df.columns
@@ -435,8 +434,8 @@ class main():
                   y="Comp2",
                   hue="hue",
                   palette=self.palette,
-                  xlabel="PC1 [{:.2f}%]".format(expl_variance["PC1"]),
-                  ylabel="PC2 [{:.2f}%]".format(expl_variance["PC2"]),
+                  xlabel="PC1 [{:.2f}%]".format(pca.explained_variance_ratio_[0] * 100),
+                  ylabel="PC2 [{:.2f}%]".format(pca.explained_variance_ratio_[1] * 100),
                   title="PCA - eigenvectors",
                   filename="eigenvectors_plot{}".format(plot_appendix))
 

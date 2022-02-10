@@ -3,7 +3,7 @@
 """
 File:         calculate_explained_variance.py
 Created:      2022/01/18
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -138,7 +138,7 @@ class main():
         self.log.info("Loading eQTL data and filter on FDR values of the "
                       "main eQTL effect")
         eqtl_df = self.data.get_eqtl_df()
-        eqtl_fdr_keep_mask = (eqtl_df["FDR"] < self.eqtl_alpha).to_numpy(dtype=bool)
+        eqtl_fdr_keep_mask = (eqtl_df["FDR"] <= self.eqtl_alpha).to_numpy(dtype=bool)
         eqtl_signif_df = eqtl_df.loc[eqtl_fdr_keep_mask, :]
         eqtl_signif_df.reset_index(drop=True, inplace=True)
 
@@ -658,12 +658,12 @@ class main():
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
         self.log.info("  > Minimal dataset size: >={}".format(self.genotype_na))
-        self.log.info("  > eQTL alpha: <{}".format(self.eqtl_alpha))
+        self.log.info("  > eQTL alpha: <={}".format(self.eqtl_alpha))
         self.log.info("  > SNP call rate: >{}".format(self.call_rate))
-        self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
+        self.log.info("  > Hardy-Weinberg p-value: >{}".format(self.hw_pval))
         self.log.info("  > MAF: >{}".format(self.maf))
         self.log.info("  > Minimal group size: >={}".format(self.mgs))
-        self.log.info("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))
+        self.log.info("  > ieQTL alpha: <={}".format(self.ieqtl_alpha))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")
 

@@ -3,7 +3,7 @@
 """
 File:         create_upsetplot.py
 Created:      2021/05/10
-Last Changed: 2021/11/13
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -153,7 +153,7 @@ class main():
 
                 df = self.load_file(fpath, header=0, index_col=None)
                 df.index = df["SNP"] + ":" + df["gene"]
-                signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
+                signif_ieqtl = set(df.loc[df["FDR"] <= 0.05, :].index.tolist())
                 component_data[iter_abbreviation] = signif_ieqtl
                 final_iteration = iter_abbreviation
 
@@ -209,7 +209,7 @@ class main():
 
             df = self.load_file(fpath, header=0, index_col=None)
             df.index = df["SNP"] + ":" + df["gene"]
-            signif_ieqtl = set(df.loc[df["FDR"] < 0.05, :].index.tolist())
+            signif_ieqtl = set(df.loc[df["FDR"] <= 0.05, :].index.tolist())
             pic_data[pic] = signif_ieqtl
 
         if len(pic_data.keys()) > 0:

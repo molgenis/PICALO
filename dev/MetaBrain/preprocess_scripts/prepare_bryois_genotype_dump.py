@@ -3,7 +3,7 @@
 """
 File:         prepare_bryois_genotype_dump.py
 Created:      2022/01/26
-Last Changed:
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -105,7 +105,7 @@ class main():
         # print("Merge.")
         # bryois_df = bryois_df.merge(metabrain_snp_df, on="SNP", how="left")
         # print("Filter significnat.")
-        # bryois_df = bryois_df.loc[bryois_df["adj_p"] < 0.05, :]
+        # bryois_df = bryois_df.loc[bryois_df["adj_p"] <= 0.05, :]
 
         print("Save.")
         # bryois_df.to_csv(os.path.join(self.outdir, "bryois_cis_eqtl.txt.gz"), sep="\t", header=True, index=False, compression="gzip")

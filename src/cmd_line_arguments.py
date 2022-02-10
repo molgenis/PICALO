@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2021/12/09
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -114,7 +114,7 @@ class CommandLineArguments:
                             required=False,
                             default=0.05,
                             help="The eQTL significance cut-off. "
-                                 "Default: <0.05.")
+                                 "Default: <=0.05.")
         parser.add_argument("-cr",
                             "--call_rate",
                             type=float,
@@ -149,7 +149,7 @@ class CommandLineArguments:
                             required=False,
                             default=0.05,
                             help="The interaction eQTL significance cut-off. "
-                                 "Default: <0.05.")
+                                 "Default: <=0.05.")
         parser.add_argument("-n_components",
                             type=int,
                             required=False,
