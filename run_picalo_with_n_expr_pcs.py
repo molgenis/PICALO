@@ -3,7 +3,7 @@
 """
 File:         run_picalo_with_n_expr_pcs.py
 Created:      2021/12/02
-Last Changed: 2021/12/03
+Last Changed: 2022/02/10
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -268,14 +268,14 @@ class main():
                             required=False,
                             default=0.05,
                             help="The eQTL significance cut-off. "
-                                 "Default: <0.05.")
+                                 "Default: <=0.05.")
         parser.add_argument("-iea",
                             "--ieqtl_alpha",
                             type=float,
                             required=False,
                             default=0.05,
                             help="The interaction eQTL significance cut-off. "
-                                 "Default: <0.05.")
+                                 "Default: <=0.05.")
         parser.add_argument("-cr",
                             "--call_rate",
                             type=float,
@@ -817,8 +817,8 @@ class main():
         print("  > Technical covariates with interaction: {}".format(self.tech_covariate_with_inter))
         print("  > Covariate: {}".format(self.covariate))
         print("  > Sample to dataset: {}".format(self.sample_to_dataset))
-        print("  > eQTL alpha: <{}".format(self.eqtl_alpha))
-        print("  > ieQTL alpha: <{}".format(self.ieqtl_alpha))
+        print("  > eQTL alpha: <={}".format(self.eqtl_alpha))
+        print("  > ieQTL alpha: <={}".format(self.ieqtl_alpha))
         print("  > Call rate: >{}".format(self.call_rate))
         print("  > Hardy-Weinberg p-value: >{}".format(self.hardy_weinberg_pvalue))
         print("  > MAF: >{}".format(self.minor_allele_frequency))
