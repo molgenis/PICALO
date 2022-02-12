@@ -71,6 +71,9 @@ class GraphicalAbstractPart3(Scene):
         std_df = pd.read_csv(os.path.join("/Users/mvochteloo/Downloads/PICALO_animations/sample_to_dataset.txt.gz"), sep="\t", header=0, index_col=None)
         info_df = pd.read_csv(os.path.join("/Users/mvochteloo/Downloads/PICALO_animations/PIC1/info.txt.gz"), sep="\t", header=0, index_col=0)
 
+        iterations_df = iterations_df.iloc[:17, :]
+        info_df = info_df.iloc[:16, :]
+
         std_df["hue"] = std_df["dataset"].map(colors)
         if list(iterations_df.columns) != list(std_df["sample"]):
             print("Error, samples do not match.")
@@ -78,7 +81,7 @@ class GraphicalAbstractPart3(Scene):
         colors = list(std_df["hue"])
 
         n_iterations = iterations_df.shape[0]
-        line_xstep = 10
+        line_xstep = 5
         line_xlim = (0, math.ceil(n_iterations / line_xstep) * line_xstep, line_xstep)
 
         max_ieqtls = info_df["N"].max()
@@ -92,8 +95,8 @@ class GraphicalAbstractPart3(Scene):
 
         min_value = iterations_df.min(axis=1).min()
         max_value = iterations_df.max(axis=1).max()
-        scatter_ystep = 2
-        scatter_ylim = (math.ceil(min_value / scatter_ystep) * scatter_ystep, math.ceil(max_value / scatter_ystep) * scatter_ystep, scatter_ystep)
+        scatter_ystep = 1
+        scatter_ylim = (math.floor(min_value / scatter_ystep) * scatter_ystep, math.ceil(max_value / scatter_ystep) * scatter_ystep, scatter_ystep)
 
         print(line_xlim, line_ylim)
         print(scatter_xlim, scatter_ylim)
@@ -153,19 +156,19 @@ class GraphicalAbstractPart3(Scene):
 
         # Add the text.
         iteration = "start"
-        iteration_text = always_redraw(lambda: Text("{}".format(iteration), color=WHITE).scale(0.8).shift(UP * 3))
+        iteration_text = always_redraw(lambda: Text("{}".format(iteration), color=WHITE).scale(0.8).shift(UP * 3.5))
 
         n_ieqtls = np.nan
         n_ieqtls_text = always_redraw(
             lambda: Text("N = {:,}".format(n_ieqtls), color=GREY_B).scale(0.4).move_to(
-                line_axes.c2p(line_xlim[1] * 0.8, line_ylim[1] * 0.8)
+                line_axes.c2p(line_xlim[1] * 0.9, line_ylim[1] * 0.8)
             )
         )
 
         pearson_r = np.nan
         pearson_r_text = always_redraw(
-            lambda: Text("Pearson r = {:.2f}".format(pearson_r), color=GREY_B).scale(0.4).move_to(
-                scatter_axes.c2p(scatter_xlim[1] * 0.8, scatter_ylim[1] * 0.8)
+            lambda: Text("r = {:.4f}".format(pearson_r), color=GREY_B).scale(0.4).move_to(
+                scatter_axes.c2p(scatter_xlim[1] * 0.9, scatter_ylim[1] * 0.8)
             )
         )
 
@@ -174,19 +177,20 @@ class GraphicalAbstractPart3(Scene):
             FadeIn(VGroup(*sample_dots)),
             FadeIn(iteration_text)
         )
-        self.wait()
+        self.wait(3)
 
         # Do the iterations.
-        run_time = 3
-        run_time_change = 0.9
+        run_time = 4
+        run_time_change = 0.925
         prev_index = None
         prev_label = None
         for row_index, (iteration_label, row) in enumerate(iterations_df.iterrows()):
             if iteration_label == "start":
                 continue
+            print(row_index, iteration_label)
 
             # Calculate the run time.
-            rt = run_time * run_time_change
+            run_time = run_time * run_time_change
 
             # Load the animations.
             animations = []
@@ -199,7 +203,7 @@ class GraphicalAbstractPart3(Scene):
             if prev_index is not None and prev_label is not None:
                 line = Line(start=line_axes.c2p(prev_index, info_df.loc[prev_label, "N"]),
                             end=line_axes.c2p(row_index, info_df.loc[iteration_label, "N"]),
-                            stroke_width=8,
+                            stroke_width=5,
                             color=WHITE)
 
             # Play the animations.
@@ -209,13 +213,13 @@ class GraphicalAbstractPart3(Scene):
                     *animations,
                     ApplyMethod(n_ieqtls_dot.move_to, line_axes.c2p(row_index, new_n_ieqtls)),
                     ShowCreation(line),
-                    run_time=rt)
+                    run_time=run_time)
             else:
                 self.play(
                     *animations,
                     ApplyMethod(n_ieqtls_dot.move_to,
                                 line_axes.c2p(row_index, new_n_ieqtls)),
-                    run_time=rt)
+                    run_time=run_time)
             self.wait()
 
             # Update the text.
