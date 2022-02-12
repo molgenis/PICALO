@@ -26,6 +26,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 import random
 import math
+import os
 
 # Third party imports.
 import numpy as np
@@ -103,11 +104,15 @@ class GraphicalAbstractPart1(Scene):
 
         # Create a dot for each sample on x-axis = context and y-axis =
         # expression.
-        context_value = ValueTracker(ieqtl1.loc[example_name, "context"])
+        example_color1 = None
+        example_dot_scatter_x1 = ieqtl1.loc[example_name, "context"]
+        example_dot_scatter_y1 = ieqtl1.loc[example_name, "expression"]
         example_dot_scatter1 = None
         example_dot_scatter_radius1 = 0.08
+        example_dot_scatter_fill1 = 0.5
         example_text_scatter1 = None
-        example_color1 = None
+        example_text_scatter_scale1 = 0.6
+        context_value = ValueTracker(example_dot_scatter_x1)
         scatter_dots1 = []
         for i, row in ieqtl1.iterrows():
             color = BLACK
@@ -121,14 +126,18 @@ class GraphicalAbstractPart1(Scene):
             if i == example_name:
                 example_color1 = color
                 example_dot_scatter1 = always_redraw(
-                    lambda: Dot(radius=example_dot_scatter_radius1, color=example_color1).move_to(
-                        scatter_axes1.c2p(context_value.get_value(),
-                                          ieqtl1.loc[example_name, "expression"])
+                    lambda: Dot(radius=example_dot_scatter_radius1,
+                                color=example_color1,
+                                fill_opacity=example_dot_scatter_fill1).move_to(
+                        scatter_axes1.c2p(context_value.get_value(), example_dot_scatter_y1)
                     )
                 )
 
-                example_text_scatter1 = Text(example_name).scale(0.3)
-                example_text_scatter1.move_to(scatter_axes1.c2p(row["context"], row["expression"] + 0.5))
+                example_text_scatter1 = always_redraw(
+                    lambda: Text(example_name).scale(example_text_scatter_scale1).move_to(
+                        scatter_axes1.c2p(context_value.get_value(), example_dot_scatter_y1 + 0.75)
+                    )
+                )
             else:
                 dot = Dot(color=color, fill_opacity=0.5)
                 dot.move_to(scatter_axes1.c2p(row["context"], row["expression"]))
@@ -145,11 +154,8 @@ class GraphicalAbstractPart1(Scene):
             elif genotype_group == 2:
                 color = RED
 
-            start_dot = Dot()
-            start_dot.move_to(scatter_axes1.c2p(start[0], start[1]))
-
-            end_dot = Dot()
-            end_dot.move_to(scatter_axes1.c2p(end[0], end[1]))
+            start_dot = Dot().move_to(scatter_axes1.c2p(start[0], start[1]))
+            end_dot = Dot().move_to(scatter_axes1.c2p(end[0], end[1]))
 
             scatter_lines1.append(Line(start_dot, end_dot, color=color))
 
@@ -159,30 +165,33 @@ class GraphicalAbstractPart1(Scene):
             FadeIn(VGroup(*scatter_lines1)),
             FadeIn(example_dot_scatter1)
         )
-        self.wait()
+        self.wait(3)
 
         # Remove the individual dots except the example dot.
         self.play(
             FadeOut(VGroup(*scatter_dots1)),
             FadeIn(example_text_scatter1)
         )
-        self.remove(*scatter_dots1)
-        self.wait()
-        self.play(
-            FadeOut(example_text_scatter1),
-        )
-        self.wait()
+        self.wait(2)
+        example_dot_scatter_fill1 = 1
 
         # Zoom out and add a second graph for the log likelihood.
         self.play(
             VGroup(scatter_axes1,
                    scatter_axis_labels1,
                    *scatter_lines1,
-                   example_dot_scatter1).animate.scale(0.5).shift(LEFT * 3.5),
+                   example_dot_scatter1,
+                   example_text_scatter1).animate.scale(0.5).shift(LEFT * 3.5),
             run_time=2
         )
         example_dot_scatter_radius1 = example_dot_scatter_radius1 * 0.5
-        self.wait()
+        example_text_scatter_scale1 = example_text_scatter_scale1 * 0.5
+        self.wait(2)
+
+        # Add the x-axis movement line.
+        start_dot = Dot().move_to(scatter_axes1.c2p(context_range1[0], example_dot_scatter_y1))
+        end_dot = Dot().move_to(scatter_axes1.c2p(context_range1[1], example_dot_scatter_y1))
+        example_dot_scatter_hline1 = DashedLine(start_dot, end_dot, stroke_width=3, color=WHITE)
 
         ########################################################################
 
@@ -273,30 +282,37 @@ class GraphicalAbstractPart1(Scene):
             DrawBorderThenFill(graph_axes1),
             Write(graph_axes_labels1)
         )
-        self.add(example_dot_graph1, example_vline_graph1, value_text)
+        self.add(example_dot_scatter_hline1,
+                 example_dot_graph1,
+                 example_vline_graph1,
+                 value_text)
         self.wait()
 
         # Move the example dot along the x-axis.
+        dps = 1
         self.play(context_value.animate.set_value(context_range1[0]),
                   ShowCreation(example_parabola1_left),
-                  run_time=2)
+                  run_time=abs(example_dot_scatter_x1 - context_range1[0]) / dps)
         self.play(context_value.animate.set_value(context_range1[1]),
                   ShowCreation(example_parabola1),
-                  run_time=3)
+                  run_time=abs(context_range1[0] - context_range1[1]) / dps)
         self.play(context_value.animate.set_value(example_x_optimal1),
                   FadeOut(example_parabola1_left),
-                  run_time=1.5)
-        self.wait()
+                  run_time=3)
+        self.wait(2)
 
         self.play(
             FadeOut(VGroup(graph_axes1,
                            graph_axes_labels1,
                            example_dot_scatter1,
+                           example_text_scatter1,
+                           example_dot_scatter_hline1,
                            example_dot_graph1,
                            example_vline_graph1,
                            example_parabola1_left,
                            example_parabola1,
-                           value_text))
+                           value_text)),
+            run_time=2
         )
         self.wait()
 
@@ -306,7 +322,7 @@ class GraphicalAbstractPart1(Scene):
                    *scatter_lines1).animate.scale(2).shift(RIGHT * 3.5),
             run_time=2
         )
-        self.wait()
+        self.wait(2)
 
         scatter_dots1 = []
         animations = []
@@ -333,8 +349,8 @@ class GraphicalAbstractPart1(Scene):
             FadeIn(VGroup(*scatter_dots1))
         )
         self.wait()
-        self.play(*animations, run_time=5)
-        self.wait()
+        self.play(*animations, run_time=6)
+        self.wait(2)
 
 
 class GraphicalAbstractPart2(Scene):
@@ -371,8 +387,9 @@ class GraphicalAbstractPart2(Scene):
         context_range1 = (math.floor(min(ieqtl1["context"].min(), ieqtl2["context"].min())) - 1, math.ceil(max(ieqtl1["context"].max(), ieqtl1["context"].max())) + 1, 1)
         scatter_y_range1 = (math.floor(min(ieqtl1["expression"].min(), ieqtl2["expression"].min())), math.ceil(max(ieqtl1["expression"].max(), ieqtl2["expression"].max())), 2)
 
-        context_value1 = ValueTracker(base_model.loc[example_name, "context"])
-        context_value2 = ValueTracker(base_model.loc[example_name, "context"])
+        example_dot_x = base_model.loc[example_name, "context"]
+        context_value1 = ValueTracker(example_dot_x)
+        context_value2 = ValueTracker(example_dot_x)
 
         ########################################################################
 
@@ -397,10 +414,13 @@ class GraphicalAbstractPart2(Scene):
 
         # Create a dot for each sample on x-axis = context and y-axis =
         # expression.
+        example_color1 = None
+        example_dot_scatter_y1 = ieqtl1.loc[example_name, "expression"]
         example_dot_scatter1 = None
         example_dot_scatter_radius1 = 0.08
+        example_dot_scatter_fill1 = 0.5
         example_text_scatter1 = None
-        example_color1 = None
+        example_text_scatter_scale1 = 0.6
         scatter_dots1 = []
         for i, row in ieqtl1.iterrows():
             color = BLACK
@@ -414,14 +434,18 @@ class GraphicalAbstractPart2(Scene):
             if i == example_name:
                 example_color1 = color
                 example_dot_scatter1 = always_redraw(
-                    lambda: Dot(radius=example_dot_scatter_radius1, color=example_color1).move_to(
-                        scatter_axes1.c2p(context_value1.get_value(),
-                                          ieqtl1.loc[example_name, "expression"])
+                    lambda: Dot(radius=example_dot_scatter_radius1,
+                                color=example_color1,
+                                fill_opacity=example_dot_scatter_fill1).move_to(
+                        scatter_axes1.c2p(context_value1.get_value(), example_dot_scatter_y1)
                     )
                 )
 
-                example_text_scatter1 = Text(example_name).scale(0.3)
-                example_text_scatter1.move_to(scatter_axes1.c2p(row["context"], row["expression"] + 0.5))
+                example_text_scatter1 = always_redraw(
+                    lambda: Text(example_name).scale(example_text_scatter_scale1).move_to(
+                        scatter_axes1.c2p(context_value1.get_value(), example_dot_scatter_y1 + 0.75)
+                    )
+                )
             else:
                 dot = Dot(color=color, fill_opacity=0.5)
                 dot.move_to(scatter_axes1.c2p(row["context"], row["expression"]))
@@ -438,12 +462,8 @@ class GraphicalAbstractPart2(Scene):
             elif genotype_group == 2:
                 color = RED
 
-            start_dot = Dot()
-            start_dot.move_to(scatter_axes1.c2p(start[0], start[1]))
-
-            end_dot = Dot()
-            end_dot.move_to(scatter_axes1.c2p(end[0], end[1]))
-
+            start_dot = Dot().move_to(scatter_axes1.c2p(start[0], start[1]))
+            end_dot = Dot().move_to(scatter_axes1.c2p(end[0], end[1]))
             scatter_lines1.append(Line(start_dot, end_dot, color=color))
 
         VGroup(scatter_axes1,
@@ -452,6 +472,7 @@ class GraphicalAbstractPart2(Scene):
                *scatter_lines1,
                example_dot_scatter1).scale(0.5).shift(LEFT * 3.5 + UP * 2)
         example_dot_scatter_radius1 = example_dot_scatter_radius1 * 0.5
+        example_text_scatter_scale1 = example_text_scatter_scale1 * 0.5
 
         ########################################################################
 
@@ -476,10 +497,13 @@ class GraphicalAbstractPart2(Scene):
 
         # Create a dot for each sample on x-axis = context and y-axis =
         # expression.
+        example_color2 = None
+        example_dot_scatter_y2 = ieqtl2.loc[example_name, "expression"]
         example_dot_scatter2 = None
         example_dot_scatter_radius2 = 0.08
+        example_dot_scatter_fill2 = 0.5
         example_text_scatter2 = None
-        example_color2 = None
+        example_text_scatter_scale2 = 0.6
         scatter_dots2 = []
         for i, row in ieqtl2.iterrows():
             color = BLACK
@@ -493,14 +517,18 @@ class GraphicalAbstractPart2(Scene):
             if i == example_name:
                 example_color2 = color
                 example_dot_scatter2 = always_redraw(
-                    lambda: Dot(radius=example_dot_scatter_radius2, color=example_color2).move_to(
-                        scatter_axes2.c2p(context_value2.get_value(),
-                                          ieqtl2.loc[example_name, "expression"])
+                    lambda: Dot(radius=example_dot_scatter_radius2,
+                                color=example_color2,
+                                fill_opacity=example_dot_scatter_fill2).move_to(
+                        scatter_axes2.c2p(context_value2.get_value(), example_dot_scatter_y2)
                     )
                 )
 
-                example_text_scatter2 = Text(example_name).scale(0.3)
-                example_text_scatter2.move_to(scatter_axes2.c2p(row["context"], row["expression"] + 0.5))
+                example_text_scatter2 = always_redraw(
+                    lambda: Text(example_name).scale(example_text_scatter_scale2).move_to(
+                        scatter_axes2.c2p(context_value2.get_value(), example_dot_scatter_y2 + 0.75)
+                    )
+                )
             else:
                 dot = Dot(color=color, fill_opacity=0.5)
                 dot.move_to(scatter_axes2.c2p(row["context"], row["expression"]))
@@ -517,12 +545,8 @@ class GraphicalAbstractPart2(Scene):
             elif genotype_group == 2:
                 color = RED
 
-            start_dot = Dot()
-            start_dot.move_to(scatter_axes2.c2p(start[0], start[1]))
-
-            end_dot = Dot()
-            end_dot.move_to(scatter_axes2.c2p(end[0], end[1]))
-
+            start_dot = Dot().move_to(scatter_axes2.c2p(start[0], start[1]))
+            end_dot = Dot().move_to(scatter_axes2.c2p(end[0], end[1]))
             scatter_lines2.append(Line(start_dot, end_dot, color=color))
 
         VGroup(scatter_axes2,
@@ -531,6 +555,7 @@ class GraphicalAbstractPart2(Scene):
                *scatter_lines2,
                example_dot_scatter2).scale(0.5).shift(LEFT * 3.5 + DOWN * 2)
         example_dot_scatter_radius2 = example_dot_scatter_radius2 * 0.5
+        example_text_scatter_scale2 = example_text_scatter_scale2 * 0.5
 
         ########################################################################
 
@@ -617,15 +642,10 @@ class GraphicalAbstractPart2(Scene):
             FadeIn(example_dot_scatter1),
             FadeIn(VGroup(*scatter_dots2)),
             FadeIn(VGroup(*scatter_lines2)),
-            FadeIn(example_dot_scatter2)
+            FadeIn(example_dot_scatter2),
+            run_time=2
         )
-        self.wait()
-
-        self.play(
-            FadeOut(VGroup(*scatter_dots1)),
-            FadeOut(VGroup(*scatter_dots2))
-        )
-        self.wait()
+        self.wait(3)
 
         ########################################################################
 
@@ -657,7 +677,8 @@ class GraphicalAbstractPart2(Scene):
 
         example_dot_graph_radius1 = 0.04
         example_dot_graph1 = always_redraw(
-            lambda: Dot(radius=example_dot_graph_radius1, color=example_color1).move_to(
+            lambda: Dot(radius=example_dot_graph_radius1,
+                        color=example_color1).move_to(
                 graph_axes.i2gp(context_value1.get_value(),
                                 example_parabola1)
             )
@@ -676,7 +697,8 @@ class GraphicalAbstractPart2(Scene):
 
         example_dot_graph_radius2 = 0.04
         example_dot_graph2 = always_redraw(
-            lambda: Dot(radius=example_dot_graph_radius2, color=example_color2).move_to(
+            lambda: Dot(radius=example_dot_graph_radius2,
+                        color=example_color2).move_to(
                 graph_axes.i2gp(context_value2.get_value(),
                                 example_parabola2)
             )
@@ -700,47 +722,115 @@ class GraphicalAbstractPart2(Scene):
 
         example_vline_graph3 = graph_axes.get_v_line(example_dot_graph3.get_bottom())
 
-        self.add(example_dot_graph1,
+        self.play(
+            FadeOut(VGroup(*scatter_dots1)),
+            FadeOut(VGroup(*scatter_dots2))
+        )
+        example_dot_scatter_fill1 = 1
+        example_dot_scatter_fill2 = 1
+        self.add(example_text_scatter1,
+                 example_text_scatter2,
+                 example_dot_graph1,
                  example_dot_graph2,
                  example_vline_graph1,
                  example_vline_graph2,
                  value_text1,
                  value_text2)
-        self.wait()
+        self.wait(2)
 
         # Move the example dot along the x-axis.
+        dps = 1
         self.play(context_value1.animate.set_value(context_range1[0]),
                   context_value2.animate.set_value(context_range1[0]),
                   ShowCreation(example_parabola1_left),
                   ShowCreation(example_parabola2_left),
-                  run_time=2)
+                  run_time=abs(example_dot_x - context_range1[0]) / dps)
         self.play(context_value1.animate.set_value(context_range1[1]),
                   context_value2.animate.set_value(context_range1[1]),
                   ShowCreation(example_parabola1),
                   ShowCreation(example_parabola2),
-                  run_time=3)
+                  run_time=abs(context_range1[0] - context_range1[1]) / dps)
         self.play(context_value1.animate.set_value(example_x_optimal1),
                   context_value2.animate.set_value(example_x_optimal2),
                   FadeOut(example_parabola1_left),
                   FadeOut(example_parabola2_left),
-                  run_time=1.5)
-        self.wait()
+                  run_time=3)
+        self.wait(4)
+
+        ########################################################################
+
+        graph_objects = VGroup(
+            graph_axes,
+            graph_axes_labels,
+            example_parabola1,
+            example_parabola2,
+            example_dot_graph1,
+            example_dot_graph2,
+            example_vline_graph1,
+            example_vline_graph2,
+            value_text1,
+            value_text2
+        )
+        self.play(graph_objects.animate.shift(DOWN * 1.5))
+
+        to_isolate = ["A_1", "B_1", "A_2", "B_2", "(", ")"]
+        lines = VGroup(
+            Tex("A_1", "x^2", "+", "B_1", "x"),
+            Tex("A_2", "x^2", "+", "B_2", "x"),
+            Tex("(", "A_1", "x^2", "+", "B_1", "x", ")", "+", "(", "A_2", "x^2", "+", "B_2", "x", ")", isolate=to_isolate),
+            Tex("(", "A_1", "+", "A_2", ")", "x^2", "+", "(", "B_1", "+", "B_2", ")", "x", isolate=to_isolate),
+        )
+        lines.arrange(DOWN, buff=MED_LARGE_BUFF).scale(0.6).shift(RIGHT * 3.5 + UP * 2)
+        for line in lines:
+            line.set_color_by_tex_to_color_map({
+                "A": BLUE,
+                "B": TEAL,
+                "x": WHITE
+            })
+
+        self.play(
+            FadeIn(lines[0]),
+            FadeIn(lines[1]),
+            run_time=2
+        )
+        self.wait(2)
+
+        self.play(
+            TransformMatchingTex(lines[0].copy(), lines[2]),
+            TransformMatchingTex(lines[1].copy(), lines[2]),
+            run_time=2
+        )
+        self.wait(2)
+
+        self.play(
+            TransformMatchingTex(lines[2].copy(), lines[3]),
+            run_time=2
+        )
+        self.wait(4)
+
+        self.play(
+            FadeOut(lines),
+            graph_objects.animate.shift(UP * 1.5),
+            run_time=2
+        )
+
+        ########################################################################
 
         self.play(ShowCreation(example_parabola3),
-                  run_time=1.5)
+                  run_time=2)
         self.wait()
 
         self.play(FadeIn(example_dot_graph3),
                   FadeIn(value_text3),
                   FadeIn(example_vline_graph3),
-                  run_time=1.5)
-        self.wait()
+                  run_time=2)
+        self.wait(2)
 
         self.play(context_value1.animate.set_value(example_x_optimal3),
                   context_value2.animate.set_value(example_x_optimal3),
                   FadeOut(example_parabola1_left),
                   FadeOut(example_parabola2_left),
-                  run_time=1.5)
+                  run_time=4)
         self.wait()
 
         self.play(FadeOut(VGroup(example_dot_graph1,
@@ -756,8 +846,12 @@ class GraphicalAbstractPart2(Scene):
                                  example_parabola2,
                                  example_parabola3,
                                  example_dot_scatter1,
-                                 example_dot_scatter2)),
-                  run_time=1.5)
+                                 example_dot_scatter2,
+                                 example_text_scatter1,
+                                 example_text_scatter2,
+                                 graph_axes,
+                                 graph_axes_labels)),
+                  run_time=2)
         self.wait()
 
         ########################################################################
@@ -809,9 +903,8 @@ class GraphicalAbstractPart2(Scene):
             FadeIn(VGroup(*scatter_dots2))
         )
         self.wait()
-        self.play(*animations1, *animations2, run_time=5)
-        self.wait()
-
+        self.play(*animations1, *animations2, run_time=6)
+        self.wait(2)
 
 
 def generate_base_model(example_index=0, example_name="Jane Doe", n_points=100,
