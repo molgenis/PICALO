@@ -346,7 +346,7 @@ def calculate_drop(x, y, func, x_range):
     """
     # Start vectors.
     dx = 0.1  # step used to compute numerical derivatives
-    dt = 0.0002  # integration time step
+    dt = 0.00005  # integration time step
     grav = 9.806  # acceleration due to gravity
     drop_speed = 2500
     roll_speed = 1000
