@@ -233,3 +233,215 @@ class GraphicalAbstractPart3(Scene):
 
             if row_index > 0:
                 self.add(n_ieqtls_text, pearson_r_text)
+
+
+class GraphicalAbstractPart4(Scene):
+    def construct(self):
+        func = lambda x: -x * np.sin(x)
+        x_range = (0, 10, 2)
+        radius = 0.15
+        y_values = np.array([func(x) for x in np.arange(x_range[0], x_range[1], 0.01)])
+        y_step = 2
+        y_range = ((math.floor(np.min(y_values) / y_step) * y_step, (math.ceil(np.max(y_values) / y_step) + 2) * y_step, y_step))
+
+        # Construct the axis for the scatterplot.
+        axes = Axes(
+            x_range=x_range,
+            y_range=y_range,
+            axis_config={
+                "include_tip": False,
+                "stroke_width": 1,
+            }
+        ).set_color(GREY)
+        axes.add_coordinate_labels(
+            font_size=20,
+            num_decimal_places=0,
+        ).set_color(GREY)
+
+        graph = axes.get_graph(func, color=WHITE)
+
+        self.play(
+            DrawBorderThenFill(axes),
+            run_time=1
+        )
+        self.play(
+            ShowCreation(graph),
+            run_time=2
+        )
+        self.wait()
+
+        local_text = Text("local minima").scale(0.6).move_to(axes.c2p(2.1, func(2.1) - 1.5))
+        global_text = Text("global minima").scale(0.6).move_to(axes.c2p(8, func(8) - 1.5))
+        self.play(
+            FadeIn(VGroup(local_text, global_text)),
+            run_time=1
+        )
+        self.wait()
+
+        # Drop ball 1.
+        start_x = 7
+        start_y = y_range[1]
+        dot1 = Dot(point=axes.c2p(start_x, start_y), radius=radius, color=WHITE)
+        data = calculate_drop(x=start_x, y=start_y, func=func, x_range=x_range)
+        print(data)
+        run_time = (data.iloc[-1, :]["time"] / data.shape[0]) * 50
+        print(run_time, data.shape[0] * run_time)
+        for i, row in data.iterrows():
+            self.play(dot1.animate.move_to(axes.c2p(row["x"], row["y"])),
+                      run_time=run_time)
+        self.wait(3)
+
+        # Drop ball 2.
+        start_x = 4
+        dot2 = Dot(point=axes.c2p(start_x, start_y), radius=radius, color=WHITE)
+        data = calculate_drop(x=start_x, y=start_y, func=func, x_range=x_range)
+        print(data)
+        run_time = (data.iloc[-1, :]["time"] / data.shape[0]) * 50
+        print(run_time, data.shape[0] * run_time)
+        for i, row in data.iterrows():
+            self.play(dot2.animate.move_to(axes.c2p(row["x"], row["y"])),
+                      run_time=run_time)
+        self.wait()
+
+        # Remove.
+        self.play(
+            FadeOut(VGroup(dot1, dot2)),
+            run_time=1
+        )
+
+        combined_data = []
+        max_time = 0
+        max_rows = 0
+        for start_x in np.arange(1, 10, 1):
+            dot = Dot(point=axes.c2p(start_x, start_y), radius=radius, color=WHITE)
+            data = calculate_drop(x=start_x, y=start_y, func=func, x_range=x_range)
+
+            if data.iloc[-1, :]["time"] > max_time:
+                max_time = data.iloc[-1, :]["time"]
+
+            if data.shape[0] > max_rows:
+                max_rows = data.shape[0]
+
+            combined_data.append((dot, data))
+
+        run_time = (max_time / max_rows) * 50
+        for i in range(max_rows):
+            animations = []
+            for (dot, data) in combined_data:
+                if i < data.shape[0]:
+                    row = data.iloc[i, :]
+                    animations.append(ApplyMethod(dot.move_to, axes.c2p(row["x"], row["y"])))
+            if len(animations) > 0:
+                self.play(*animations,
+                          run_time=run_time)
+        self.wait()
+
+
+def calculate_drop(x, y, func, x_range):
+    """
+    x: starting value of X
+    func: the function
+
+    https://www.mathworks.com/matlabcentral/answers/477104-how-would-you-plot-a-graph-which-a-ball-then-rolls-down-say-a-y-x-2-graph
+    """
+    # Start vectors.
+    dx = 0.1  # step used to compute numerical derivatives
+    dt = 0.0002  # integration time step
+    grav = 9.806  # acceleration due to gravity
+    drop_speed = 2500
+    roll_speed = 1000
+    speed = drop_speed  # initial speed
+    G = [0, -grav]  # gravity vector
+    max_steps = 1000
+
+    # initial energy state (per unit mass)
+    Ep = grav * y  # potential energy
+    Ek = 0.5 * speed ** 2  # kinetic energy
+    Etot = Ep + Ek  # total system energy
+
+    # initialize saved data table
+    data = np.empty((max_steps + 1, 7), dtype=np.float64)
+    data[0, :] = np.array([0, x, y, speed, Ep, Ek, Etot])
+
+    # simulate the falling.
+    cnt = 1
+    stop = False
+    for i in range(max_steps):
+        time = cnt * dt
+
+        if y > func(x):
+            # update speed and y pos.
+            speed = speed + grav * dt
+            y = y - (speed * dt)
+
+            # update energy states
+            Ep = grav * y
+            Ek = 0.5 * speed ** 2
+            Etot = Ep + Ek
+
+            # set speed to zero once we land.
+            if y <= func(x):
+                y = func(x)
+                if func(x + 1) > func(x):
+                    speed = roll_speed * -1
+                else:
+                    speed = roll_speed
+
+            # save data
+            data[cnt, :] = np.array([time, x, y, speed, Ep, Ek, Etot])
+
+        else:
+            stop = True
+
+            dy = (func(x + dx / 2) - func(x - dx / 2)) / dx  # first derivative
+            deltax = dx  # step change in X value
+            deltay = dy * dx  # corresponding change in Y value
+            mag = np.sqrt(deltax ** 2 + deltay ** 2)  # magnitude of step change
+
+            # compute the unit tangent vector
+            Tx = deltax / mag
+            Ty = deltay / mag
+            T = [Tx, Ty]  # unit tangent vector
+
+            # compute accelerations
+            At = np.dot(G, T)  # acceration in the tangential direction
+
+            # update states (numerical integration)
+            speed = speed + At * dt
+            delta = speed * dt  # dstance traveled along curve
+            x = x + delta * Tx  # updated X position
+            y = func(x)
+
+            # update energy states
+            Ep = grav * y
+            Ek = 0.5 * speed ** 2
+            Etot = Ep + Ek
+
+            # Check if we go uphill.
+            if func(x) <= data[cnt-1, 2]:
+                stop = False
+
+            # check if we exit the x_range.
+            if x <= x_range[0]:
+                x = x_range[0]
+                stop = True
+                print("left border reached")
+            if x >= x_range[1]:
+                x = x_range[1]
+                stop = True
+                print("right border reached")
+
+            # save data
+            data[cnt, :] = np.array([time, x, y, speed, Ep, Ek, Etot])
+
+            if stop:
+                print("going uphill")
+
+        cnt += 1
+
+        if stop:
+            break
+
+    data_df = pd.DataFrame(data, columns=["time", "x", "y", "speed", "ep", "ek", "etot"])
+    return data_df.iloc[:cnt, :]
+
