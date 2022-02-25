@@ -3,7 +3,7 @@
 """
 File:         gene_set_enrichment.py
 Created:      2022/02/24
-Last Changed:
+Last Changed: 2022/02/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -310,8 +310,9 @@ class main():
                                  data=data)
         result = json.loads(response.text)
         df = pd.DataFrame(result["Annotations"])
-        df["Genes"] = [", ".join([gene["Symbol"] for gene in value]) for value in df["Genes"]]
-        df.drop(["Category", "ID"], axis=1, inplace=True)
+        if df.shape[0] > 0:
+            df["Genes"] = [", ".join([gene["Symbol"] for gene in value]) for value in df["Genes"]]
+            df.drop(["Category", "ID"], axis=1, inplace=True)
         return df
 
     def print_arguments(self):
