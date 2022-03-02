@@ -60,15 +60,29 @@ Syntax:
 ### BIOS ###
 
 ./model_cell_fraction_by_pics.py \
+    -cf /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PICs.txt.gz \
+    -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-Complete
+    
+./model_cell_fraction_by_pics.py \
     -cf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz \
     -p /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PICs.txt.gz \
     -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
     
-./model_cell_fraction_by_pics.py \
-    -cf /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/force_normalise_matrix/2021-12-10-CellFractionPercentages_BIOS_ForceNormalised.txt.gz \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PICs.txt.gz \
-    -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-CF_FNPD
     
+### METABRAIN ###
+
+./model_cell_fraction_by_pics.py \
+    -cf /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table_complete.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/PICs.txt.gz \
+    -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-Complete
+    
+./model_cell_fraction_by_pics.py \
+    -cf /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/PICs.txt.gz \
+    -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs
+    
+
 """
 
 
@@ -82,11 +96,62 @@ class main():
 
         # Set variables.
         base_dir = str(Path(__file__).parent.parent)
-        self.file_outdir = os.path.join(base_dir, 'model_cell_fractions_by_pics')
+        self.file_outdir = os.path.join(base_dir, 'model_cell_fraction_by_pics')
         self.plot_outdir = os.path.join(self.file_outdir, 'plot')
         for outdir in [self.plot_outdir, self.file_outdir]:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
+
+        self.ct_trans_dict ={
+            "Baso": "Basophil",
+            "Neut": "Neutrophil",
+            "Eos": "Eosinophil",
+            "Granulocyte": "Granulocyte",
+            "Mono": "Monocyte",
+            "LUC": "LUC",
+            "Lymph": "Lymphocyte",
+        }
+
+        self.palette = {
+            'Adult-Ex1': '#56B4E9',
+            'Adult-Ex2': '#56B4E9',
+            'Adult-Ex3': '#56B4E9',
+            'Adult-Ex4': '#56B4E9',
+            'Adult-Ex5': '#56B4E9',
+            'Adult-Ex6': '#56B4E9',
+            'Adult-Ex7': '#56B4E9',
+            'Adult-Ex8': '#56B4E9',
+            'Adult-In1': '#2690ce',
+            'Adult-In2': '#2690ce',
+            'Adult-In3': '#2690ce',
+            'Adult-In4': '#2690ce',
+            'Adult-In5': '#2690ce',
+            'Adult-In6': '#2690ce',
+            'Adult-In7': '#2690ce',
+            'Adult-In8': '#2690ce',
+            'Adult-Microglia': '#E69F00',
+            'Adult-OPC': '#1b8569',
+            'Adult-Endothelial': '#CC79A7',
+            'Adult-Astrocytes': '#D55E00',
+            'Adult-Oligo': '#009E73',
+            'Adult-OtherNeuron': '#2690ce',
+            'Dev-Replicating': '#000000',
+            'Dev-Quiescent': '#808080',
+            "Excitatory": "#56B4E9",
+            "Inhibitory": "#2690ce",
+            'OtherNeuron': '#0072B2',
+            "Oligodendrocyte": "#009E73",
+            "EndothelialCell": "#CC79A7",
+            "Microglia": "#E69F00",
+            "Astrocyte": "#D55E00",
+            "Basophil": "#009E73",
+            "Neutrophil": "#D55E00",
+            "Eosinophil": "#0072B2",
+            "Granulocyte": "#808080",
+            "Monocyte": "#E69F00",
+            "LUC": "#F0E442",
+            "Lymphocyte": "#CC79A7",
+        }
 
     @staticmethod
     def create_argument_parser():
@@ -128,17 +193,23 @@ class main():
 
         print("Preprocessing data")
         pics_df = pics_df.T
+        if cf_df.shape[0] < cf_df.shape[1]:
+            cf_df = cf_df.T
 
         samples = [sample for sample in pics_df.index if sample in cf_df.index]
         print("\tUsing {} samples".format(len(samples)))
         pics_df = pics_df.loc[samples, :]
         cf_df = cf_df.loc[samples, :]
 
+        cf_df.columns = [col.split("_")[0] for col in cf_df.columns]
+        cf_df.columns = [self.ct_trans_dict[col] if col in self.ct_trans_dict else col for col in cf_df.columns]
+
         print("Modelling")
         correlation_m = np.empty((cf_df.shape[1], pics_df.shape[1]), dtype=np.float64)
         pvalue_m = np.empty((cf_df.shape[1], pics_df.shape[1]), dtype=np.float64)
         ols_results_m = np.empty((cf_df.shape[1], 2 + (pics_df.shape[1] * 2)), dtype=np.float64)
         index = []
+        full_index = []
         for i, cell_type in enumerate(cf_df.columns):
             # Creat mask.
             mask = ~cf_df.loc[:, cell_type].isna()
@@ -158,7 +229,8 @@ class main():
 
             # Save results.
             ols_results_m[i, :] = np.hstack((np.array([n, results.rsquared]), results.params, results.bse))
-            index.append("{} [N={:,}]".format(cell_type, n))
+            index.append(cell_type)
+            full_index.append("{} [N={:,}]".format(cell_type, n))
 
         correlation_df = pd.DataFrame(correlation_m,
                                       index=index,
@@ -187,7 +259,26 @@ class main():
                        outpath=os.path.join(self.file_outdir, "{}_ols_results_df.txt.gz".format(self.out_filename)))
 
         print("Visualising")
+        bar_df = ols_results_df[["R2"]].copy()
+        bar_df["index"] = bar_df.index
+        palette = self.palette
+        for ct in bar_df["index"]:
+            if ct not in palette:
+                palette = None
+                break
+        self.plot_barplot(
+            df=bar_df,
+            x="R2",
+            y="index",
+            xlabel="R\u00b2",
+            ylabel="cell type",
+            palette=palette,
+            appendix="_R2_barplot"
+        )
+
+        correlation_df.index = full_index
         correlation_annot_df = correlation_df.copy()
+        correlation_annot_df.index = full_index
         correlation_annot_df = correlation_annot_df.round(2).astype(str)
         correlation_df[pvalue_df > 0.05] = 0
         self.plot_heatmap(df=correlation_df,
@@ -200,6 +291,7 @@ class main():
                           appendix="correlation_heatmap")
 
         tvalue_df = ols_results_df.loc[:, [col for col in ols_results_df.columns if col.endswith(" t-value")]].copy()
+        tvalue_df.index = full_index
         tvalue_df.columns = [col.replace(" t-value", "") for col in tvalue_df.columns]
         tvalue_annot_df = tvalue_df.copy()
         tvalue_annot_df = tvalue_annot_df.round(2).astype(str)
@@ -233,8 +325,42 @@ class main():
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
 
+    def plot_barplot(self, df, x="x", y="y", xlabel="", ylabel="", title="",
+                     palette=None, appendix=""):
+        sns.set_style("ticks")
+        fig, ax = plt.subplots(figsize=(12, 12))
+
+        sns.despine(fig=fig, ax=ax)
+
+        color = None
+        if palette is None:
+            color = "#808080"
+
+        g = sns.barplot(x=x,
+                        y=y,
+                        data=df,
+                        color=color,
+                        palette=palette,
+                        dodge=False,
+                        ax=ax)
+
+        ax.set_title(title,
+                     fontsize=22,
+                     fontweight='bold')
+        ax.set_ylabel(ylabel,
+                      fontsize=14,
+                      fontweight='bold')
+        ax.set_xlabel(xlabel,
+                      fontsize=14,
+                      fontweight='bold')
+
+        plt.tight_layout()
+        fig.savefig(os.path.join(self.plot_outdir, "{}_{}.png".format(self.out_filename, appendix)))
+        plt.close()
+
     def plot_heatmap(self, df, annot_df, vmin=None, vmax=None, xlabel="",
                      ylabel="", title="", appendix=""):
+        sns.set_style("ticks")
         annot_df.fillna("", inplace=True)
 
         fig, ax = plt.subplots(figsize=(df.shape[1], df.shape[0]))
