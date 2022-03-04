@@ -67,7 +67,17 @@ Syntax:
     -gi /groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz \
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
     -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-GeneExpressionFNPD
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-GeneExpressionFNPD
+    
+./correlate_components_with_genes.py \
+    -c /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-AllPICsCorrected-SP140AsCov-bug/PICs.txt.gz \
+    -g /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/force_normalise_matrix/2021-12-10-gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS_ForceNormalised.txt.gz \
+    -gi /groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2022-03-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-AllPICsCorrected-SP140AsCov-GeneExpressionFNPD
 
 ### MetaBrain ###
 
@@ -178,48 +188,46 @@ class main():
 
         # Load data.
         print("Loading data.")
-        # comp_df = self.load_file(self.components_path, header=0, index_col=0)
-        # genes_df = self.load_file(self.genes_path, header=0, index_col=0, nrows=None)
-        # gene_info_df = self.load_file(self.gene_info_path, header=0, index_col=None)
-        # gene_dict = dict(zip(gene_info_df["ArrayAddress"], gene_info_df["Symbol"]))
+        comp_df = self.load_file(self.components_path, header=0, index_col=0)
+        genes_df = self.load_file(self.genes_path, header=0, index_col=0, nrows=None)
+        gene_info_df = self.load_file(self.gene_info_path, header=0, index_col=None)
+        gene_dict = dict(zip(gene_info_df["ArrayAddress"], gene_info_df["Symbol"]))
         avg_ge_df = self.load_file(self.avg_ge_path, header=0, index_col=0)
         print(avg_ge_df)
         avg_ge_dict = dict(zip(avg_ge_df.index, avg_ge_df["average"]))
-        # del gene_info_df, avg_ge_df
-        #
-        # print("Pre-processing data.")
-        # # Make sure order is the same.
-        # samples = set(comp_df.columns.tolist()).intersection(set(genes_df.columns.tolist()))
-        # comp_df = comp_df.loc[:, samples]
-        # genes_df = genes_df.loc[:, samples]
-        #
-        # # Safe the indices.
-        # components = comp_df.index.tolist()
-        # genes = genes_df.index.tolist()
-        #
-        # # Convert to numpy.
-        # comp_m = comp_df.to_numpy()
-        # genes_m = genes_df.to_numpy()
-        # del comp_df, genes_df
-        #
-        # # Calculate correlating.
-        # print("Correlating.")
-        # corr_m = np.corrcoef(comp_m, genes_m)[:comp_m.shape[0], comp_m.shape[0]:]
-        # corr_df = pd.DataFrame(corr_m, index=components)
-        #
-        # print("Post-processing data.")
-        # corr_df = corr_df.T
-        # corr_df.insert(0, "index", np.arange(0, corr_df.shape[0]))
-        # corr_df.insert(1, "ProbeName", genes)
-        # corr_df.insert(2, 'HGNCName', corr_df["ProbeName"].map(gene_dict))
-        corr_df = self.load_file(os.path.join(self.file_outdir, "{}_gene_correlations.txt.gz".format(self.out_filename)), header=0, index_col=0)
-        print(corr_df)
+        del gene_info_df, avg_ge_df
+
+        print("Pre-processing data.")
+        # Make sure order is the same.
+        samples = set(comp_df.columns.tolist()).intersection(set(genes_df.columns.tolist()))
+        comp_df = comp_df.loc[:, samples]
+        genes_df = genes_df.loc[:, samples]
+
+        # Safe the indices.
+        components = comp_df.index.tolist()
+        genes = genes_df.index.tolist()
+
+        # Convert to numpy.
+        comp_m = comp_df.to_numpy()
+        genes_m = genes_df.to_numpy()
+        del comp_df, genes_df
+
+        # Calculate correlating.
+        print("Correlating.")
+        corr_m = np.corrcoef(comp_m, genes_m)[:comp_m.shape[0], comp_m.shape[0]:]
+        corr_df = pd.DataFrame(corr_m, index=components)
+
+        print("Post-processing data.")
+        corr_df = corr_df.T
+        corr_df.insert(0, "index", np.arange(0, corr_df.shape[0]))
+        corr_df.insert(1, "ProbeName", genes)
+        corr_df.insert(2, 'HGNCName', corr_df["ProbeName"].map(gene_dict))
         corr_df.insert(2, 'avgExpression', corr_df["ProbeName"].map(avg_ge_dict))
 
         print("Saving file.")
         self.save_file(df=corr_df, outpath=os.path.join(self.file_outdir, "{}_gene_correlations-avgExpressionAdded.txt.gz".format(self.out_filename)),
                        index=False)
-        corr_df.to_excel(os.path.join(self.file_outdir, "{}_gene_correlations-avgExpressionAdded.xlsx".format(self.out_filename)))
+        # corr_df.to_excel(os.path.join(self.file_outdir, "{}_gene_correlations-avgExpressionAdded.xlsx".format(self.out_filename)))
         exit()
 
         corr_df_m = corr_df.melt(id_vars=["index", "ProbeName", "HGNCName"])

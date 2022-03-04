@@ -159,10 +159,10 @@ class InteractionOptimizer:
 
             n_ieqtls = len(ieqtls)
             if n_ieqtls <= 1:
-                self.log.error("\t\t  None or not enough significant ieQTLs "
-                               "found\n")
+                self.log.error("\t\t  None or not enough significant ieQTLs found")
                 if iteration == 0:
                     context_a = None
+                    stop = False
                 break
 
             self.log.info("\t\t  Optimizing ieQTLs")

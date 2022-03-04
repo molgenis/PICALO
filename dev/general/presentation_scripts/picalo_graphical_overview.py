@@ -321,7 +321,8 @@ class main():
     def calc_vertex_xpos(a, b):
         return -b / (2 * a)
 
-    def plot_ieqtl(self, X, xlim=None, ylim=None, xlabel="", ylabel="", title="", filename=None):
+    def plot_ieqtl(self, X, xlim=None, ylim=None, xlabel="", ylabel="",
+                   title="", filename=None, annot=None):
         # Calculate R2.
         pearsonr = self.calc_pearsonr_vector(x=X["expression"], y=X["y_hat"])
         r_squared = pearsonr * pearsonr
@@ -376,6 +377,16 @@ class main():
             alpha=1,
             fontsize=30,
             fontweight='bold')
+        if annot is not None:
+            # Add the text.
+            ax.annotate(
+                'betas = {}'.format(annot),
+                xy=(0.05, 0.80),
+                xycoords=ax.transAxes,
+                color="#000000",
+                alpha=1,
+                fontsize=20,
+                fontweight='bold')
 
         ax.set_title(title,
                      fontsize=30,
@@ -400,7 +411,7 @@ class main():
             ax.set_ylim(ylim)
 
         plt.show()
-        #fig.savefig(os.path.join(self.outdir, "{}.pdf".format(filename)))
+        fig.savefig(os.path.join(self.outdir, "{}.pdf".format(filename)))
 
         return ax.get_xlim(), ax.get_ylim()
 

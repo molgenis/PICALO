@@ -238,6 +238,8 @@ class GraphicalAbstractPart3(Scene):
 class GraphicalAbstractPart4(Scene):
     def construct(self):
         func = lambda x: -x * np.sin(x)
+        # func = lambda x: x ** 2 - 8 * x
+        # func = lambda x: np.sin(x) + np.sin((10.0 / 3.0) * x)
         x_range = (0, 10, 2)
         radius = 0.15
         y_values = np.array([func(x) for x in np.arange(x_range[0], x_range[1], 0.01)])
@@ -382,7 +384,7 @@ def calculate_drop(x, y, func, x_range):
             # set speed to zero once we land.
             if y <= func(x):
                 y = func(x)
-                if func(x + 1) > func(x):
+                if func(x + dx) > func(x):
                     speed = roll_speed * -1
                 else:
                     speed = roll_speed

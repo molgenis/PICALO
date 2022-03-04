@@ -35,6 +35,7 @@ import pandas as pd
 import fastcluster
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.cluster import SpectralClustering
 
 # Local application imports.
 
@@ -61,7 +62,7 @@ Syntax:
 ./cluster_pic_eqtl_genes.py \
     -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs \
     -gn /groups/umcg-wijmenga/tmp01/projects/depict2/depict2_bundle/reference_datasets/human_b37/pathway_databases/gene_network_v2_1/gene_coregulation_165_eigenvectors_protein_coding.txt.gz \
-    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-GeneExpressionFNPD_gene_correlations.txt.gz \
+    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-AllPICsCorrected-SP140AsCov-GeneExpressionFNPD_gene_correlations.txt.gz \
     -gi /groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz \
     -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
     -mae 1 \
@@ -159,6 +160,36 @@ class main():
     def start(self):
         self.print_arguments()
 
+        # Load data.
+        print("Loading PICALO data.")
+        snp_stats_df_list = []
+        for i in range(1, 50):
+            pic = "PIC{}".format(i)
+            pic_eqtl_path = os.path.join(self.picalo_indir, "PIC_interactions", "PIC{}.txt.gz".format(i))
+            if not os.path.exists(pic_eqtl_path):
+                break
+
+            pic_eqtl_df = self.load_file(pic_eqtl_path, header=0, index_col=None)
+            pic_eqtl_df.index = pic_eqtl_df.index.astype(str) + "_" + pic_eqtl_df["gene"].str.split(".", n=1, expand=True)[0]
+            pic_eqtl_df["direction"] = ((pic_eqtl_df["beta-genotype"] * pic_eqtl_df["beta-interaction"]) > 0).map({True: "induces", False: "inhibits"})
+
+            pic_eqtl_df["N"] = 1
+
+            if i == 1:
+                unique_snp_counts_df = pic_eqtl_df[["gene", "N"]].groupby("gene").sum()
+                snp_stats_df_list.append(unique_snp_counts_df)
+
+            signif_unique_snp_counts_df = pic_eqtl_df.loc[pic_eqtl_df["FDR"] < 0.05, ["gene", "N"]].groupby("gene").sum()
+            signif_unique_snp_counts_df.columns = [pic]
+            snp_stats_df_list.append(signif_unique_snp_counts_df)
+        snp_stats_df = pd.concat(snp_stats_df_list, axis=1)
+        snp_stats_df.fillna(0, inplace=True)
+        print(snp_stats_df)
+        self.save_file(df=snp_stats_df,
+                       outpath=os.path.join(self.file_outdir, "gene_stats_df.txt.gz".format(self.out_filename)),
+                       index=True)
+        exit()
+
         # print("Loading gene network data.")
         # gn_df = self.load_file(self.gene_network_path, header=0, index_col=0, nrows=None)
         # gn_annot_df = pd.DataFrame(np.nan, index=gn_df.columns, columns=[])
@@ -225,7 +256,7 @@ class main():
         # overlapping_genes = [gene for gene in pic_eqtl_df["gene"] if gene in gn_df.index]
         # print("\tSelecting {:,} genes".format(len(overlapping_genes)))
         # pic_eqtl_df = pic_eqtl_df.loc[pic_eqtl_df["gene"].isin(overlapping_genes), :]
-        # gn_df = gn_df.loc[overlapping_genes, :]
+        # gn_df = gn_df.loc[overlapping_genes, overlapping_genes]
         # gn_df.index = pic_eqtl_df.index
         # print(pic_eqtl_df)
         # print(gn_df)
@@ -244,35 +275,36 @@ class main():
         pic_eqtl_df = self.load_file(os.path.join(self.file_outdir, "pic_eqtl_annotation_df.txt.gz".format(self.out_filename)))
         gn_annot_df = self.load_file(os.path.join(self.file_outdir, "gene_network_annotation_df.txt.gz".format(self.out_filename)))
         gn_df = self.load_file(os.path.join(self.file_outdir, "gene_network_coregulations.pkl".format(self.out_filename)))
+
+        pic_eqtl_df = pic_eqtl_df.iloc[:500, :]
+        gn_annot_df = gn_annot_df.iloc[:500, :]
+        gn_df = gn_df.iloc[:500, :500]
         print(pic_eqtl_df)
         print(gn_annot_df)
         print(gn_df)
 
-        print("Printing groups.")
-        print("\nBackground: {}\n".format(", ".join(pic_eqtl_df["gene"])))
-        for i in range(self.pic_start, self.pic_end + 1):
-            for correlation_direction in ["positive", "negative"]:
-                for interaction_direction in ["inhibits", "induces"]:
-                    correlation_mask = None
-                    if correlation_direction == "positive":
-                        correlation_mask = pic_eqtl_df["PIC{} r".format(i)] > 0
-                    elif correlation_direction == "negative":
-                        correlation_mask = pic_eqtl_df["PIC{} r".format(i)] < 0
-                    else:
-                        print("huh")
-                        exit()
-
-                    signif_pic_eqlt_genes = pic_eqtl_df.loc[
-                            (pic_eqtl_df["PIC{} FDR".format(i)] < 0.05) & (correlation_mask) & (pic_eqtl_df["PIC{} direction".format(i)] == interaction_direction), ["SNP", "gene", "gene symbol", "PIC{} FDR".format(i), "PIC{} r".format(i), "PIC{} direction".format(i)]].copy()
-                    print("\nPIC{} - {} - {} [N={:,}]: {}\n".format(i, correlation_direction, interaction_direction, signif_pic_eqlt_genes.shape[0], ", ".join(signif_pic_eqlt_genes["gene"])))
-        exit()
+        # print("Printing groups.")
+        # print("\nBackground: {}\n".format(", ".join(pic_eqtl_df["gene"])))
+        # for i in range(self.pic_start, self.pic_end + 1):
+        #     for correlation_direction in ["positive", "negative"]:
+        #         for interaction_direction in ["inhibits", "induces"]:
+        #             correlation_mask = None
+        #             if correlation_direction == "positive":
+        #                 correlation_mask = pic_eqtl_df["PIC{} r".format(i)] > 0
+        #             elif correlation_direction == "negative":
+        #                 correlation_mask = pic_eqtl_df["PIC{} r".format(i)] < 0
+        #             else:
+        #                 print("huh")
+        #                 exit()
+        #
+        #             signif_pic_eqlt_genes = pic_eqtl_df.loc[
+        #                     (pic_eqtl_df["PIC{} FDR".format(i)] < 0.05) & (correlation_mask) & (pic_eqtl_df["PIC{} direction".format(i)] == interaction_direction), ["SNP", "gene", "gene symbol", "PIC{} FDR".format(i), "PIC{} r".format(i), "PIC{} direction".format(i)]].copy()
+        #             print("\nPIC{} - {} - {} [N={:,}]: {}\n".format(i, correlation_direction, interaction_direction, signif_pic_eqlt_genes.shape[0], ", ".join(signif_pic_eqlt_genes["gene"])))
+        # exit()
 
         print("Create annotations")
         row_colors_df = self.prep_row_colors(annot_df=pic_eqtl_df)
         col_colors_df = self.prep_col_colors(annot_df=gn_annot_df)
-
-        # print("Cluster columns")
-        # col_linkage = self.cluster(gn_df.T)
 
         print("Visualising")
         for i in range(self.pic_start, self.pic_end + 1):
@@ -291,13 +323,18 @@ class main():
             pic_col_colors_df = col_colors_df.loc[:, ["avg expr", "PIC{} r".format(i)]].copy()
             pic_col_colors_df.columns = ["avg expr", "correlation"]
 
-            self.plot(df=pic_gn_df,
+            # Cluster.
+            pic_dissimilarity_gn_df = self.zscore_to_dissimilarity(df=pic_gn_df)
+            row_linkage = self.cluster(pic_dissimilarity_gn_df)
+
+            self.plot(df=pic_dissimilarity_gn_df,
                       row_colors=signif_row_colors_df,
-                      col_colors=pic_col_colors_df,
-                      row_cluster=True,
-                      col_cluster=True,
+                      row_linkage=row_linkage,
+                      col_colors=signif_row_colors_df,
+                      col_linkage=row_linkage,
                       name="PIC{}_gene_network_clustermap".format(i),
                       outdir=pic_plot_outdir)
+            exit()
 
             for direction in ["inhibits", "induces", "positive", "negative"]:
                 signif_pic_eqlt_genes = None
@@ -356,7 +393,19 @@ class main():
                                       df.shape))
 
     @staticmethod
-    def cluster(df, metric="euclidean", method="average"):
+    def zscore_to_dissimilarity(df):
+        m = df.to_numpy()
+
+        # normalize between 0 and 1.
+        m = (m - np.min(m)) / np.ptp(m)
+
+        # inverse.
+        m = 1 - m
+
+        return pd.DataFrame(m, index=df.index, columns=df.columns)
+
+    @staticmethod
+    def cluster(df, metric="euclidean", method="centroid"):
         euclidean = metric == 'euclidean' and method in ('centroid', 'median', 'ward')
         if euclidean or method == 'single':
             linkage = fastcluster.linkage_vector(df,
@@ -368,6 +417,13 @@ class main():
                                           metric=metric)
 
         return linkage
+
+    # @staticmethod
+    # def cluster(df, affinity='precomputed', n_clusters=8):
+    #     model = SpectralClustering(n_clusters=n_clusters,
+    #                                affinity=affinity).fit(df.abs())
+    #
+    #     return model
 
     def prep_row_colors(self, annot_df, a=0.05):
         row_color_data = {}
