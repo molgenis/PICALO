@@ -79,6 +79,13 @@ Syntax:
     -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-GeneExpressionFNPD_gene_correlations.txt.gz \
     -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICs-eQTLGeneCorrelationsFNPD
     
+./gene_set_enrichment.py \
+    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
+    -mae 1 \
+    -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-SP140AsCov/PIC_interactions \
+    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-SP140AsCov-GeneExpressionFNPD_gene_correlations-avgExpressionAdded.txt.gz \
+    -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-SP140AsCov
+    
 ### MetaBrain ###
 
 ./gene_set_enrichment.py \
@@ -228,7 +235,7 @@ class main():
         # self.save_file(df=tie_term_df, outpath=os.path.join(self.outdir, "gene_network_tie_term.pkl"))
         # del gn_matrix_df
         # # exit()
-
+        #
         # print("Loading average gene expression.")
         # df = self.load_file(self.avg_ge_path, header=0, index_col=0)
         # df.columns = ["avg expression"]
@@ -371,7 +378,7 @@ class main():
                 # Prep correlation matrix.
                 corr_subset_df = subset_df.copy()
                 corr_subset_df["abs correlation"] = corr_subset_df["correlation"].abs()
-                #corr_subset_df = corr_subset_df.loc[corr_subset_df["abs correlation"] >= self.min_corr, :]
+                corr_subset_df = corr_subset_df.loc[corr_subset_df["abs correlation"] >= self.min_corr, :]
                 corr_subset_df.sort_values(by="abs correlation", ascending=False, inplace=True)
                 print(corr_subset_df)
 

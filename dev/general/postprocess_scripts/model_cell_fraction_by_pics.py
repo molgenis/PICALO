@@ -3,7 +3,7 @@
 """
 File:         model_cell_fractions_by_pics.py
 Created:      2022/02/25
-Last Changed:
+Last Changed: 2022/03/04
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -200,14 +200,17 @@ class main():
         print("\tUsing {} samples".format(len(samples)))
         pics_df = pics_df.loc[samples, :]
         cf_df = cf_df.loc[samples, :]
+        pics = pics_df.columns
 
         cf_df.columns = [col.split("_")[0] for col in cf_df.columns]
         cf_df.columns = [self.ct_trans_dict[col] if col in self.ct_trans_dict else col for col in cf_df.columns]
 
+        pics_df.insert(0, "INTERCEPT", 1)
+
         print("Modelling")
-        correlation_m = np.empty((cf_df.shape[1], pics_df.shape[1]), dtype=np.float64)
-        pvalue_m = np.empty((cf_df.shape[1], pics_df.shape[1]), dtype=np.float64)
-        ols_results_m = np.empty((cf_df.shape[1], 2 + (pics_df.shape[1] * 2)), dtype=np.float64)
+        correlation_m = np.empty((cf_df.shape[1], len(pics)), dtype=np.float64)
+        pvalue_m = np.empty((cf_df.shape[1], len(pics)), dtype=np.float64)
+        ols_results_m = np.empty((cf_df.shape[1], 2 + (len(pics) * 2)), dtype=np.float64)
         index = []
         full_index = []
         for i, cell_type in enumerate(cf_df.columns):
@@ -218,7 +221,7 @@ class main():
             print("\t{} [N={:,}]".format(cell_type, n))
 
             # Correlations.
-            for j, pic in enumerate(pics_df.columns):
+            for j, pic in enumerate(pics):
                 coef, pvalue = stats.pearsonr(cf_df.loc[mask, cell_type], pics_df.loc[mask, pic])
                 correlation_m[i, j] = coef
                 pvalue_m[i, j] = pvalue
@@ -228,27 +231,27 @@ class main():
             results = ols.fit()
 
             # Save results.
-            ols_results_m[i, :] = np.hstack((np.array([n, results.rsquared]), results.params, results.bse))
+            ols_results_m[i, :] = np.hstack((np.array([n, results.rsquared]), results.params[1:], results.bse[1:]))
             index.append(cell_type)
             full_index.append("{} [N={:,}]".format(cell_type, n))
 
         correlation_df = pd.DataFrame(correlation_m,
                                       index=index,
-                                      columns=pics_df.columns
+                                      columns=pics
                                       )
         print(correlation_df)
         pvalue_df = pd.DataFrame(pvalue_m,
                                  index=index,
-                                 columns=pics_df.columns
+                                 columns=pics
                                  )
 
         ols_results_df = pd.DataFrame(ols_results_m,
                                       index=index,
                                       columns=["N", "R2"] +
-                                              ["{} beta".format(col) for col in pics_df.columns] +
-                                              ["{} std err".format(col) for col in pics_df.columns]
+                                              ["{} beta".format(pic) for pic in pics] +
+                                              ["{} std err".format(pic) for pic in pics]
                                       )
-        for pic in pics_df.columns:
+        for pic in pics:
             ols_results_df["{} t-value".format(pic)] = ols_results_df["{} beta".format(pic)] / ols_results_df["{} std err".format(pic)]
         print(ols_results_df)
 
