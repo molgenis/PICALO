@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-File:         compare_PIC_interactions_to_PC_interactions.py
+File:         compare_interactions_results.py
 Created:      2021/12/21
 Last Changed: 2022/02/10
 Author:       M.Vochteloo
@@ -24,7 +24,9 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
+import glob
 import argparse
+import re
 import os
 
 # Third party imports.
@@ -39,7 +41,7 @@ import matplotlib.pyplot as plt
 
 
 # Metadata
-__program__ = "Compare PIC Interactions vs PC Interactions"
+__program__ = "Compare Interactions Results"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -54,9 +56,19 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-./compare_PIC_interactions_to_PC_interactions.py -h
+./compare_interactions_results.py -h
 
-./compare_PIC_interactions_to_PC_interactions.py -pic /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICsAsCov -pc /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-First33ExprPCsAsCov -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
+./compare_interactions_results.py \
+    -pic /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICsAsCov \
+    -pc /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-First33ExprPCsAsCov \
+    -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
+    
+./compare_interactions_results.py \
+    -indir1 /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PIC_interactions \
+    -n1 ExprPCs \
+    -indir2 /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-SP140AsCov/PIC_interactions \
+    -n2 SP140 \
+    -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs_ExprPCsAsCov_vs_SP140AsCov
 """
 
 
@@ -64,8 +76,10 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.pic_indir = getattr(arguments, 'pic_indir')
-        self.pc_indir = getattr(arguments, 'pc_indir')
+        self.indir1 = getattr(arguments, 'input_directory1')
+        self.name1 = getattr(arguments, 'name1')
+        self.indir2 = getattr(arguments, 'input_directory2')
+        self.name2 = getattr(arguments, 'name2')
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
@@ -85,16 +99,26 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit.")
-        parser.add_argument("-pic",
-                            "--pic_indir",
+        parser.add_argument("-indir1",
+                            "--input_directory1",
                             type=str,
                             required=True,
-                            help="The path to the PIC interaction directory.")
-        parser.add_argument("-pc",
-                            "--pc_indir",
+                            help="The path to the first interaction directory.")
+        parser.add_argument("-n1",
+                            "--name1",
                             type=str,
                             required=True,
-                            help="The path to the PC interaction directory.")
+                            help="The name of the first interaction directory.")
+        parser.add_argument("-indir2",
+                            "--input_directory2",
+                            type=str,
+                            required=True,
+                            help="The path to the second interaction directory.")
+        parser.add_argument("-n2",
+                            "--name2",
+                            type=str,
+                            required=True,
+                            help="The name of the second interaction directory.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
@@ -106,56 +130,97 @@ class main():
     def start(self):
         self.print_arguments()
 
+        gene_info_df = pd.read_csv("/groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz", sep="\t", header=0, index_col=None)
+        gene_dict = dict(zip(gene_info_df["ArrayAddress"], gene_info_df["Symbol"]))
+        del gene_info_df
+
         print("### Step1 ###")
         print("Loading data")
-        pic_df = self.load_interaction_results(indir=self.pic_indir, cov_name="PIC")
-        pc_df = self.load_interaction_results(indir=self.pc_indir, cov_name="Comp")
-        print(pic_df)
-        print(pc_df)
+        df1 = self.load_interaction_results(indir=self.indir1)
+        df2 = self.load_interaction_results(indir=self.indir2)
+        #df1 = df1.iloc[:, 4:]
+        #df2 = df2.iloc[:, [3, 4]]
+        print(df1)
+        print(df2)
+
+
+        # print("Comparing result")
+        # for covariate2 in df2.columns:
+        #     ieqtls = df2.loc[df2[covariate2] < 0.05, :].index.tolist()
+        #     print("\t{}: N={:,}".format(covariate2, len(ieqtls)))
+        #     for covariate1 in df1.columns:
+        #         df1_subset = df1.loc[ieqtls, [covariate1]]
+        #         repl = df1_subset.loc[df1_subset[covariate1] < 0.05, :]
+        #         print("\t  {} N={:,} [{:.2f}%]\t{}".format(covariate1, repl.shape[0], (100 / df1_subset.shape[0]) * repl.shape[0], ", ".join([gene_dict[gene] if gene in gene_dict else gene for gene in repl.index])))
+        #
+        # exit()
 
         print("### Step2 ###")
         print("Compare")
-        pic_n_ieqtls = (pic_df <= 0.05).sum().sum()
-        pc_n_ieqtls = (pc_df <= 0.05).sum().sum()
-        pic_eqtl_interaction_df = pic_df.loc[pic_df.min(axis=1) <= 0.05, :]
-        pc_eqtl_interaction_df = pc_df.loc[pc_df.min(axis=1) <= 0.05, :]
-        print("\t{} PICs: n-ieQTLs: {:,}    {:.2f}% of eQTLs has an interaction".format(pic_df.shape[1], pic_n_ieqtls, (100 / pic_df.shape[0]) * pic_eqtl_interaction_df.shape[0]))
-        print("\t{} PCs:  n-ieQTLs: {:,}    {:.2f}% of eQTLs has an interaction".format(pc_df.shape[1], pc_n_ieqtls, (100 / pc_df.shape[0]) * pc_eqtl_interaction_df.shape[0]))
+        df1_n_ieqtls = (df1 <= 0.05).sum().sum()
+        df2_n_ieqtls = (df2 <= 0.05).sum().sum()
+        df1_interaction_df = df1.loc[df1.min(axis=1) <= 0.05, :]
+        df2_interaction_df = df2.loc[df2.min(axis=1) <= 0.05, :]
+        print("\t{} = {} PICs: n-ieQTLs: {:,}    {:.2f}% of eQTLs has an interaction".format(self.name1, df1.shape[1], df1_n_ieqtls, (100 / df1.shape[0]) * df1_interaction_df.shape[0]))
+        print("\t{} = {} PCs:  n-ieQTLs: {:,}    {:.2f}% of eQTLs has an interaction".format(self.name2, df2.shape[1], df2_n_ieqtls, (100 / df2.shape[0]) * df2_interaction_df.shape[0]))
 
-        n_ieqtls_pics_to_pc = len([x for x in pic_eqtl_interaction_df.index if x in pc_eqtl_interaction_df.index])
-        n_ieqtls_pcs_to_pics = len([x for x in pc_eqtl_interaction_df.index if x in pic_eqtl_interaction_df.index])
-        overlap_eqtls_with_interaction = set(pic_eqtl_interaction_df.index).intersection(set(pc_eqtl_interaction_df.index))
-        print("\t{:,}/{:,} of the PIC ieQTLs also interacts with one or more PCs".format(n_ieqtls_pics_to_pc, pic_eqtl_interaction_df.shape[0]))
-        print("\t{:,}/{:,} of the PC ieQTLs also interacts with one or more PICs".format(n_ieqtls_pcs_to_pics, pc_eqtl_interaction_df.shape[0]))
+        n_ieqtls_df1_to_df2 = len([x for x in df1_interaction_df.index if x in df2_interaction_df.index])
+        n_ieqtls_df2_to_df1 = len([x for x in df2_interaction_df.index if x in df1_interaction_df.index])
+        overlap_eqtls_with_interaction = set(df1_interaction_df.index).intersection(set(df2_interaction_df.index))
+        print("\t{:,}/{:,} of the {} ieQTLs also interacts with one or more {}".format(n_ieqtls_df1_to_df2, df1_interaction_df.shape[0], self.name1, self.name2))
+        print("\t{:,}/{:,} of the {} ieQTLs also interacts with one or more {}".format(n_ieqtls_df2_to_df1, df2_interaction_df.shape[0], self.name2, self.name1))
         print("\tOverlap in eQTLs with an interaction: {:,}".format(len(overlap_eqtls_with_interaction)))
 
         print("Plot")
-        df1_df2_replication_df = self.create_replication_df(df1=pic_df, df2=pc_df)
+        df1_df2_replication_df = self.create_replication_df(df1=df1, df2=df2)
         self.plot_heatmap(df=df1_df2_replication_df,
-                          xlabel="PC",
-                          ylabel="PIC",
-                          filename="PICs_replicating_in_PCs")
+                          xlabel=self.name2,
+                          ylabel=self.name1,
+                          filename="{}_replicating_in_{}".format(self.name1, self.name2))
 
-        df2_df1_replication_df = self.create_replication_df(df1=pc_df, df2=pic_df)
+        df2_df1_replication_df = self.create_replication_df(df1=df2, df2=df1)
         self.plot_heatmap(df=df2_df1_replication_df,
-                          xlabel="PIC",
-                          ylabel="PC",
-                          filename="PIC_replicating_in_PICs")
+                          xlabel=self.name1,
+                          ylabel=self.name2,
+                          filename="{}_replicating_in_{}".format(self.name2, self.name1))
 
-    @staticmethod
-    def load_interaction_results(indir, cov_name):
+    def load_interaction_results(self, indir):
         fdr_data = []
-        for i in range(101):
-            covariate = "{}{}".format(cov_name, i)
+        ieqtl_result_paths = glob.glob(os.path.join(indir, "*.txt.gz"))
+        ieqtl_result_paths.sort(key=self.natural_keys)
+        for ieqtl_result_path in ieqtl_result_paths:
+            covariate = os.path.basename(ieqtl_result_path).split(".")[0]
+            if covariate in ["call_rate", "genotype_stats"]:
+                continue
 
             fpath = os.path.join(indir, "{}.txt.gz".format(covariate))
             if os.path.exists(fpath):
                 df = pd.read_csv(fpath, sep="\t", header=0, index_col=None)
-                fdr_df = df[["ieQTL FDR"]]
+
+                df.index = df["gene"]
+                if "SNP" in df.columns:
+                    df.index = df["gene"] + df["SNP"]
+                elif "snp" in df.columns:
+                    df.index = df["gene"] + df["snp"]
+                else:
+                    pass
+
+                fdr_df = None
+                if "ieQTL FDR" in df.columns:
+                    fdr_df = df[["ieQTL FDR"]]
+                elif "FDR" in df.columns:
+                    fdr_df = df[["FDR"]]
+                else:
+                    pass
                 fdr_df.columns = [covariate]
+
                 fdr_data.append(fdr_df)
         fdr_df = pd.concat(fdr_data, axis=1)
         return fdr_df
+
+    @staticmethod
+    def natural_keys(text):
+        return [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', text)]
 
     @staticmethod
     def create_replication_df(df1, df2):
@@ -178,7 +243,6 @@ class main():
         replication_df.columns = ["{} [n={}]".format(ct, df2_n_signif.loc[ct]) for ct in df2_subset.columns]
 
         return replication_df
-
 
     def plot_heatmap(self, df, xlabel="", ylabel="", filename=""):
         cmap = sns.diverging_palette(246, 24, as_cmap=True)
@@ -223,8 +287,12 @@ class main():
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > PIC interaction input directory: {}".format(self.pic_indir))
-        print("  > PC interaction input directory: {}".format(self.pc_indir))
+        print("  > Data 1: ")
+        print("    > Input directory: {}".format(self.indir1))
+        print("    > Name: {}".format(self.name1))
+        print("  > Data 2: ")
+        print("    > Input directory: {}".format(self.indir2))
+        print("    > Name: {}".format(self.name2))
         print("  > Output directory {}".format(self.outdir))
         print("  > Output filename: {}".format(self.out_filename))
         print("")

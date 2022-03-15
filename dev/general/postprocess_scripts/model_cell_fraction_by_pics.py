@@ -210,6 +210,8 @@ class main():
         print("Modelling")
         correlation_m = np.empty((cf_df.shape[1], len(pics)), dtype=np.float64)
         pvalue_m = np.empty((cf_df.shape[1], len(pics)), dtype=np.float64)
+        y_hat_m = np.empty_like(cf_df, dtype=np.float64)
+        y_hat_m[:] = np.nan
         ols_results_m = np.empty((cf_df.shape[1], 2 + (len(pics) * 2)), dtype=np.float64)
         index = []
         full_index = []
@@ -231,6 +233,7 @@ class main():
             results = ols.fit()
 
             # Save results.
+            y_hat_m[mask, i] = results.predict()
             ols_results_m[i, :] = np.hstack((np.array([n, results.rsquared]), results.params[1:], results.bse[1:]))
             index.append(cell_type)
             full_index.append("{} [N={:,}]".format(cell_type, n))
@@ -245,6 +248,11 @@ class main():
                                  columns=pics
                                  )
 
+        y_hat_df = pd.DataFrame(y_hat_m,
+                                index=samples,
+                                columns=cf_df.columns
+                                )
+
         ols_results_df = pd.DataFrame(ols_results_m,
                                       index=index,
                                       columns=["N", "R2"] +
@@ -258,6 +266,8 @@ class main():
         print("Saving file.")
         self.save_file(df=correlation_df,
                        outpath=os.path.join(self.file_outdir, "{}_correlation_df.txt.gz".format(self.out_filename)))
+        self.save_file(df=y_hat_df,
+                       outpath=os.path.join(self.file_outdir, "{}_y_hat_df.txt.gz".format(self.out_filename)))
         self.save_file(df=ols_results_df,
                        outpath=os.path.join(self.file_outdir, "{}_ols_results_df.txt.gz".format(self.out_filename)))
 
