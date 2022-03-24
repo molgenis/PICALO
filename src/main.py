@@ -739,7 +739,7 @@ class Main:
     def print_arguments(self):
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
-        self.log.info("  > Minimal dataset size: >={}".format(self.genotype_na))
+        self.log.info("  > Minimal dataset size: >={}".format(self.min_dataset_sample_size))
         self.log.info("  > eQTL alpha: <={}".format(self.eqtl_alpha))
         self.log.info("  > SNP call rate: >{}".format(self.call_rate))
         self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))

@@ -57,27 +57,45 @@ Syntax:
 
 ### MetaBrain EUR ###
 
-./plot_df_per_column.py -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz -o MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter -e png pdf
+./plot_df_per_column.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
+    -o MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter \
+    -e png pdf
 
-./plot_df_per_column.py -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz -o MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter -e png pdf
+./plot_df_per_column.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
+    -o MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter \
+    -e png pdf
 
 ### MetaBrain AFR ###
 
-./plot_df_per_column.py -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexAFR-allchr-mds-dupsremoved-VariantFilter.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz -o MetaBrain-CortexAFR-allchr-mds-dupsremoved-VariantFilter -e png pdf
+./plot_df_per_column.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexAFR-allchr-mds-dupsremoved-VariantFilter.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
+    -o MetaBrain-CortexAFR-allchr-mds-dupsremoved-VariantFilter \
+    -e png pdf
 
-./plot_df_per_column.py -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexAFR-allchr-mds-dupsremoved-outlierremoved-VariantFilter.txt.gz -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz -o MetaBrain-CortexAFR-allchr-mds-dupsremoved-outlierremoved-VariantFilter -e png pdf
-
+./plot_df_per_column.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexAFR-allchr-mds-dupsremoved-outlierremoved-VariantFilter.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
+    -o MetaBrain-CortexAFR-allchr-mds-dupsremoved-outlierremoved-VariantFilter \
+    -e png pdf
 
 ### BIOS ###
 
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter -e png pdf
+./plot_df_per_column.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz \
+    -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter \
+    -e png pdf
 
-./plot_df_per_column.py -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -e png pdf
-
-
-### OTHER ###
-
-./plot_df_per_column.py -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table_InhibitorySummedWithOtherNeuron.txt.gz -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/combine_gte_files/SampleToDataset.txt.gz -o 2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected-deconvolution_table_InhibitorySummedWithOtherNeuron -e png
+./plot_df_per_column.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_STD.txt.gz \
+    -o BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz \
+    -e png pdf
 """
 
 

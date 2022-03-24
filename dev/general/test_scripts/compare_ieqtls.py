@@ -55,20 +55,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./compare_ieqtls.py -h
-
-
-./compare_ieqtls.py \
-    -i1 /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-22-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-TMMLog2CovariatesRemovedOLSScaleAndLocReturnedPCA-PICsAsCovs \
-    -conditional1 \
-    -s1 PIC1 PIC4 \
-    -n1 PICs \
-    -i2 /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-22-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-TMMLog2CovariatesRemovedOLSScaleAndLocReturnedPCA-ExprPCsAsCovs \
-    -conditional2 \
-    -nf2 31 \
-    -s2 Comp1 Comp2 \
-    -n2 PCs
-    
-
 """
 
 
@@ -86,6 +72,11 @@ class main():
         self.skip2 = getattr(arguments, 'skip2')
         self.name1 = getattr(arguments, 'name1')
         self.name2 = getattr(arguments, 'name2')
+
+        if self.skip1 is None:
+            self.skip1 = []
+        if self.skip2 is None:
+            self.skip2 = []
 
         current_dir = str(os.path.dirname(os.path.abspath(__file__)))
 
@@ -203,6 +194,7 @@ class main():
                                                 n_files=self.n_files2,
                                                 skip=self.skip2)
         fdr_count_df2 = (fdr_df2 < 0.05).astype(int)
+        print(", ".join([ieqtl.split("_")[1] for ieqtl in fdr_count_df2.index]))
         print("")
 
         print("Printing results")
@@ -231,6 +223,10 @@ class main():
         overlap = ieqtls1.intersection(ieqtls2)
         print("  Overlap in ieQTLs: {:,}".format(len(overlap)))
         print("")
+        #
+        # corr_df = pd.read_csv("/groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS-1MscBloodNL-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-UT-CD4T-Unique-BulkTechPICsCorrected-PIC1AndCD3G_gene_correlations-avgExpressionAdded.txt.gz", sep="\t", header=0, index_col=None)
+        # corr_df.index = corr_df["ProbeName"]
+        # print(corr_df)
 
         print("Unique eQTLs with interaction in {}".format(self.name1))
         unique1 = [ieqtl for ieqtl in ieqtls1 if ieqtl not in ieqtls2]
@@ -250,6 +246,10 @@ class main():
                                                               (tvalues > 0).sum(),
                                                               (tvalues < 0).sum()
                                                               ))
+            #
+            # corr_subset_df = corr_df.loc[[ieqtl.split("_")[1] for ieqtl in ieqtls], [covariate]].copy()
+            # print("    Positive: {}".format(", ".join(list(corr_subset_df.loc[corr_subset_df[covariate] > 0, :].index))))
+            # print("    Negative: {}".format(", ".join(list(corr_subset_df.loc[corr_subset_df[covariate] < 0, :].index))))
             del ieqtls, tvalues
         print("")
 
@@ -271,6 +271,10 @@ class main():
                                                                   (tvalues > 0).sum(),
                                                                   (tvalues < 0).sum()
                                                                   ))
+            #
+            # corr_subset_df = corr_df.loc[[ieqtl.split("_")[1] for ieqtl in ieqtls], [covariate]].copy()
+            # print("    Positive: {}".format(", ".join(list(corr_subset_df.loc[corr_subset_df[covariate] > 0, :].index))))
+            # print("    Negative: {}".format(", ".join(list(corr_subset_df.loc[corr_subset_df[covariate] < 0, :].index))))
             del ieqtls, tvalues
         print("")
 
@@ -292,6 +296,8 @@ class main():
                 continue
 
             filename = os.path.basename(inpath).split(".")[0].replace("_conditional", "")
+            if filename in ["call_rate", "genotype_stats"]:
+                continue
             if skip is not None and filename in skip:
                 continue
 

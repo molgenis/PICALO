@@ -58,8 +58,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./plot_genotype.py -h
-
-./plot_genotype.py -g /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis-NoCovCorrected-NoENA-NoGVEX/create_matrices/genotype_table.txt.gz -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/OLD/ContainsDuplicateSamples/CortexEUR-cis/combine_gte_files/SampleToDataset.txt.gz -p ../../data/MetaBrainColorPalette.json -o test
 """
 
 

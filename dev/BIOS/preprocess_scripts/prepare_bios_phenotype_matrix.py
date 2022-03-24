@@ -3,7 +3,7 @@
 """
 File:         prepare_bios_phenotype_matrix.py
 Created:      2021/11/10
-Last Changed: 2021/11/16
+Last Changed: 2022/03/18
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -54,7 +54,7 @@ Syntax:
 
 class main():
     def __init__(self):
-        self.pheno_path = "/groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt.gz"
+        self.pheno_path = "/groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt"
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bios_phenotype_matrix')
@@ -67,7 +67,8 @@ class main():
 
         rna_alignment_columns = []
         cf_perc_columns = []
-        cf_columns = []
+        cc_columns = []
+        blood_stats_columns = []
         other_columns = []
         encoded_dfs = []
         for column in df.columns:
@@ -84,8 +85,10 @@ class main():
                 rna_alignment_columns.append(column)
             elif column.endswith("_Perc"):
                 cf_perc_columns.append(column)
-            elif column in ["Mono", "Lymph", "Granulocyte", "Baso", "Eos", "Neut", "LUC"]:
-                cf_columns.append(column)
+            elif column in ["Mono", "Lymph", "Granulocyte", "Baso", "Eos", "Neut", "LUC", "WBC", "RBC", "PLT"]:
+                cc_columns.append(column)
+            elif column in ["RDW", "HCT", "HGB", "MCHC", "MPV", "MCH", "MCV"]:
+                blood_stats_columns.append(column)
             else:
                 if column in ["biobank_id", "LipidMed", "DNA_Extraction_Method",
                               "RNA_Source", "DNA_QuantificationMethod",
@@ -128,26 +131,32 @@ class main():
         self.save_file(df=incl_rna_alignmnt_df, outpath=os.path.join(self.outdir, "BIOS_CorrectionIncluded_RNA_AlignmentMetrics.txt.gz"))
         del incl_rna_alignmnt_df
 
-        cf_perc_df = df.loc[:, cf_perc_columns]
+        cf_perc_df = df.loc[:, cf_perc_columns].copy()
         cf_perc_df.dropna(axis=0, how="all", inplace=True)
         cf_perc_df = cf_perc_df.reindex(sorted(cf_perc_df.columns), axis=1)
         self.save_file(df=cf_perc_df, outpath=os.path.join(self.outdir, "BIOS_CellFractionPercentages.txt.gz"))
         del cf_perc_df
 
-        cf_df = df.loc[:, cf_columns]
-        cf_df.dropna(axis=0, how="all", inplace=True)
-        cf_df = cf_df.reindex(sorted(cf_df.columns), axis=1)
-        cf_df["sum"] = cf_df.sum(axis=1)
-        self.save_file(df=cf_df, outpath=os.path.join(self.outdir, "BIOS_CellFractions.txt.gz"))
-        del cf_df
+        cc_df = df.loc[:, cc_columns].copy()
+        cc_df.dropna(axis=0, how="all", inplace=True)
+        cc_df = cc_df.reindex(sorted(cc_df.columns), axis=1)
+        cc_df["sum"] = cc_df.sum(axis=1)
+        self.save_file(df=cc_df, outpath=os.path.join(self.outdir, "BIOS_CellCounts.txt.gz"))
+        del cc_df
 
-        other_df = df.loc[:, other_columns]
+        bs_df = df.loc[:, blood_stats_columns].copy()
+        bs_df.dropna(axis=0, how="all", inplace=True)
+        bs_df = bs_df.reindex(sorted(bs_df.columns), axis=1)
+        self.save_file(df=bs_df, outpath=os.path.join(self.outdir, "BIOS_BloodStats.txt.gz"))
+        del bs_df
+
+        other_df = df.loc[:, other_columns].copy()
         encoded_df = pd.concat(encoded_dfs, axis=1)
         other_df = other_df.merge(encoded_df, left_index=True, right_index=True)
         self.save_file(df=other_df, outpath=os.path.join(self.outdir, "BIOS_phenotypes.txt.gz"))
         del other_df
 
-        sex_df = encoded_df.loc[:, ["Sex"]]
+        sex_df = encoded_df.loc[:, ["Sex"]].copy()
         sex_df.dropna(inplace=True)
         self.save_file(df=sex_df, outpath=os.path.join(self.outdir, "BIOS_sex.txt.gz"))
         del sex_df, encoded_df

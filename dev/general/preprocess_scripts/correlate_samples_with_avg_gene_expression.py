@@ -52,9 +52,17 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./correlate_samples_with_avg_gene_expression.py -h
 
-./correlate_samples_with_avg_gene_expression.py -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz -op MetaBrain
+### MetaBrain ###
 
-./correlate_samples_with_avg_gene_expression.py -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz -op BIOS
+./correlate_samples_with_avg_gene_expression.py \
+    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_metabrain_expression_matrix/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz \
+    -op MetaBrain
+
+### BIOS ###
+
+./correlate_samples_with_avg_gene_expression.py \
+    -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_bios_expression_matrix/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_20RNAseqAlignemntMetrics/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz \
+    -op BIOS
 """
 
 

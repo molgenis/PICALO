@@ -3,7 +3,7 @@
 """
 File:         pre_process_expression_matrix.py
 Created:      2021/10/22
-Last Changed: 2022/02/10
+Last Changed: 2022/03/17
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -59,59 +59,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./pre_process_expression_matrix.py -h
-
-### MetaBrain EUR ###
-
-./pre_process_expression_matrix.py \
-    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz \
-    -s /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_sex.txt.gz \
-    -m /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz \
-    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/filter_gte_file/MetaBrain_CortexEUR_NoENA_NoMDSOutlier/SampleToDataset.txt.gz \
-    -pa /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
-    -of MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics-TMMLog2PCA
-
-### MetaBrain AFR ###
-
-./pre_process_expression_matrix.py \
-    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz \
-    -s /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_metabrain_phenotype_matrix/MetaBrain_sex.txt.gz \
-    -m /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexAFR-allchr-mds-dupsremoved-outlierremoved-VariantFilter.txt.gz \
-    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/filter_gte_file/MetaBrain_CortexAFR_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
-    -of MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics
-
-### BIOS ###
-
-./pre_process_expression_matrix.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
-    -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz \
-    -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics-TMMLog2PCA
-
-### SHUANG REQUEST ###
-
-./pre_process_expression_matrix.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
-    -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz \
-    -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz \
-    -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PICs.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PICsCorrection
-
-./pre_process_expression_matrix.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
-    -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz \
-    -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PIC1and4.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PIC1andPIC4Corrected
-
-./pre_process_expression_matrix.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
-    -s /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_sex.txt.gz \
-    -m /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz \
-    -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PIC1to4.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -pa /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -of BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_PIC1toPIC4Corrected
 """
 
 
@@ -233,7 +180,7 @@ class main():
         dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
         dataset_sample_counts.sort(key=lambda x: -x[1])
         datasets = [csc[0] for csc in dataset_sample_counts]
-        print("\tDatasets: {} [N = {}]".format(", ".join(datasets), len(datasets)))
+        print("\tDatasets: {:,} [N = {:,}]".format(", ".join(datasets), len(datasets)))
 
         dataset_s = std_df.copy()
         dataset_s.set_index(std_df.columns[0], inplace=True)
@@ -246,12 +193,12 @@ class main():
         print(df)
 
         print("Step 1: sample selection.")
-        print("\tUsing {}/{} samples.".format(len(samples), df.shape[1]))
+        print("\tUsing {:,}/{:,} samples.".format(len(samples), df.shape[1]))
         df = df.loc[:, samples]
 
         print("Step 2: remove probes with zero variance.")
         mask = df.std(axis=1) != 0
-        print("\tUsing {}/{} probes.".format(np.sum(mask), np.size(mask)))
+        print("\tUsing {:,}/{:,} probes.".format(np.sum(mask), np.size(mask)))
         df = df.loc[mask, :]
 
         print("Step 3: log2 transform.")
@@ -261,30 +208,18 @@ class main():
         else:
             df = np.log2(df + 1)
 
-        print("Step 6: PCA analysis.")
+        print("Step 4: PCA analysis.")
         self.pca(df=df,
                  filename=filename,
                  sample_to_dataset=sample_to_dataset,
                  file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed",
-                 plot_appendix="_1")
+                 plot_appendix="_1_TMMLog2")
 
-        print("Step 4: center probes.")
-        df = df.subtract(df.mean(axis=1), axis=0)
+        print("Step 5: save mean and std per gene.")
+        mean = df.mean(axis=1)
+        std = df.std(axis=1)
 
-        print("Step 5: sample z-transform.")
-        df = (df - df.mean(axis=0)) / df.std(axis=0)
-
-        print("\tSaving file.")
-        self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)))
-
-        print("Step 6: PCA analysis.")
-        self.pca(df=df,
-                 filename=filename,
-                 sample_to_dataset=sample_to_dataset,
-                 file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
-                 plot_appendix="_2")
-
-        print("Step 7: Construct correction matrix 1.")
+        print("Step 6: construct correction matrix 1.")
         ram_df = None
         if self.rna_alignment_path is not None:
             ram_df = self.load_file(self.rna_alignment_path, header=0, index_col=0)
@@ -314,18 +249,50 @@ class main():
         print("\tSaving file.")
         self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix1.txt.gz"))
 
-        print("Step 8: remove technical covariates OLS.")
+        print("Step 7: remove technical covariates OLS.")
         corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
 
-        print("\tSaving file.")
-        self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(filename)))
+        print("Step 8: return distribution shape and location.")
+        corrected_df = corrected_df.subtract(corrected_df.mean(axis=1), axis=0).mul(std / corrected_df.std(axis=1), axis=0).add(mean, axis=0)
 
         print("Step 9: PCA analysis.")
         self.pca(df=corrected_df,
                  filename=filename,
                  sample_to_dataset=sample_to_dataset,
+                 file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.CovariatesRemovedOLS.ScaleAndLocReturned",
+                 plot_appendix="_2_TMMLog2CovariatesRemovedOLSScaleAndLocReturned")
+        del corrected_df
+
+        print("Step 10: center probes.")
+        df = df.subtract(df.mean(axis=1), axis=0)
+
+        print("Step 11: sample z-transform.")
+        df = (df - df.mean(axis=0)) / df.std(axis=0)
+
+        print("\tSaving file.")
+        self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.txt.gz".format(filename)))
+
+        print("Step 12: PCA analysis.")
+        self.pca(df=df,
+                 filename=filename,
+                 sample_to_dataset=sample_to_dataset,
+                 file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed",
+                 plot_appendix="_3_TMMLog2CenteredZTransformed")
+
+        print("Step 13: remove technical covariates OLS.")
+        corrected_df = self.calculate_residuals(df=df,
+                                                correction_df=correction_df)
+
+        print("\tSaving file.")
+        self.save_file(df=corrected_df, outpath=os.path.join(self.file_outdir,
+                                                             "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz".format(
+                                                                 filename)))
+        print("Step 14: PCA analysis.")
+        self.pca(df=corrected_df,
+                 filename=filename,
+                 sample_to_dataset=sample_to_dataset,
                  file_appendix="SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS",
-                 plot_appendix="_3_CovariatesRemovedOLS")
+                 plot_appendix="_4_TMMLog2CenteredZTransformedCovariatesRemovedOLS")
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,

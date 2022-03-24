@@ -56,17 +56,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./cluster_pic_eqtl_genes.py -h
-
-### BIOS ###
-
-./cluster_pic_eqtl_genes.py \
-    -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs \
-    -gn /groups/umcg-wijmenga/tmp01/projects/depict2/depict2_bundle/reference_datasets/human_b37/pathway_databases/gene_network_v2_1/gene_coregulation_165_eigenvectors_protein_coding.txt.gz \
-    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-04-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-AllPICsCorrected-SP140AsCov-GeneExpressionFNPD_gene_correlations.txt.gz \
-    -gi /groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz \
-    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
-    -mae 1 \
-    -o 2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICs-eQTLGeneCorrelationsFNPD
 """
 
 

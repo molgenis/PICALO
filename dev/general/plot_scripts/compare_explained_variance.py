@@ -56,8 +56,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./compare_explained_variance.py -h
-
-./compare_explained_variance.py -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-01-18-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICsAsCov/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-01-18-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-33TMMLog2ExprPCsAsCov/results.txt.gz -i /groups/umcg-bios/tmp01/projects/PICALO/dev/test_scripts/PCs.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/dev/test_scripts/PICs.txt.gz -n PICs PCs -o 2022-01-18-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
 """
 
 

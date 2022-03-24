@@ -50,8 +50,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./calc_replication_score.py -h
-
-./calc_replication_score.py -pec /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs_gene_correlations.txt.gz -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz -o 2021-12-13-MetaBrain-CortexAFR-ReplicationScore-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs
 """
 
 

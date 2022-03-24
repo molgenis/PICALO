@@ -51,8 +51,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./compare_conditional_to_unconditional.py -h
-
-./compare_conditional_to_unconditional.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
 """
 
 

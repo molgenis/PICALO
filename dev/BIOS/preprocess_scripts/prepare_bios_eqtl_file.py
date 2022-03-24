@@ -51,14 +51,13 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./prepare_bios_eqtl_file.py -h
 
-./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p EQTLGen_
-
-./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -p BIOS_
-
-./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -mae 1 -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -p BIOS_All_
-
-./prepare_bios_eqtl_file.py -eq /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz -mae 1 -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz -ex /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz -p BIOS_
-
+./prepare_bios_eqtl_file.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/data/gene_level_eQTLs_independent_effects_interactions.txt.gz \
+    -s /groups/umcg-bios/tmp01/projects/decon_optimizer/data/datasets_biosdata/brittexport/SNP_dataset_matrix.txt.gz \
+    -mae 1 \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
+    -p BIOS_
 """
 
 

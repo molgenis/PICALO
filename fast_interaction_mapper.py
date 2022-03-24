@@ -3,7 +3,7 @@
 """
 File:         fast_interaction_mapper.py
 Created:      2021/11/16
-Last Changed: 2022/02/10
+Last Changed: 2022/03/22
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -25,6 +25,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
+import argparse
 import time
 import os
 
@@ -34,7 +35,6 @@ import pandas as pd
 from statsmodels.stats import multitest
 
 # Local application imports.
-from src.cmd_line_arguments import CommandLineArguments
 from src.logger import Logger
 from src.objects.data import Data
 from src.utilities import save_dataframe
@@ -66,43 +66,168 @@ Syntax:
 class main():
     def __init__(self):
         # Get the command line arguments.
-        cla = CommandLineArguments(program=__program__,
-                                   version=__version__,
-                                   description=__description__)
-        self.genotype_na = cla.get_argument('genotype_na')
-        self.min_dataset_sample_size = cla.get_argument('min_dataset_size')
-        self.eqtl_alpha = cla.get_argument('eqtl_alpha')
-        self.ieqtl_alpha = cla.get_argument('ieqtl_alpha')
-        self.call_rate = cla.get_argument('call_rate')
-        self.hw_pval = cla.get_argument('hardy_weinberg_pvalue')
-        self.maf = cla.get_argument('minor_allele_frequency')
-        self.mgs = cla.get_argument('min_group_size')
+        arguments = self.create_argument_parser()
+        self.genotype_na = getattr(arguments, 'genotype_na')
+        self.min_dataset_sample_size = getattr(arguments, 'min_dataset_size')
+        self.call_rate = getattr(arguments, 'call_rate')
+        self.hw_pval = getattr(arguments, 'hardy_weinberg_pvalue')
+        self.maf = getattr(arguments, 'minor_allele_frequency')
+        self.mgs = getattr(arguments, 'min_group_size')
+        self.eqtl_alpha = getattr(arguments, 'eqtl_alpha')
+        self.ieqtl_alpha = getattr(arguments, 'ieqtl_alpha')
+        self.conditional = getattr(arguments, 'conditional')
 
         # Define the current directory.
-        current_dir = str(Path(__file__).parent.parent)
+        current_dir = str(os.path.dirname(os.path.abspath(__file__)))
 
         # Prepare an output directory.
-        self.outdir = os.path.join(current_dir, "fast_interaction_mapper", cla.get_argument('outdir'))
+        self.outdir = os.path.join(current_dir, "fast_interaction_mapper", getattr(arguments, 'outdir'))
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
         # Initialize logger.
         logger = Logger(outdir=self.outdir,
-                        verbose=cla.get_argument('verbose'),
+                        verbose=getattr(arguments, 'verbose'),
                         clear_log=True)
         logger.print_arguments()
         self.log = logger.get_logger()
 
         # Initialize data object.
-        self.data = Data(eqtl_path=cla.get_argument('eqtl'),
-                         genotype_path=cla.get_argument('genotype'),
-                         expression_path=cla.get_argument('expression'),
-                         tech_covariate_path=cla.get_argument('tech_covariate'),
-                         tech_covariate_with_inter_path=cla.get_argument('tech_covariate_with_inter'),
-                         covariate_path=cla.get_argument('covariate'),
-                         sample_dataset_path=cla.get_argument('sample_to_dataset'),
+        self.data = Data(eqtl_path=getattr(arguments, 'eqtl'),
+                         genotype_path=getattr(arguments, 'genotype'),
+                         expression_path=getattr(arguments, 'expression'),
+                         tech_covariate_path=getattr(arguments, 'tech_covariate'),
+                         tech_covariate_with_inter_path=getattr(arguments, 'tech_covariate_with_inter'),
+                         covariate_path=getattr(arguments, 'covariate'),
+                         sample_dataset_path=getattr(arguments, 'sample_to_dataset'),
                          log=self.log)
         self.data.print_arguments()
+
+    @staticmethod
+    def create_argument_parser():
+        parser = argparse.ArgumentParser(prog=__program__,
+                                         description=__description__)
+
+        # Add optional arguments.
+        parser.add_argument("-v",
+                            "--version",
+                            action="version",
+                            version="{} {}".format(__program__,
+                                                   __version__),
+                            help="show program's version number and exit")
+        parser.add_argument("-eq",
+                            "--eqtl",
+                            type=str,
+                            required=True,
+                            help="The path to the eqtl matrix.")
+        parser.add_argument("-ge",
+                            "--genotype",
+                            type=str,
+                            required=True,
+                            help="The path to the genotype matrix.")
+        parser.add_argument("-na",
+                            "--genotype_na",
+                            type=int,
+                            required=False,
+                            default=-1,
+                            help="The genotype value that equals a missing "
+                                 "value. Default: -1.")
+        parser.add_argument("-ex",
+                            "--expression",
+                            type=str,
+                            required=True,
+                            help="The path to the expression matrix.")
+        parser.add_argument("-tc",
+                            "--tech_covariate",
+                            type=str,
+                            default=None,
+                            help="The path to the technical covariate matrix "
+                                 "(excluding an interaction with genotype). "
+                                 "Default: None.")
+        parser.add_argument("-tci",
+                            "--tech_covariate_with_inter",
+                            type=str,
+                            default=None,
+                            help="The path to the technical covariate matrix"
+                                 "(including an interaction with genotype). "
+                                 "Default: None.")
+        parser.add_argument("-co",
+                            "--covariate",
+                            type=str,
+                            required=True,
+                            help="The path to the covariate matrix (i.e. the"
+                                 "matrix used as starting vector for the "
+                                 "interaction term).")
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the sample-dataset link matrix."
+                                 "Default: None.")
+        parser.add_argument("-mds",
+                            "--min_dataset_size",
+                            type=int,
+                            required=False,
+                            default=30,
+                            help="The minimal number of samples per dataset. "
+                                 "Default: >=30.")
+        parser.add_argument("-ea",
+                            "--eqtl_alpha",
+                            type=float,
+                            required=False,
+                            default=0.05,
+                            help="The eQTL significance cut-off. "
+                                 "Default: <=0.05.")
+        parser.add_argument("-cr",
+                            "--call_rate",
+                            type=float,
+                            required=False,
+                            default=0.95,
+                            help="The minimal call rate of a SNP (per dataset)."
+                                 "Equals to (1 - missingness). "
+                                 "Default: >= 0.95.")
+        parser.add_argument("-hw",
+                            "--hardy_weinberg_pvalue",
+                            type=float,
+                            required=False,
+                            default=1e-4,
+                            help="The Hardy-Weinberg p-value threshold."
+                                 "Default: >= 1e-4.")
+        parser.add_argument("-maf",
+                            "--minor_allele_frequency",
+                            type=float,
+                            required=False,
+                            default=0.01,
+                            help="The MAF threshold. Default: >0.01.")
+        parser.add_argument("-mgs",
+                            "--min_group_size",
+                            type=int,
+                            required=False,
+                            default=2,
+                            help="The minimal number of samples per genotype "
+                                 "group. Default: >= 2.")
+        parser.add_argument("-iea",
+                            "--ieqtl_alpha",
+                            type=float,
+                            required=False,
+                            default=0.05,
+                            help="The interaction eQTL significance cut-off. "
+                                 "Default: <=0.05.")
+        parser.add_argument("-conditional",
+                            action='store_true',
+                            help="Perform conditional analysis. Default: False.")
+        parser.add_argument("-o",
+                            "--outdir",
+                            type=str,
+                            required=False,
+                            default="output",
+                            help="The name of the output folder.")
+        parser.add_argument("-verbose",
+                            action='store_true',
+                            help="Enable verbose output. Default: False.")
+
+        return parser.parse_args()
 
     def start(self):
         self.log.info("Starting program")
@@ -295,180 +420,54 @@ class main():
 
         ########################################################################
 
-        self.log.info("Correcting expression matrix")
-        # Correct the gene expression matrix.
-        corrected_expr_m = remove_covariates(y_m=expr_m,
-                                             X_m=corr_m,
-                                             X_inter_m=corr_inter_m,
-                                             inter_m=geno_m,
-                                             log=self.log)
-        del expr_m, corr_m, corr_inter_m
+        if self.conditional:
+            self.log.info("Performing conditional interaction analysis")
+            cov_corr_inter_m = corr_inter_m.copy()
+            cov_m = None
+            for cov_index, covariate in enumerate(covariates):
+                self.log.info("\tAnalysing covariate '{}'".format(covariate))
+                if cov_m is not None:
+                    # Add the previous covariate to the correction matrix
+                    # including interaction term.
+                    cov_corr_inter_m = np.hstack((cov_corr_inter_m, cov_m.T))
 
-        self.log.info("Force normalise the expression matrix and covariates.")
-        fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
-        corrected_expr_m = fn.process(data=corrected_expr_m)
-        covs_m = fn.process(data=covs_m)
+                # Extract the covariate of interest.
+                cov_m = covs_m[[cov_index], :]
 
-        ########################################################################
+                cov_ieqtl_results = self.map_interactions(expr_m=expr_m,
+                                                          corr_m=corr_m,
+                                                          corr_inter_m=cov_corr_inter_m,
+                                                          geno_m=geno_m,
+                                                          dataset_m=dataset_m,
+                                                          samples=samples,
+                                                          covs_m=cov_m,
+                                                          covariates=[covariate],
+                                                          prefix="\t  "
+                                                          )
 
-        # visualiser = Visualiser()
-        # for eqtl_index in range(geno_m.shape[0]):
-        #     snp, gene = eqtl_m[eqtl_index, :]
-        #
-        #     if snp + gene not in ["rs1131017ENSG00000197728",
-        #                           "rs12936231ENSG00000073605",
-        #                           "rs2070901ENSG00000158869",
-        #                           "rs2196171ENSG00000115896",
-        #                           "rs41284471ENSG00000259812",
-        #                           "rs6227ENSG00000182511",
-        #                           "rs8067378ENSG00000172057",
-        #                           "rs9688496ENSG00000080546"]:
-        #         continue
-        #
-        #     for cov_index, cov in enumerate(covariates):
-        #         if snp + gene + cov not in ["rs1131017ENSG00000197728PIC3",
-        #                                     "rs12936231ENSG00000073605PIC3",
-        #                                     "rs2070901ENSG00000158869PIC3",
-        #                                     "rs2196171ENSG00000115896PIC3",
-        #                                     "rs41284471ENSG00000259812PIC3",
-        #                                     "rs6227ENSG00000182511PIC3",
-        #                                     "rs8067378ENSG00000172057PIC3",
-        #                                     "rs9688496ENSG00000080546PIC3"]:
-        #             continue
-        #
-        #         ieqtl = IeQTL(snp=snp,
-        #                       gene=gene,
-        #                       cov=cov,
-        #                       genotype=geno_m[eqtl_index, :],
-        #                       covariate=covs_m[cov_index, :],
-        #                       expression=corrected_expr_m[eqtl_index, :]
-        #                       )
-        #         visualiser.plot_overview(ieqtl, out_path=self.outdir, label="AfterFN")
-        # exit()
+                self.save_results(data_m=cov_ieqtl_results[covariate],
+                                  covariate=covariate,
+                                  eqtl_m=eqtl_m,
+                                  prefix="\t  ")
+                self.log.info("")
+        else:
+            self.log.info("Performing standard interaction analysis")
+            ieqtl_results = self.map_interactions(expr_m=expr_m,
+                                                  corr_m=corr_m,
+                                                  corr_inter_m=corr_inter_m,
+                                                  geno_m=geno_m,
+                                                  dataset_m=dataset_m,
+                                                  samples=samples,
+                                                  covs_m=covs_m,
+                                                  covariates=covariates
+                                                  )
 
-        ########################################################################
-
-        self.log.info("Mapping interactions")
-        n_eqtls = geno_m.shape[0]
-        eqtl_results_m = np.empty((n_eqtls, 8), dtype=np.float64)
-        ieqtl_results = {cov: np.empty((n_eqtls, 11), dtype=np.float64) for cov in covariates}
-        last_print_time = None
-        for eqtl_index in range(n_eqtls):
-            now_time = int(time.time())
-            if last_print_time is None or (now_time - last_print_time) >= 30 or (eqtl_index + 1) == n_eqtls:
-                last_print_time = now_time
-                self.log.info("\t{:,}/{:,} eQTLs analysed [{:.2f}%]".format(eqtl_index, n_eqtls - 1, (100 / (n_eqtls - 1)) * eqtl_index))
-
-            # Get the genotype.
-            genotype = geno_m[eqtl_index, :]
-
-            # Construct the mask to remove missing values.
-            mask = ~np.isnan(genotype)
-            n = np.sum(mask)
-
-            # Create the matrices. Note that only the first two columns
-            # are filled in.
-            base_matrix = np.empty((n, 4), np.float32)
-            base_matrix[:, 0] = 1
-            base_matrix[:, 1] = genotype[mask]
-
-            # Get the expression.
-            y = corrected_expr_m[eqtl_index, mask]
-
-            # Compute the rss for just the intercept.
-            rss_model1 = calc_rss(y=y, y_hat=np.mean(y))
-
-            # Compute the rss for the main eQTL effect.
-            eqtl_inv_m = inverse(X=base_matrix[:, :2])
-            eqtl_betas = fit(X=base_matrix[:, :2], y=y, inv_m=eqtl_inv_m)
-            rss_model2 = calc_rss(y=y, y_hat=predict(X=base_matrix[:, :2], betas=eqtl_betas))
-            eqtl_std = calc_std(rss=rss_model2, n=n, df=2, inv_m=eqtl_inv_m)
-
-            # Calculate eQTL p-value.
-            eqtl_p_value = calc_p_value(rss1=rss_model1, rss2=rss_model2, df1=1, df2=2, n=n)
-
-            # Save results.
-            eqtl_results_m[eqtl_index, :] = np.hstack((np.array([n, rss_model1]),
-                                                       eqtl_betas,
-                                                       np.array([rss_model2]),
-                                                       eqtl_std,
-                                                       np.array([eqtl_p_value])))
-
-            for cov_index, cov in enumerate(covariates):
-                # Fill in the last two columns.
-                X = base_matrix
-                X[:, 2] = covs_m[cov_index, mask]
-                X[:, 3] = X[:, 1] * X[:, 2]
-
-                # First calculate the rss for the matrix minux the interaction
-                # term.
-                rss_model3 = calc_rss(y=y, y_hat=fit_and_predict(X=X[:, :3], y=y))
-
-                # Calculate the rss for the interaction model.
-                ieqtl_inv_m = inverse(X)
-                ieqtl_betas = fit(X=X, y=y, inv_m=ieqtl_inv_m)
-                rss_model4 = calc_rss(y=y, y_hat=predict(X=X, betas=ieqtl_betas))
-                ieqtl_std = calc_std(rss=rss_model4, n=n, df=4, inv_m=ieqtl_inv_m)
-
-                # Calculate interaction p-value.
-                ieqtl_p_value = calc_p_value(rss1=rss_model3, rss2=rss_model4, df1=3, df2=4, n=n)
-
-                # Save results.
-                ieqtl_results[cov][eqtl_index, :] = np.hstack((np.array([rss_model3]),
-                                                               ieqtl_betas,
-                                                               np.array([rss_model4]),
-                                                               ieqtl_std,
-                                                               np.array([ieqtl_p_value])))
-
-        ########################################################################
-
-        self.log.info("Saving results")
-        for cov_index, cov in enumerate(covariates):
-            # Combine result matrices.
-            output_m = np.hstack((eqtl_results_m, ieqtl_results[cov]))
-
-            # Convert to pandas data frame.
-            df = pd.DataFrame(output_m, columns=["n",
-                                                 "rss model1",
-                                                 "eQTL beta-intercept",
-                                                 "eQTL beta-genotype",
-                                                 "rss model2",
-                                                 "eQTL std-intercept",
-                                                 "eQTL std-genotype",
-                                                 "eQTL p-value",
-                                                 "rss model3",
-                                                 "ieQTL beta-intercept",
-                                                 "ieQTL beta-genotype",
-                                                 "ieQTL beta-covariate",
-                                                 "ieQTL beta-interaction",
-                                                 "rss model4",
-                                                 "ieQTL std-intercept",
-                                                 "ieQTL std-genotype",
-                                                 "ieQTL std-covariate",
-                                                 "ieQTL std-interaction",
-                                                 "ieQTL p-value"])
-            df.insert(0, "cov", cov)
-            df.insert(0, "gene", eqtl_m[:, 1])
-            df.insert(0, "snp", eqtl_m[:, 0])
-            df["ieQTL FDR"] = multitest.multipletests(df["ieQTL p-value"], method='fdr_bh')[1]
-
-            if cov_index == 0:
-                # Print the number of eQTLs.
-                n_hits = np.sum(df["eQTL p-value"] <= self.eqtl_alpha)
-                self.log.info("There are {:,} significant eQTLs (p-value <{})".format(n_hits, self.eqtl_alpha))
-
-            # Print the number of interactions.
-            n_hits = np.sum(df["ieQTL FDR"] <= self.ieqtl_alpha)
-            self.log.info("  {} has {:,} significant ieQTLs (FDR <{})".format(cov, n_hits, self.ieqtl_alpha))
-
-            # Save results.
-            save_dataframe(df=df,
-                           outpath=os.path.join(self.outdir, "{}.txt.gz".format(cov)),
-                           header=True,
-                           index=False,
-                           log=self.log)
-
-            del df, n_hits
+            self.log.info("Saving results")
+            for covariate in covariates:
+                self.save_results(data_m=ieqtl_results[covariate],
+                                  covariate=covariate,
+                                  eqtl_m=eqtl_m,
+                                  prefix="  ")
 
         ########################################################################
 
@@ -736,16 +735,124 @@ class main():
 
         return corr_m, corr_inter_m, corr_m_columns + corr_inter_m_columns
 
+    def map_interactions(self, expr_m, corr_m, corr_inter_m, geno_m, dataset_m,
+                         samples, covs_m, covariates, prefix=""):
+
+        self.log.info("{}Correcting expression matrix".format(prefix))
+        # Correct the gene expression matrix.
+        corrected_expr_m = remove_covariates(y_m=expr_m,
+                                             X_m=corr_m,
+                                             X_inter_m=corr_inter_m,
+                                             inter_m=geno_m,
+                                             log=self.log)
+
+        self.log.info("{}Force normalise the expression matrix and covariates".format(prefix))
+        fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
+        corrected_expr_m = fn.process(data=corrected_expr_m)
+        covs_m = fn.process(data=covs_m)
+
+        ########################################################################
+
+        self.log.info("{}Mapping interactions".format(prefix))
+        n_eqtls = geno_m.shape[0]
+        ieqtl_results = {cov: np.empty((n_eqtls, 10), dtype=np.float64) for cov in covariates}
+        last_print_time = None
+        for eqtl_index in range(n_eqtls):
+            now_time = int(time.time())
+            if last_print_time is None or (now_time - last_print_time) >= 30 or (eqtl_index + 1) == n_eqtls:
+                last_print_time = now_time
+                self.log.info("{}\t{:,}/{:,} eQTLs analysed [{:.2f}%]".format(prefix, eqtl_index, n_eqtls - 1, (100 / (n_eqtls - 1)) * eqtl_index))
+
+            # Get the genotype.
+            genotype = geno_m[eqtl_index, :]
+
+            # Construct the mask to remove missing values.
+            mask = ~np.isnan(genotype)
+            n = np.sum(mask)
+
+            # Create the matrices. Note that only the first two columns
+            # are filled in.
+            X = np.empty((n, 4), np.float32)
+            X[:, 0] = 1
+            X[:, 1] = genotype[mask]
+
+            # Get the expression.
+            y = corrected_expr_m[eqtl_index, mask]
+
+            for cov_index, cov in enumerate(covariates):
+                # Fill in the last two columns.
+                X[:, 2] = covs_m[cov_index, mask]
+                X[:, 3] = X[:, 1] * X[:, 2]
+
+                # First calculate the rss for the matrix minux the interaction
+                # term.
+                rss_null = calc_rss(y=y, y_hat=fit_and_predict(X=X[:, :3], y=y))
+
+                # Calculate the rss for the interaction model.
+                ieqtl_inv_m = inverse(X)
+                ieqtl_betas = fit(X=X, y=y, inv_m=ieqtl_inv_m)
+                rss_alt = calc_rss(y=y, y_hat=predict(X=X, betas=ieqtl_betas))
+                ieqtl_std = calc_std(rss=rss_alt, n=n, df=4, inv_m=ieqtl_inv_m)
+
+                # Calculate interaction p-value.
+                ieqtl_p_value = calc_p_value(rss1=rss_null, rss2=rss_alt, df1=3, df2=4, n=n)
+
+                # Save results.
+                ieqtl_results[cov][eqtl_index, :] = np.hstack((np.array([n]),
+                                                               ieqtl_betas,
+                                                               ieqtl_std,
+                                                               np.array([ieqtl_p_value])))
+
+        return ieqtl_results
+
+    def save_results(self, data_m, covariate, eqtl_m, prefix=""):
+        # Convert to pandas data frame.
+        df = pd.DataFrame(data_m,
+                          columns=["N",
+                                   "beta-intercept", "beta-genotype",
+                                   "beta-covariate", "beta-interaction",
+                                   "std-intercept", "std-genotype",
+                                   "std-covariate", "std-interaction",
+                                   "p-value"]
+                          )
+        df.insert(0, "covariate", covariate)
+        df.insert(0, "gene", eqtl_m[:, 1])
+        df.insert(0, "SNP", eqtl_m[:, 0])
+        df["FDR"] = multitest.multipletests(df["p-value"], method='fdr_bh')[1]
+
+        # Print the number of interactions.
+        n_hits = np.sum(df["FDR"] <= self.ieqtl_alpha)
+        self.log.info("{}{} has {:,} significant ieQTLs (FDR <{})".format(prefix,
+                                                                          covariate,
+                                                                          n_hits,
+                                                                          self.ieqtl_alpha))
+
+        appendix = ""
+        if self.conditional:
+            appendix = "_conditional"
+
+        # Save results.
+        save_dataframe(df=df,
+                       outpath=os.path.join(self.outdir,
+                                            "{}{}.txt.gz".format(covariate,
+                                                                 appendix)),
+                       header=True,
+                       index=False,
+                       log=self.log)
+
+        del df, n_hits
+
     def print_arguments(self):
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
-        self.log.info("  > Minimal dataset size: >={}".format(self.genotype_na))
+        self.log.info("  > Minimal dataset size: >={}".format(self.min_dataset_sample_size))
         self.log.info("  > eQTL alpha: <={}".format(self.eqtl_alpha))
         self.log.info("  > SNP call rate: >{}".format(self.call_rate))
         self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
         self.log.info("  > MAF: >{}".format(self.maf))
         self.log.info("  > Minimal group size: >={}".format(self.mgs))
         self.log.info("  > ieQTL alpha: <={}".format(self.ieqtl_alpha))
+        self.log.info("  > Conditional ieQTL analysis: {}".format(self.conditional))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")
 

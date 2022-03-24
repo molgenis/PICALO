@@ -51,15 +51,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./visualise_results_metabrain.py -h
-
-./visualise_results_metabrain.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs -pf /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs -ep /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json -o 2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs
-
-./visualise_results_metabrain.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-01-27-MetaBrain-Bryois-cis-Astrocyte-NoENA-NoMDSOutlier-GT1AvgExprFilter \
-    -pf /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/MetaBrain-Bryois-cis-Astrocyte-NoENA-NoMDSOutlier-GT1AvgExprFilter \
-    -ep /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/MetaBrain_CortexEUR_NoENA_NoMDSOutlier_NoRNAseqAlignmentMetrics \
-    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
-    -o 2022-01-27-MetaBrain-Bryois-cis-Astrocyte-NoENA-NoMDSOutlier-GT1AvgExprFilter
 """
 
 

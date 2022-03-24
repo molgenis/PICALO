@@ -50,7 +50,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./combine_genotype_dump.py -w /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR/genotypedump-bryoissnps/
+./combine_genotype_dump.py \
+    -w /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR/genotypedump-bryoissnps/
 """
 
 
@@ -98,7 +99,6 @@ class main():
         self.save_file(df=df,
                        outpath=os.path.join(self.work_directory, "GenotypeData.txt.gz")
                        )
-
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,

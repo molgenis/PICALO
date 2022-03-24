@@ -51,8 +51,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./harmonize_genotype.py -h
-
-./harmonize_genotype.py -dg /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-EUR/genotypedump/GenotypeData.txt.gz -rg /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-05-26-eqtls-rsidfix-popfix/cis/2020-05-26-Cortex-AFR/genotypedump_EUR_SNPs/GenotypeData.txt.gz -o 2020-05-26-Cortex-AFR-ReplicatonOfCortexEUR-GenotypeData
 """
 
 

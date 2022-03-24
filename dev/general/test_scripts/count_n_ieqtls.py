@@ -24,7 +24,9 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 from pathlib import Path
+import glob
 import argparse
+import re
 import os
 
 # Third party imports.
@@ -50,26 +52,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./count_n_ieqtls.py -h
-
-./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov/
-
-./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov-PICsNotRemoved/
-
-./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-100TMMLog2ExprPCs-PICsNotRemoved/
-
-./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov/
-
-./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-FIrst100ExprPCsAsCov-PICsNotRemoved/
-
-./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs-100TMMLog2ExprPCs-PICsNotRemoved/
-
-./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-PICsAsCov
-
-./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-First33ExprPCsAsCov
-
-./count_n_ieqtls.py -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/PIC_interactions
-
-./count_n_ieqtls.py -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/PIC_interactions
 """
 
 
@@ -78,10 +60,8 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.indir = getattr(arguments, 'indir')
-
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'count_n_ieqtls')
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
+        self.n_files = getattr(arguments, 'n_files')
+        self.conditional = getattr(arguments, 'conditional')
 
     @staticmethod
     def create_argument_parser():
@@ -100,6 +80,15 @@ class main():
                             type=str,
                             required=True,
                             help="The path to input directory.")
+        parser.add_argument("-n",
+                            "--n_files",
+                            type=int,
+                            default=None,
+                            help="The number of files to load. "
+                                 "Default: all.")
+        parser.add_argument("-conditional",
+                            action='store_true',
+                            help="Perform conditional analysis. Default: False.")
 
         return parser.parse_args()
 
@@ -109,50 +98,39 @@ class main():
         print("### Step1 ###")
         print("Loading PICALO results")
         ieqtl_fdr_df_list = []
-        ieqtl_direction_df_list = []
-        for i in range(101):
-            covariate = "PIC{}".format(i)
-            filename = "{}.txt.gz".format(covariate)
-            fpath = os.path.join(self.indir, filename)
-            print(fpath)
-            if os.path.exists(fpath):
-                df = pd.read_csv(fpath, sep="\t", header=0, index_col=None)
+        inpaths = glob.glob(os.path.join(self.indir, "*.txt.gz"))
+        if self.conditional:
+            inpaths = [inpath for inpath in inpaths if inpath.endswith("_conditional")]
+        else:
+            inpaths = [inpath for inpath in inpaths if not inpath.endswith("_conditional")]
+        inpaths.sort(key=self.natural_keys)
+        count = 0
+        for inpath in inpaths:
+            if self.n_files is not None and count == self.n_files:
+                continue
 
-                signif_col = None
-                if "ieQTL FDR" in df.columns:
-                    signif_col = "ieQTL FDR"
-                    df.index = df["snp"] + "_" + df["gene"]
-                elif "FDR" in df.columns:
-                    signif_col = "FDR"
-                    df.index = df["SNP"] + "_" + df["gene"]
-                else:
-                    print("No signif column found")
-                    exit()
+            filename = os.path.basename(inpath).split(".")[0].replace("_conditional", "")
+            if filename in ["call_rate", "genotype_stats", "PIC1", "PIC4", "Comp1", "Comp2"]:
+                continue
+            # if filename in ["call_rate", "genotype_stats"]:
+            #     continue
 
-                ieqtls = df.loc[df[signif_col] <= 0.05, :].index
-                ieqtl_fdr_df = pd.DataFrame(0, index=df.index, columns=[covariate])
-                ieqtl_fdr_df.loc[ieqtls, covariate] = 1
+            df = self.load_file(inpath, header=0, index_col=None)
+            signif_col = "FDR"
+            df.index = df["SNP"] + "_" + df["gene"]
 
-                pos_ieqtls = df.loc[(df[signif_col] <= 0.05) & (df["beta-interaction"] > 0), :].index
-                neg_ieqtls = df.loc[(df[signif_col] <= 0.05) & (df["beta-interaction"] < 0), :].index
-                ieqtl_direction_df = pd.DataFrame(0, index=df.index, columns=[covariate])
-                ieqtl_direction_df.loc[pos_ieqtls, covariate] = 1
-                ieqtl_direction_df.loc[neg_ieqtls, covariate] = 1
+            ieqtls = df.loc[df[signif_col] <= 0.05, :].index
+            ieqtl_fdr_df = pd.DataFrame(0, index=df.index, columns=[filename])
+            ieqtl_fdr_df.loc[ieqtls, filename] = 1
+            ieqtl_fdr_df_list.append(ieqtl_fdr_df)
 
-                ieqtl_fdr_df_list.append(ieqtl_fdr_df)
-                ieqtl_direction_df_list.append(ieqtl_direction_df)
+            del ieqtl_fdr_df
+            count += 1
 
-                del ieqtl_fdr_df, ieqtl_direction_df
         ieqtl_fdr_df = pd.concat(ieqtl_fdr_df_list, axis=1)
-        ieqtl_direction_df = pd.concat(ieqtl_direction_df_list, axis=1)
-
-        ieqtl_direction_df["snp"] = ["_".join(x.split("_")[:-1]) for x in ieqtl_direction_df.index]
-        ieqtl_direction_df["gene"] = [x.split("_")[-1].split(".")[0] for x in ieqtl_direction_df.index]
-        ieqtl_direction_df.to_excel("PICs.xlsx", index=False)
-        del ieqtl_direction_df
+        ieqtl_fdr_df.to_csv("b.txt.gz", sep="\t", header=True, index=True, compression="gzip")
         cov_sum = ieqtl_fdr_df.sum(axis=0)
         print(cov_sum)
-        exit()
 
         print("Stats per covariate:")
         print("\tSum: {:,}".format(cov_sum.sum()))
@@ -169,9 +147,27 @@ class main():
                 print("\tN-eQTLs with {} interaction: {:,} [{:.2f}%]".format(value, n, (100 / eqtls_w_inter) * n))
         print("\tUnique: {:,} / {:,} [{:.2f}%]".format(eqtls_w_inter, total_eqtls, (100 / total_eqtls) * eqtls_w_inter))
 
+    @staticmethod
+    def load_file(inpath, header=0, index_col=0, sep="\t", low_memory=True,
+                  nrows=None, skiprows=None):
+        df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
+                         low_memory=low_memory, nrows=nrows, skiprows=skiprows)
+        print("\tLoaded dataframe: {} "
+              "with shape: {}".format(os.path.basename(inpath),
+                                      df.shape))
+        return df
+
+    @staticmethod
+    def natural_keys(text):
+        return [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', text)]
+
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.indir))
+        if self.n_files is None:
+            print("  > N-files: all")
+        else:
+            print("  > N-files: {:,}".format(self.n_files))
         print("")
 
 

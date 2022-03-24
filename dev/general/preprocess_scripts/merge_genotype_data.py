@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-File:         calculate_correlation_start_vs_end.py
-Created:      2022/01/14
+File:         merge_genotype_data.py
+Created:      2022/03/16
 Last Changed:
 Author:       M.Vochteloo
 
@@ -23,18 +23,16 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
 # Third party imports.
 import pandas as pd
-from scipy import stats
 
 # Local application imports.
 
 # Metadata
-__program__ = "Count Correlation Start VS End"
+__program__ = "Merge Genotype Data"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -48,18 +46,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
                                         __license__)
 
 """
-Syntax:
-./calculate_correlation_start_vs_end.py -h
-
-### MetaBrain ###
-
-./calculate_correlation_start_vs_end.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/
-
-### BIOS ###
-
-./calculate_correlation_start_vs_end.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/
+Syntax: 
+./merge_genotype_data.py -h
 """
 
 
@@ -67,16 +55,13 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.indir = getattr(arguments, 'indir')
-
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'count_n_ieqtls')
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
+        self.work_directory = getattr(arguments, 'input')
 
     @staticmethod
     def create_argument_parser():
         parser = argparse.ArgumentParser(prog=__program__,
-                                         description=__description__)
+                                         description=__description__,
+                                         )
 
         # Add optional arguments.
         parser.add_argument("-v",
@@ -86,39 +71,59 @@ class main():
                                                    __version__),
                             help="show program's version number and exit.")
         parser.add_argument("-i",
-                            "--indir",
+                            "--input",
                             type=str,
                             required=True,
-                            help="The path to input directory.")
+                            help="The path to the work directory.")
 
         return parser.parse_args()
 
     def start(self):
         self.print_arguments()
 
-        print("### Step1 ###")
-        print("Loading PICALO results")
-        coefficient_data = []
-        for i in range(101):
-            covariate = "PIC{}".format(i)
-            fpath1 = os.path.join(self.indir, "PIC_interactions", "{}.txt.gz".format(covariate))
-            fpath2 = os.path.join(self.indir, covariate, "iteration.txt.gz")
-            print(fpath2)
-            if os.path.exists(fpath1) and os.path.exists(fpath2):
-                df = pd.read_csv(fpath2, sep="\t", header=0, index_col=0)
-                coef, _ = stats.spearmanr(df.loc[df.index[0], :], df.loc[df.index[-1], :])
-                coefficient_data.append([covariate, coef])
+        print("Loading data")
+        df_list = []
+        for i in range(1, 23):
+            fpath = os.path.join(self.work_directory, "chr{}".format(i), "GenotypeData.txt.gz")
+            if not os.path.exists(fpath):
+                continue
 
-        coef_df = pd.DataFrame(coefficient_data, columns=["covariate", "coef"])
-        print(coef_df)
+            df = self.load_file(fpath)
+            df_list.append(df)
+        df = pd.concat(df_list, axis=0)
+        print(df)
 
-        print("Spearman correlations:")
-        print("\tMean: {:.2f}".format(coef_df["coef"].mean()))
-        print("\tSD: {:.2f}".format(coef_df["coef"].std()))
+        print("Fill NA with -1")
+        df.fillna(-1, inplace=True)
+
+        print("Saving file.")
+        self.save_file(df=df, outpath=os.path.join(self.work_directory, "GenotypeMatrix.txt.gz"))
+
+    @staticmethod
+    def load_file(inpath, header=0, index_col=0, sep="\t", low_memory=True,
+                  nrows=None, skiprows=None):
+        df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
+                         low_memory=low_memory, nrows=nrows, skiprows=skiprows)
+        print("\tLoaded dataframe: {} "
+              "with shape: {}".format(os.path.basename(inpath),
+                                      df.shape))
+        return df
+
+    @staticmethod
+    def save_file(df, outpath, header=True, index=True, sep="\t"):
+        compression = 'infer'
+        if outpath.endswith('.gz'):
+            compression = 'gzip'
+
+        df.to_csv(outpath, sep=sep, index=index, header=header,
+                  compression=compression)
+        print("\tSaved dataframe: {} "
+              "with shape: {}".format(os.path.basename(outpath),
+                                      df.shape))
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > Input directory: {}".format(self.indir))
+        print("  > Working directory: {}".format(self.work_directory))
         print("")
 
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         create_regplot.py
-Created:      2021/11/09
-Last Changed: 2021/12/06
+File:         create_regplot_per_dataset.py
+Created:      2022/03/21
+Last Changed:
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -26,10 +26,12 @@ from __future__ import print_function
 from pathlib import Path
 import argparse
 import json
+import math
 import os
 
 # Third party imports.
 import pandas as pd
+import numpy as np
 from scipy import stats
 import seaborn as sns
 import matplotlib
@@ -40,7 +42,7 @@ import matplotlib.patches as mpatches
 # Local application imports.
 
 # Metadata
-__program__ = "Create Regplot"
+__program__ = "Create Regplot Per Dataset"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -55,7 +57,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./create_regplot.py -h
+./create_regplot_per_dataset.py -h
 """
 
 
@@ -66,7 +68,6 @@ class main():
         self.x_data_path = getattr(arguments, 'x_data')
         self.x_transpose = getattr(arguments, 'x_transpose')
         self.x_index = " ".join(getattr(arguments, 'x_index'))
-        self.x_ranked = getattr(arguments, 'x_ranked')
         x_label = getattr(arguments, 'x_label')
         if x_label is None:
             x_label = self.x_index
@@ -74,7 +75,6 @@ class main():
         self.y_data_path = getattr(arguments, 'y_data')
         self.y_transpose = getattr(arguments, 'y_transpose')
         self.y_index = " ".join(getattr(arguments, 'y_index'))
-        self.y_ranked = getattr(arguments, 'y_ranked')
         y_label = getattr(arguments, 'y_label')
         if y_label is None:
             y_label = self.y_index
@@ -121,9 +121,6 @@ class main():
                             type=str,
                             required=True,
                             help="The index name.")
-        parser.add_argument("-x_ranked",
-                            action='store_true',
-                            help="Rank X.")
         parser.add_argument("-xl",
                             "--x_label",
                             type=str,
@@ -144,9 +141,6 @@ class main():
                             type=str,
                             required=True,
                             help="The index name.")
-        parser.add_argument("-y_ranked",
-                            action='store_true',
-                            help="Rank Y.")
         parser.add_argument("-yl",
                             "--y_label",
                             type=str,
@@ -156,8 +150,7 @@ class main():
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
-                            required=False,
-                            default=None,
+                            required=True,
                             help="The path to the sample-dataset link matrix.")
         parser.add_argument("-p",
                             "--palette",
@@ -180,9 +173,6 @@ class main():
         print("Loading data.")
         x_df = self.load_file(self.x_data_path, header=0, index_col=0)
         y_df = self.load_file(self.y_data_path, header=0, index_col=0)
-
-        # x_df["t-value"] = x_df["beta-interaction"].astype(float) / x_df["std-interaction"].astype(float)
-        # y_df["t-value"] = y_df["beta-interaction"].astype(float) / y_df["std-interaction"].astype(float)
 
         print("Pre-process")
         if self.x_transpose:
@@ -217,35 +207,23 @@ class main():
         plot_df = plot_df.astype(float)
         print(plot_df)
 
-        xlabel = self.x_label
-        if self.x_ranked:
-            plot_df["x"] = plot_df["x"].rank()
-            xlabel += " - ranked"
-
-        ylabel = self.y_label
-        if self.y_ranked:
-            plot_df["y"] = plot_df["y"].rank()
-            ylabel += " - ranked"
-
         print("Loading color data.")
-        hue = None
-        palette = None
-        if self.std_path is not None:
-            sa_df = self.load_file(self.std_path, header=0, index_col=None)
-            sa_df.set_index(sa_df.columns[0], inplace=True)
-            sa_df.columns = ["hue"]
-            plot_df = plot_df.merge(sa_df, left_index=True, right_index=True)
+        sa_df = self.load_file(self.std_path, header=0, index_col=None)
+        sa_df.set_index(sa_df.columns[0], inplace=True)
+        sa_df.columns = ["dataset"]
+        plot_df = plot_df.merge(sa_df, left_index=True, right_index=True)
 
-            hue = "hue"
-            palette = self.palette
+        dataset_sample_counts = list(zip(*np.unique(sa_df["dataset"], return_counts=True)))
+        dataset_sample_counts.sort(key=lambda x: -x[1])
+        datasets = [x[0] for x in dataset_sample_counts]
 
         print("Plotting.")
-        self.single_regplot(df=plot_df,
-                            hue=hue,
-                            palette=palette,
-                            xlabel=xlabel,
-                            ylabel=ylabel,
-                            filename=self.out_filename)
+        self.plot(df=plot_df,
+                  panels=datasets,
+                  palette=self.palette,
+                  xlabel=self.x_label,
+                  ylabel=self.y_label,
+                  filename=self.out_filename)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -257,103 +235,124 @@ class main():
                                       df.shape))
         return df
 
-    def single_regplot(self, df, x="x", y="y", hue=None, palette=None,
-                       xlabel=None, ylabel=None, title="", filename="plot"):
-        if xlabel is None:
-            xlabel = x
-        if ylabel is None:
-            ylabel = y
+    def plot(self, df, x="x", y="y", group="dataset", panels=None, palette=None,
+             xlabel=None, ylabel=None, title="", filename="plot"):
+        if panels is None:
+            panels = list(df[group].unique())
+            panels.sort()
 
-        sns.set(rc={'figure.figsize': (12, 9)})
+        nplots = len(panels)
+        ncols = math.ceil(np.sqrt(nplots))
+        nrows = math.ceil(nplots / ncols)
+
         sns.set_style("ticks")
-        fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2,
-                                       gridspec_kw={"width_ratios": [0.8, 0.2]})
-        sns.despine(fig=fig, ax=ax1)
-        ax2.axis('off')
+        fig, axes = plt.subplots(nrows=nrows,
+                                 ncols=ncols,
+                                 sharex='none',
+                                 sharey='none',
+                                 figsize=(9 * ncols, 9 * nrows))
+        sns.set(color_codes=True)
 
-        # Set annotation.
-        pearson_coef, _ = stats.pearsonr(df[y], df[x])
-        ax1.annotate(
-            'total N = {:,}'.format(df.shape[0]),
-            xy=(0.03, 0.94),
-            xycoords=ax1.transAxes,
-            color="#000000",
-            fontsize=14,
-            fontweight='bold')
-        ax1.annotate(
-            'total r = {:.2f}'.format(pearson_coef),
-            xy=(0.03, 0.90),
-            xycoords=ax1.transAxes,
-            color="#000000",
-            fontsize=14,
-            fontweight='bold')
 
-        group_column = hue
-        if hue is None:
-            df["hue"] = "#000000"
-            group_column = "hue"
+        row_index = 0
+        col_index = 0
+        for i in range(ncols * nrows):
+            if nrows == 1 and ncols == 1:
+                ax = axes
+            elif nrows == 1 and ncols > 1:
+                ax = axes[col_index]
+            elif nrows > 1 and ncols == 1:
+                ax = axes[row_index]
+            else:
+                ax = axes[row_index, col_index]
 
-        group_corr_coef = {}
-        group_sizes = {}
-        for i, hue_group in enumerate(df[group_column].unique()):
-            subset = df.loc[df[group_column] == hue_group, :]
-            if subset.shape[0] < 2:
-                continue
+            sns.despine(fig=fig, ax=ax)
 
-            facecolors = "#000000"
-            color = "#b22222"
-            if palette is not None:
-                facecolors = palette[hue_group]
-                color = facecolors
+            if i < nplots:
+                plot_df = df.loc[df[group] == panels[i], [x, y]]
+                if plot_df.shape[0] <= 2:
+                    continue
 
-            sns.regplot(x=x, y=y, data=subset, ci=None,
-                        scatter_kws={'facecolors': facecolors,
-                                     'linewidth': 0},
-                        line_kws={"color": color},
-                        ax=ax1)
+                accent_color = palette[panels[i]]
 
-            if hue is not None:
-                subset_pearson_coef, _ = stats.pearsonr(subset[y], subset[x])
-                group_corr_coef[hue_group] = subset_pearson_coef
-                group_sizes[hue_group] = subset.shape[0]
+                coef, _ = stats.spearmanr(plot_df[y], plot_df[x])
 
-        if hue is not None:
-            handles = []
-            for hue_group in df[group_column].unique():
-                if hue_group in palette:
-                    n = "0"
-                    if hue_group in group_sizes:
-                        n = "{:,}".format(group_sizes[hue_group])
-                    r = "NA"
-                    if hue_group in group_corr_coef:
-                        r = "{:.2f}".format(group_corr_coef[hue_group])
-                    handles.append([mpatches.Patch(color=palette[hue_group], label="{} [n={}; r={}]".format(hue_group, n, r)), group_corr_coef[hue_group]])
-            handles.sort(key=lambda x: -x[1])
-            handles = [x[0] for x in handles]
-            ax2.legend(handles=handles, loc="center", fontsize=8)
+                sns.regplot(x=x,
+                            y=y,
+                            data=plot_df,
+                            scatter_kws={'facecolors': "#000000",
+                                         'linewidth': 0,
+                                         's': 60,
+                                         'alpha': 0.75},
+                            line_kws={"color": accent_color,
+                                      'linewidth': 5},
+                            ax=ax)
 
-        ax1.set_xlabel(xlabel,
-                       fontsize=14,
-                       fontweight='bold')
-        ax1.set_ylabel(ylabel,
-                       fontsize=14,
-                       fontweight='bold')
-        ax1.set_title(title,
-                      fontsize=18,
-                      fontweight='bold')
+                ax.axhline(0, ls='--', color="#000000", zorder=-1)
+                ax.axvline(0, ls='--', color="#000000", zorder=-1)
 
-        # Change margins.
-        xlim = ax1.get_xlim()
-        ylim = ax1.get_ylim()
+                ax.annotate(
+                    'N = {}'.format(plot_df.shape[0]),
+                    xy=(0.03, 0.94),
+                    xycoords=ax.transAxes,
+                    color=accent_color,
+                    alpha=1,
+                    fontsize=18,
+                    fontweight='bold')
+                ax.annotate(
+                    'r = {:.2f}'.format(coef),
+                    xy=(0.03, 0.90),
+                    xycoords=ax.transAxes,
+                    color=accent_color,
+                    alpha=1,
+                    fontsize=18,
+                    fontweight='bold')
 
-        xmargin = (xlim[1] - xlim[0]) * 0.05
-        ymargin = (ylim[1] - ylim[0]) * 0.05
+                tmp_xlabel = ""
+                if row_index == (nrows - 1):
+                    tmp_xlabel = xlabel
+                ax.set_xlabel(tmp_xlabel,
+                              color="#000000",
+                              fontsize=20,
+                              fontweight='bold')
+                tmp_ylabel = ""
+                if col_index == 0:
+                    tmp_ylabel = ylabel
+                ax.set_ylabel(tmp_ylabel,
+                              color="#000000",
+                              fontsize=20,
+                              fontweight='bold')
 
-        new_xlim = (xlim[0] - xmargin, xlim[1] + xmargin)
-        new_ylim = (ylim[0] - ymargin, ylim[1] + ymargin)
+                ax.set_title(panels[i],
+                             color=accent_color,
+                             fontsize=25,
+                             fontweight='bold')
 
-        ax1.set_xlim(new_xlim[0], new_xlim[1])
-        ax1.set_ylim(new_ylim[0], new_ylim[1])
+                # Change margins.
+                xlim = ax.get_xlim()
+                ylim = ax.get_ylim()
+
+                xmargin = (xlim[1] - xlim[0]) * 0.05
+                ymargin = (ylim[1] - ylim[0]) * 0.05
+
+                new_xlim = (xlim[0] - xmargin, xlim[1] + xmargin)
+                new_ylim = (ylim[0] - ymargin, ylim[1] + ymargin)
+
+                ax.set_xlim(new_xlim[0], new_xlim[1])
+                ax.set_ylim(new_ylim[0], new_ylim[1])
+            else:
+                tmp_xlabel = ""
+                if row_index == (nrows - 1):
+                    tmp_xlabel = xlabel
+                ax.set_xlabel(tmp_xlabel,
+                              color="#000000",
+                              fontsize=20,
+                              fontweight='bold')
+
+            col_index += 1
+            if col_index > (ncols - 1):
+                col_index = 0
+                row_index += 1
 
         outpath = os.path.join(self.outdir, "{}.png".format(filename))
         fig.savefig(outpath)
@@ -366,13 +365,11 @@ class main():
         print("    > Data: {}".format(self.x_data_path))
         print("    > Transpose: {}".format(self.x_transpose))
         print("    > Index: {}".format(self.x_index))
-        print("    > Ranked: {}".format(self.x_ranked))
         print("    > Label: {}".format(self.x_label))
         print("  > Y-axis:")
         print("    > Data: {}".format(self.y_data_path))
         print("    > Transpose: {}".format(self.y_transpose))
         print("    > Index: {}".format(self.y_index))
-        print("    > Ranked: {}".format(self.y_ranked))
         print("    > Label: {}".format(self.y_label))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
