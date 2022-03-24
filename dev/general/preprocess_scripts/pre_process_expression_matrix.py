@@ -180,7 +180,7 @@ class main():
         dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
         dataset_sample_counts.sort(key=lambda x: -x[1])
         datasets = [csc[0] for csc in dataset_sample_counts]
-        print("\tDatasets: {:,} [N = {:,}]".format(", ".join(datasets), len(datasets)))
+        print("\tDatasets: {} [N = {:,}]".format(", ".join(datasets), len(datasets)))
 
         dataset_s = std_df.copy()
         dataset_s.set_index(std_df.columns[0], inplace=True)
@@ -247,7 +247,7 @@ class main():
                                                        dataset_df=dataset_df)
 
         print("\tSaving file.")
-        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix1.txt.gz"))
+        self.save_file(df=correction_df, outpath=os.path.join(self.file_outdir, "correction_matrix.txt.gz"))
 
         print("Step 7: remove technical covariates OLS.")
         corrected_df = self.calculate_residuals(df=df, correction_df=correction_df)
