@@ -3,7 +3,7 @@
 """
 File:         run_picalo_with_n_expr_pcs.py
 Created:      2021/12/02
-Last Changed: 2022/02/10
+Last Changed: 2022/03/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -87,12 +87,12 @@ class main():
         self.force_continue = False
         self.verbose = True
         outdir = getattr(arguments, 'outdir')
-        outfolder = getattr(arguments, 'outfolder')
+        self.outfolder = getattr(arguments, 'outfolder')
 
         # Set variables.
         if outdir is None:
             outdir = str(os.path.dirname(os.path.abspath(__file__)))
-        self.outdir = os.path.join(outdir, "run_PICALO_with_n_expr_pcs", outfolder)
+        self.outdir = os.path.join(outdir, "run_PICALO_with_n_expr_pcs", self.outfolder)
         self.technical_covariates_outdir = os.path.join(self.outdir, "technical_covariates")
         self.jobs_dir = os.path.join(self.outdir, "jobs")
         self.jobs_output_dir = os.path.join(self.jobs_dir, "output")
@@ -324,7 +324,7 @@ class main():
         jobfile_paths = []
         job_names = []
         for label, tech_covariate_path in pcs.items():
-            job_name = "{}-{}".format(self.picalo_outdir, label)
+            job_name = "{}-{}".format(self.outfolder, label)
             jobfile_path = self.create_job_file(job_name=job_name,
                                                 tech_covariate_path=tech_covariate_path,
                                                 jobs_dir=self.jobs_dir,
@@ -398,14 +398,13 @@ class main():
         print("  Plotting.")
         self.plot_info_df_m(info_df_m=info_df_m,
                             pic_groups=pic_groups,
-                            name=self.picalo_outdir)
+                            name=self.outfolder)
         self.plot_summary_stats(summary_stats_df=summary_stats_df,
                                 pic_groups=pic_groups,
-                                name=self.picalo_outdir)
-
+                                name=self.outfolder)
         self.plot_pics_df(pics_df=pics_df,
                           pic_groups=pic_groups,
-                          name=self.picalo_outdir)
+                          name=self.outfolder)
         print("")
 
     @staticmethod

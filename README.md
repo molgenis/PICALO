@@ -22,8 +22,8 @@ See 'Installing' on how to install these packages. Note that the performance / r
 
 Install the required packages. Consider using a virtual environment to ensure the right version of packages are used.
 ```  
-python3 -m venv env
-source env/bin/activate
+python3 -m venv <name of virtual environment>
+source <name of virtual environment>/bin/activate
 ```
 
 The python packager manager (pip) and the requirements file can be used to install all the necessary packages. Note that the [requirements.txt](requirements.txt) file includes depedencies with their correct versions. Therefore, include the flag --no-dependencies when installing the packages to prevent unnecessary upgrading. 
@@ -50,10 +50,13 @@ TODO
 ## Content
 
  * **src**: the source code for the PICALO program
- * **dev/<Dataset>/preprocess_scripts**: script used for pre-processing the input data
- * **dev/<Dataset>/plot_scripts**: scripts used to visualise the output of PICALO
- * **dev/<Dataset>/test_scripts**: scripts used to test things / visualise stuff / etc.
+ * ***/plot_scripts**: scripts used to visualise the output of PICALO
+ * ***/postprocess_scripts**: script used for post-processing the PICALO output (i.e. downstream analyses)
+ * ***/preprocess_scripts**: script used for pre-processing the input data
+ * ***/presentation_scripts**: script used for creating plots for presentations
+ * ***/test_scripts**: scripts used to test things / visualise stuff / etc.
 
+The files are split between **general** and dataset specific scripts (**BIOS** / **MetaBrain**).
 
 ## Author  
 
