@@ -57,15 +57,21 @@ Syntax:
 ### MetaBrain EUR ###
 
 ./plot_df_per_column.py \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexEUR-allchr-mds-dupsremoved-VariantFilter.txt.gz \
     -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
-    -o MetaBrain-MetaBrain-allchr-mds-dupsremoved-VariantFilter \
+    -o MetaBrain-CortexEUR-allchr-mds-dupsremoved-VariantFilter \
+    -e png pdf
+    
+./plot_df_per_column.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexEUR-allchr-mds-noENA-dupsremoved-VariantFilter.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
+    -o MetaBrain-CortexEUR-allchr-mds-noENA-dupsremoved-VariantFilter \
     -e png pdf
 
 ./plot_df_per_column.py \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexEUR-allchr-mds-noENA-dupsremoved-NoMDSOutlier-VariantFilter.txt.gz \
     -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
-    -o MetaBrain-MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter \
+    -o MetaBrain-CortexEUR-allchr-mds-noENA-dupsremoved-NoMDSOutlier-VariantFilter \
     -e png pdf
 
 ### MetaBrain AFR ###
@@ -77,9 +83,9 @@ Syntax:
     -e png pdf
 
 ./plot_df_per_column.py \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexAFR-allchr-mds-dupsremoved-outlierremoved-VariantFilter.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/preprocess_mds_file/MetaBrain-CortexAFR-allchr-mds-dupsremoved-NoMDSOutlier-VariantFilter.txt.gz \
     -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_STD_cortex.txt.gz \
-    -o MetaBrain-CortexAFR-allchr-mds-dupsremoved-outlierremoved-VariantFilter \
+    -o MetaBrain-CortexAFR-allchr-mds-dupsremoved-NoMDSOutlier-VariantFilter \
     -e png pdf
 
 ### BIOS ###

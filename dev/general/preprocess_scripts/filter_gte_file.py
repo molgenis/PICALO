@@ -53,12 +53,12 @@ Syntax:
 
 ./filter_gte_file.py \
     -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_ENASamples.txt.gz \
+    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CortexEUR_ENASamples.txt.gz \
     -o MetaBrain_CortexEUR_NoENA
 
 ./filter_gte_file.py \
     -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_ENASamples_andMDSOutlierSample.txt.gz \
+    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CortexEUR_ENASamples_andMDSOutlierSample.txt.gz \
     -o MetaBrain_CortexEUR_NoENA_NoMDSOutlier
 
 ### MetaBrain AFR ###

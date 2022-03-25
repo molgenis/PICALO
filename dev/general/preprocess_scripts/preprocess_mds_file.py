@@ -54,10 +54,15 @@ Syntax:
 ./preprocess_mds_file.py \
     -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-dupsremoved-VariantFilter.mds \
     -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz \
-    -op MetaBrain-CortexEUR
+    -op MetaBrain-CortexEUR-
 
 ./preprocess_mds_file.py \
-    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved-outlierremoved-VariantFilter.mds \
+    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved-VariantFilter.mds \
+    -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz \
+    -op MetaBrain-CortexEUR-
+    
+./preprocess_mds_file.py \
+    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain-allchr-mds-noENA-dupsremoved-NoMDSOutlier-VariantFilter.mds \
     -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz \
     -op MetaBrain-CortexEUR-
     
@@ -76,7 +81,7 @@ Syntax:
 #### BIOS ####
 
 ./preprocess_mds_file.py \
-    -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-11-mds-NoRNAPhenoNA_NoSexNA-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter.mds \
+    -d /groups/umcg-bios/tmp01/resources/genotypes-hrc-imputed-vcf/2021-11-11-mds-NoRNAPhenoNA-NoSexNA-SamplesVariantFilter/allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-VariantSubsetFilter.mds \
     -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
     -op BIOS-
 
