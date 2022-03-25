@@ -24,7 +24,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import time
 import os
 
@@ -76,7 +75,7 @@ class main():
         self.mgs = cla.get_argument('min_group_size')
 
         # Define the current directory.
-        current_dir = str(Path(__file__).parent.parent)
+        current_dir = str(os.path.dirname(os.path.abspath(__file__)))
 
         # Prepare an output directory.
         self.outdir = os.path.join(current_dir, "calculate_explained_variance", cla.get_argument('outdir'))

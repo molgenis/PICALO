@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import os
 
 # Third party imports.
@@ -57,7 +56,7 @@ class main():
         self.pheno_path = "/groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt"
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bios_phenotype_matrix')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'prepare_bios_phenotype_matrix')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

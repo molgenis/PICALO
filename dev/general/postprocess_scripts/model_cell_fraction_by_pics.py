@@ -24,7 +24,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
@@ -72,7 +71,7 @@ class main():
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
-        base_dir = str(Path(__file__).parent.parent)
+        base_dir = str(os.path.dirname(os.path.abspath(__file__)))
         self.file_outdir = os.path.join(base_dir, 'model_cell_fraction_by_pics')
         self.plot_outdir = os.path.join(self.file_outdir, 'plot')
         for outdir in [self.plot_outdir, self.file_outdir]:

@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import os
 
 # Third party imports.
@@ -53,7 +52,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 class main():
     def __init__(self):
-        self.jobs_dir = os.path.join(Path().resolve(), 'create_PICALO_jobs')
+        self.jobs_dir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'create_PICALO_jobs')
         self.jobs_output_dir = os.path.join(self.jobs_dir, 'output')
         for dir in [self.jobs_dir, self.jobs_output_dir]:
             if not os.path.exists(dir):

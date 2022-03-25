@@ -23,14 +23,10 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
-import argparse
-import glob
 import os
 
 # Third party imports.
 import pandas as pd
-import numpy as np
 
 # Local application imports.
 
@@ -61,7 +57,7 @@ class main():
         self.datasets = ["NABEC-Human550", "GVEX-V2", "LIBD-h650", "UCLA-ASD", "NABEC-Human610", "BrainGVEX-V2", "CMC", "LIBD-1M", "CMC-set2", "TargetALS", "AMPAD-ROSMAP", "GTEX-WGS", "AMPAD-MAYO", "AMPAD-MSBB", "2020-01-08-ENA-genotypes", "LIBD-h650"]
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_bryois_genotype_dump')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'prepare_bryois_genotype_dump')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

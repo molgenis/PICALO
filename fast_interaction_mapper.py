@@ -24,7 +24,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import time
 import os
@@ -76,12 +75,13 @@ class main():
         self.eqtl_alpha = getattr(arguments, 'eqtl_alpha')
         self.ieqtl_alpha = getattr(arguments, 'ieqtl_alpha')
         self.conditional = getattr(arguments, 'conditional')
+        outdir = getattr(arguments, 'outdir')
+        outfolder = getattr(arguments, 'outfolder')
 
-        # Define the current directory.
-        current_dir = str(os.path.dirname(os.path.abspath(__file__)))
-
-        # Prepare an output directory.
-        self.outdir = os.path.join(current_dir, "fast_interaction_mapper", getattr(arguments, 'outdir'))
+        # Set variables.
+        if outdir is None:
+            outdir = str(os.path.dirname(os.path.abspath(__file__)))
+        self.outdir = os.path.join(outdir, "fast_interaction_mapper", outfolder)
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -217,8 +217,14 @@ class main():
         parser.add_argument("-conditional",
                             action='store_true',
                             help="Perform conditional analysis. Default: False.")
-        parser.add_argument("-o",
+        parser.add_argument("-od",
                             "--outdir",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The name of the output path.")
+        parser.add_argument("-of",
+                            "--outfolder",
                             type=str,
                             required=False,
                             default="output",

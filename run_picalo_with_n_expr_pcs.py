@@ -23,11 +23,9 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 from datetime import datetime
 import subprocess
 import argparse
-import glob
 import time
 import os
 
@@ -88,17 +86,13 @@ class main():
         self.tol = getattr(arguments, 'tol')
         self.force_continue = False
         self.verbose = True
-        self.picalo_outdir = getattr(arguments, 'outdir')
+        outdir = getattr(arguments, 'outdir')
+        outfolder = getattr(arguments, 'outfolder')
 
-        # Safe the other arguments.
-        self.picalo_path = getattr(arguments, 'picalo_path')
-        self.step_size = getattr(arguments, 'step_size')
-        self.print_interval = getattr(arguments, 'print_interval')
-        self.sleep_time = getattr(arguments, 'sleep_time')
-        self.max_end_time = int(time.time()) + ((getattr(arguments, 'max_runtime') * 60) - 5) * 60
-
-        # Prepare an output directory.
-        self.outdir = os.path.join(Path().resolve(), "run_PICALO_with_n_expr_pcs", self.picalo_outdir)
+        # Set variables.
+        if outdir is None:
+            outdir = str(os.path.dirname(os.path.abspath(__file__)))
+        self.outdir = os.path.join(outdir, "run_PICALO_with_n_expr_pcs", outfolder)
         self.technical_covariates_outdir = os.path.join(self.outdir, "technical_covariates")
         self.jobs_dir = os.path.join(self.outdir, "jobs")
         self.jobs_output_dir = os.path.join(self.jobs_dir, "output")
@@ -106,6 +100,13 @@ class main():
         for dir in [self.outdir, self.technical_covariates_outdir, self.jobs_dir, self.jobs_output_dir, self.plot_dir]:
             if not os.path.exists(dir):
                 os.makedirs(dir)
+
+        # Safe the other arguments.
+        self.picalo_path = getattr(arguments, 'picalo_path')
+        self.step_size = getattr(arguments, 'step_size')
+        self.print_interval = getattr(arguments, 'print_interval')
+        self.sleep_time = getattr(arguments, 'sleep_time')
+        self.max_end_time = int(time.time()) + ((getattr(arguments, 'max_runtime') * 60) - 5) * 60
 
         # Define the color palette.
         self.palette = {
@@ -260,8 +261,14 @@ class main():
         parser.add_argument("-verbose",
                             action='store_true',
                             help="Enable verbose output. Default: False.")
-        parser.add_argument("-o",
+        parser.add_argument("-od",
                             "--outdir",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The name of the output path.")
+        parser.add_argument("-of",
+                            "--outfolder",
                             type=str,
                             required=False,
                             default="output",
@@ -751,7 +758,7 @@ class main():
         print("  > Tolerance: {}".format(self.tol))
         print("  > Force continue: {}".format(self.force_continue))
         print("  > Verbose: {}".format(self.verbose))
-        print("  > PICALO output directory: {}".format(self.picalo_outdir))
+        print("  > Output directory: {}".format(self.outdir))
         print("  > PICALO path: {}".format(self.picalo_path))
         print("  > Step size: {}".format(self.step_size))
         print("  > Print interval: {} sec".format(self.sleep_time))

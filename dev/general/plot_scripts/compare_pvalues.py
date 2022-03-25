@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
@@ -71,7 +70,7 @@ class main():
         self.data_path3 = "/groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics/BIOS_eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

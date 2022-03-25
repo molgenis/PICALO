@@ -23,14 +23,11 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
-import gzip
 import os
 
 # Third party imports.
 import pandas as pd
-import numpy as np
 
 # Local application imports.
 
@@ -63,7 +60,7 @@ class main():
         self.output_filename = getattr(arguments, 'output_filename')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'harmonize_genotype')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'harmonize_genotype')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

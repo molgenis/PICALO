@@ -23,15 +23,12 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
-import math
 import os
 
 # Third party imports.
 import pandas as pd
 import numpy as np
 from scipy import stats
-from statsmodels.stats import multitest
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
@@ -74,7 +71,7 @@ class main():
         self.min_avg_expr = 1
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

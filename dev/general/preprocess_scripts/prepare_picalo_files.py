@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
@@ -66,9 +65,12 @@ class main():
         self.post_corr_pcs_path = getattr(arguments, 'post_corr_pcs')
         self.gte_path = getattr(arguments, 'genotype_to_expression')
         outdir = getattr(arguments, 'outdir')
+        outfolder = getattr(arguments, 'outfolder')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_picalo_files', outdir)
+        if outdir is None:
+            outdir = str(os.path.dirname(os.path.abspath(__file__)))
+        self.outdir = os.path.join(outdir, "prepare_picalo_files", outfolder)
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -131,11 +133,18 @@ class main():
                             default=None,
                             help="The path to the genotype-to-expression"
                                  " link matrix.")
-        parser.add_argument("-o",
+        parser.add_argument("-od",
                             "--outdir",
                             type=str,
-                            required=True,
-                            help="The name of the output directory.")
+                            required=False,
+                            default=None,
+                            help="The name of the output path.")
+        parser.add_argument("-of",
+                            "--outfolder",
+                            type=str,
+                            required=False,
+                            default="output",
+                            help="The name of the output folder.")
 
         return parser.parse_args()
 

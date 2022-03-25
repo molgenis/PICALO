@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
@@ -73,7 +72,7 @@ class main():
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.expression_path = getattr(arguments, 'expression')
 
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'calc_avg_gene_expression')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'calc_avg_gene_expression')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

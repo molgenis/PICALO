@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
@@ -62,7 +61,7 @@ class main():
         self.out_filename = getattr(arguments, 'outfile')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'calc_replication_score')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'calc_replication_score')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

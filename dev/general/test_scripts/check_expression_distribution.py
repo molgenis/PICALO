@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import os
 
 # Third party imports.
@@ -79,7 +78,7 @@ class main():
                                   "PIC15": "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-11-24-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-PIC-Combined/PIC15/results_iteration049.txt.gz",
                                   }
 
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

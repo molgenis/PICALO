@@ -23,8 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
-import argparse
 import os
 
 # Third party imports.
@@ -58,7 +56,7 @@ class main():
         self.pheno_path = "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-02-03-phenotype-table/2020-03-09.brain.phenotypes.txt"
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'prepare_metabrain_phenotype_matrix')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'prepare_metabrain_phenotype_matrix')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

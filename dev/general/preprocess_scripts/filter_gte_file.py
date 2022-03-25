@@ -23,14 +23,11 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
-import glob
 import os
 
 # Third party imports.
 import pandas as pd
-import numpy as np
 
 # Local application imports.
 
@@ -109,7 +106,7 @@ class main():
         outdir = getattr(arguments, 'outdir')
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'filter_gte_file', outdir)
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'filter_gte_file', outdir)
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

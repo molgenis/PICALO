@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
@@ -112,7 +111,7 @@ class main():
         self.sd = 4
 
         # Set variables.
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'plot')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

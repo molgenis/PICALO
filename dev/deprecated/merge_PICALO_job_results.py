@@ -23,7 +23,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import subprocess
 import os
@@ -68,8 +67,9 @@ class main():
         output = getattr(arguments, 'output')
         if output is None:
             output = self.job_name
-        self.data_outdir = os.path.join(Path().resolve(), 'merge_PICALO_job_results', output, "data")
-        self.plot_outdir = os.path.join(Path().resolve(), 'merge_PICALO_job_results', output, "plot")
+        base_dir = str(os.path.dirname(os.path.abspath(__file__)))
+        self.data_outdir = os.path.join(base_dir, 'merge_PICALO_job_results', output, "data")
+        self.plot_outdir = os.path.join(base_dir, 'merge_PICALO_job_results', output, "plot")
         for outdir in [self.data_outdir, self.plot_outdir]:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)

@@ -24,7 +24,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
-from pathlib import Path
 import argparse
 import os
 
@@ -101,7 +100,7 @@ class main():
         self.gte_path = getattr(arguments, 'gene_to_exression')
         self.output_prefix = getattr(arguments, 'output_prefix')
 
-        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'preprocess_mds_file')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'preprocess_mds_file')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
