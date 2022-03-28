@@ -3,7 +3,7 @@
 """
 File:         run_picalo_with_n_expr_pcs.py
 Created:      2021/12/02
-Last Changed: 2022/03/25
+Last Changed: 2022/03/28
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -372,6 +372,12 @@ class main():
 
             time.sleep(self.sleep_time)
 
+        print("  Loading covariate selection files.")
+        cov_select_df = self.combine_picalo_cov_selection_files(job_names=job_names)
+        print("Covariate selection stats:")
+        print(cov_select_df)
+        print("")
+
         print("  Loading info files.")
         info_df_m, summary_stats_df = self.combine_picalo_info_files(job_names=job_names)
         print("Summary stats:")
@@ -385,26 +391,54 @@ class main():
         print("")
 
         print("  Saving results.")
+        self.save_file(df=cov_select_df, outpath=os.path.join(self.outdir, "CovariateSelection.txt.gz"))
         self.save_file(df=summary_stats_df, outpath=os.path.join(self.outdir, "SummaryStats.txt.gz"))
         self.save_file(df=pics_df, outpath=os.path.join(self.outdir, "PICBasedOnPCX.txt.gz"))
         print("")
 
         print("  Grouping PICs.")
-        pic_groups = self.group_pics(df=pics_df)
-        for group_index, group_indices in pic_groups.items():
+        pic_cov_groups = self.group_pics_based_on_covariate(df=summary_stats_df)
+        print("Covariate groups:")
+        for group_index, group_indices in pic_cov_groups.items():
+            print("\t{}: {}".format(group_index, ", ".join(group_indices)))
+        print("")
+
+        print("Correlation groups:")
+        pic_corr_groups = self.group_pics_based_on_correlation(df=pics_df)
+        for group_index, group_indices in pic_corr_groups.items():
             print("\tGroup{}: {}".format(group_index, ", ".join(group_indices)))
         print("")
 
+        print("Preparing color palette.")
+        top_covariates = cov_select_df.mean(axis=1)
+        top_covariates.sort_values(inplace=True, ascending=False)
+        covariate_palette = {"": self.palette[-1]}
+        for i, (covariate, _) in enumerate(top_covariates.iteritems()):
+            if i < 5:
+                covariate_palette[covariate] = self.palette[i]
+
         print("  Plotting.")
-        self.plot_info_df_m(info_df_m=info_df_m,
-                            pic_groups=pic_groups,
-                            name=self.outfolder)
-        self.plot_summary_stats(summary_stats_df=summary_stats_df,
+        self.plot_covariate_selection(cov_select_df=cov_select_df,
+                                      palette=covariate_palette,
+                                      name=self.outfolder)
+        for pic_groups, palette, appendix in zip([pic_cov_groups, pic_corr_groups],
+                                                 [covariate_palette, self.palette],
+                                                 ["coloredByCorrelation", "coloredByCovariate"]):
+            self.plot_info_df_m(info_df_m=info_df_m,
                                 pic_groups=pic_groups,
-                                name=self.outfolder)
-        self.plot_pics_df(pics_df=pics_df,
-                          pic_groups=pic_groups,
-                          name=self.outfolder)
+                                palette=palette,
+                                name=self.outfolder,
+                                appendix=appendix)
+            self.plot_summary_stats(summary_stats_df=summary_stats_df,
+                                    pic_groups=pic_groups,
+                                    palette=palette,
+                                    name=self.outfolder,
+                                    appendix=appendix)
+            self.plot_pics_df(pics_df=pics_df,
+                              pic_groups=pic_groups,
+                              palette=palette,
+                              name=self.outfolder,
+                              appendix=appendix)
         print("")
 
     @staticmethod
@@ -486,6 +520,20 @@ class main():
         print(" ".join(command))
         subprocess.call(command)
 
+    def combine_picalo_cov_selection_files(self, job_names):
+        cov_selec_df_list = []
+        for job_name in job_names:
+            fpath = os.path.join(self.picalo_path, "output", job_name, "PIC1", "covariate_selection.txt.gz")
+            covariate = job_name.split("-")[-1].replace("AsCov", "")
+            if os.path.exists(fpath):
+                cov_select_df = self.load_file(inpath=fpath, header=0, index_col=0)
+                cov_select_df.columns = [covariate]
+                cov_selec_df_list.append(cov_select_df)
+                del cov_select_df
+        cov_select_df = pd.concat(cov_selec_df_list, axis=1)
+
+        return cov_select_df
+
     def combine_picalo_info_files(self, job_names):
         info_df_m_list = []
         summary_stats = []
@@ -539,7 +587,18 @@ class main():
         return pic_df
 
     @staticmethod
-    def group_pics(df):
+    def group_pics_based_on_covariate(df):
+        groups = {}
+        for index, row in df.iterrows():
+            covariate = row["covariate"]
+            if covariate in groups:
+                groups[covariate].append(index)
+            else:
+                groups[covariate] = [index]
+        return groups
+
+    @staticmethod
+    def group_pics_based_on_correlation(df):
         groups = {}
         max_group_count = 0
         for index in df.index:
@@ -570,7 +629,20 @@ class main():
 
         return groups
 
-    def plot_info_df_m(self, info_df_m, pic_groups, name):
+    def plot_covariate_selection(self, cov_select_df, palette, name):
+        cov_select_dfm = cov_select_df.melt(ignore_index=False).reset_index(drop=False)
+        cov_select_dfm["covariate"] = cov_select_dfm["Covariate"]
+        cov_select_dfm.loc[~cov_select_dfm["covariate"].isin(palette.keys()), "covariate"] = ""
+        cov_select_dfm["variable"] = cov_select_dfm["variable"].str.split("ExpressionPCs", n=1, expand=True)[0].astype(int)
+        self.lineplot(df_m=cov_select_dfm, x="variable", y="value",
+                      units="Covariate", hue="covariate",
+                      palette=palette,
+                      xlabel="#expression PCs removed",
+                      ylabel="#ieQTLS (FDR<0.05)",
+                      filename=name + "_covariate_selection_lineplot",
+                      outdir=self.plot_dir)
+
+    def plot_info_df_m(self, info_df_m, pic_groups, palette, name, appendix=""):
         info_df_m["group"] = -1
         for group_index, group_indices in pic_groups.items():
             info_df_m.loc[info_df_m["N-PCs"].isin(group_indices), "group"] = group_index
@@ -584,17 +656,17 @@ class main():
 
             self.lineplot(df_m=subset_m, x="index", y="value",
                           units="N-PCs", hue="group",
-                          palette=self.palette,
+                          palette=palette,
                           xlabel="iteration", ylabel=variable,
-                          filename=name + "-" + variable.replace(" ", "_").lower() + "_lineplot",
+                          filename=name + "-" + variable.replace(" ", "_").lower() + "_lineplot" + appendix,
                           outdir=self.plot_dir)
 
             if "Likelihood" in variable:
                 self.lineplot(df_m=subset_m, x="index", y="log10 value",
                               units="N-PCs", hue="group",
-                              palette=self.palette,
+                              palette=palette,
                               xlabel="iteration", ylabel="log10 " + variable,
-                              filename=name + "-" + variable.replace(" ", "_").lower() + "_lineplot_log10",
+                              filename=name + "-" + variable.replace(" ", "_").lower() + "_lineplot_log10" + appendix,
                               outdir=self.plot_dir)
         del info_df_m
 
@@ -633,7 +705,8 @@ class main():
         fig.savefig(outpath)
         plt.close()
 
-    def plot_summary_stats(self, summary_stats_df, pic_groups, name):
+    def plot_summary_stats(self, summary_stats_df, pic_groups, palette, name,
+                           appendix=""):
         summary_stats_df["group"] = -1
         for group_index, group_indices in pic_groups.items():
             summary_stats_df.loc[summary_stats_df.index.isin(group_indices), "group"] = group_index
@@ -643,11 +716,11 @@ class main():
                          x="N-PCs",
                          y=y,
                          hue="group",
-                         palette=self.palette,
+                         palette=palette,
                          xlabel="#expression PCs removed",
                          ylabel="#ieQTLs (FDR<0.05)",
                          title=y,
-                         filename=name + "_{}_barplot".format(y),
+                         filename=name + "_{}_barplot{}".format(y, appendix),
                          outdir=self.plot_dir
                          )
 
@@ -687,18 +760,18 @@ class main():
         fig.savefig(outpath)
         plt.close()
 
-    def plot_pics_df(self, pics_df, pic_groups, name):
+    def plot_pics_df(self, pics_df, pic_groups, palette, name, appendix=""):
         annot_df = pd.DataFrame(-1, index=pics_df.index, columns=["group"])
         for group_index, group_indices in pic_groups.items():
             annot_df.loc[group_indices, "group"] = group_index
 
-        colors = [self.palette[group] for group in annot_df["group"]]
+        colors = [palette[group] for group in annot_df["group"]]
         corr_df = self.correlate(df=pics_df)
 
         self.plot_clustermap(df=corr_df,
                              colors=colors,
                              outdir=self.plot_dir,
-                             filename=name + "_correlation_clustermap")
+                             filename=name + "_correlation_clustermap" + appendix)
 
     @staticmethod
     def correlate(df):

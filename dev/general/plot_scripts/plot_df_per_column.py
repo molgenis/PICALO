@@ -114,7 +114,7 @@ class main():
         self.transpose = getattr(arguments, 'transpose')
         self.extensions = getattr(arguments, 'extension')
         self.output_filename = getattr(arguments, 'output')
-        self.sd = 4
+        self.sd = 3
 
         # Set variables.
         self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
