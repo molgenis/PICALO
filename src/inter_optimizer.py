@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2021/12/09
+Last Changed: 2022/03/30
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -184,7 +184,7 @@ class InteractionOptimizer:
             sum_abs_norm_delta_ll = np.sum(np.abs(post_optimization_ll_a - pre_optimization_ll_a) / np.abs(pre_optimization_ll_a))
             self.log.info("\t\t\tSum absolute normalized \u0394 log likelihood: {:.2e}".format(sum_abs_norm_delta_ll))
 
-            # Calculate the pearson correlation with the previous iteration.
+            # Calculate the pearson correlation before and after optimalisation.
             pearsonr = calc_pearsonr_vector(x=context_a, y=optimized_context_a)
             self.log.info("\t\t\tPearson r: {:.6f}".format(pearsonr))
 
@@ -212,13 +212,60 @@ class InteractionOptimizer:
                                                  int(rt_sec)))
             self.log.info("")
 
+            # Check if we are stuck in an oscillating loop. Start checking
+            # this once we reached the minimum number of iterations + 1.
+            if iteration >= 3 and iteration >= self.min_iter:
+                # Check the correlation between this iteration and 2 iterations
+                # back. Also check the correlation between the previous
+                # iteration and 2 before that.
+                pearsonr1 = calc_pearsonr_vector(
+                    x=iterations_m[iteration - 1, :],
+                    y=iterations_m[iteration + 1, :]
+                )
+
+                pearsonr2 = calc_pearsonr_vector(
+                    x=iterations_m[iteration - 2, :],
+                    y=iterations_m[iteration, :]
+                )
+
+                # If both are highly correlated that means we are in an
+                # oscillating loop.
+                if (1 - pearsonr1) < self.tol and (1 - pearsonr2) < self.tol:
+                    self.log.warning("\t\tIterations are oscillating.")
+                    self.log.warning("\t\t  iteration{} vs iteration{}:"
+                                     "\tr = {:.6f}".format(iteration,
+                                                           iteration - 2,
+                                                           pearsonr1))
+                    self.log.warning("\t\t  iteration{} vs iteration{}:"
+                                     "\tr = {:.6f}".format(iteration - 1,
+                                                           iteration - 3,
+                                                           pearsonr2))
+                    self.log.warning("")
+
+                    # Check which of the recurring components has the
+                    # highest amount of interaction.
+                    if prev_included_ieqtls[0] > n_ieqtls:
+                        self.log.warning("\t\t  Rolling back to previous "
+                                         "iteration since it had {:,} more "
+                                         "ieQTLs.".format(prev_included_ieqtls[0] - n_ieqtls))
+                        self.log.warning("")
+                        context_a = iterations_m[iteration, :]
+                        n_ieqtls = prev_included_ieqtls[0]
+                    else:
+                        n_iterations_performed += 1
+
+                    self.log.warning("\t\tModel converged")
+                    self.log.info("")
+                    stop = False
+                    break
+
             # Overwrite the variables for the next round. This has to be
             # before the break because we define context_a as the end result.
             context_a = optimized_context_a
             prev_included_ieqtls = (n_ieqtls, included_ieqtl_ids)
             n_iterations_performed += 1
 
-            # Check if we converged.
+            # Check if we converged normally.
             if n_iterations_performed >= self.min_iter and (1 - pearsonr) < self.tol:
                 self.log.warning("\t\tModel converged")
                 self.log.info("")
@@ -261,6 +308,7 @@ class InteractionOptimizer:
                            log=self.log)
 
             del n_ieqtls_per_sample_df, n_ieqtls_per_sample_m, info_df, info_m
+        self.log.info("")
 
         return context_a, n_ieqtls, stop
 
