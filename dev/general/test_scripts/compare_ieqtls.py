@@ -224,7 +224,7 @@ class main():
         print("  Overlap in ieQTLs: {:,}".format(len(overlap)))
         print("")
         #
-        # corr_df = pd.read_csv("/groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS-1MscBloodNL-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-UT-CD4T-Unique-BulkTechPICsCorrected-PIC1AndCD3G_gene_correlations-avgExpressionAdded.txt.gz", sep="\t", header=0, index_col=None)
+        # corr_df = pd.read_csv("/groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2021-12-09-BIOS-CenterScaledPCA/2022-03-24-BIOS-1MscBloodNL-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-UT-CD4T-Unique-BulkTechPICsCorrected-PIC1AndCD3G_gene_correlations-avgExpressionAdded.txt.gz", sep="\t", header=0, index_col=None)
         # corr_df.index = corr_df["ProbeName"]
         # print(corr_df)
 

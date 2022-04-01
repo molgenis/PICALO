@@ -193,7 +193,6 @@ class main():
             corr_df, pvalue_df = self.correlate(index_df=dataset_row_df,
                                                 columns_df=dataset_col_df,
                                                 triangle=triangle)
-            corr_df.to_excel("pc_correlations.xlsx")
 
             print(corr_df)
             print(pvalue_df)

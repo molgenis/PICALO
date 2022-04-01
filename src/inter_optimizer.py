@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2022/03/30
+Last Changed: 2022/04/01
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -170,6 +170,14 @@ class InteractionOptimizer:
             # Optimize the interaction vector.
             optimized_context_a, n_ieqtls_per_sample_a = self.optimize_ieqtls(ieqtls)
 
+            # Check if we have at least 2 ieQTLs per sample.
+            if np.min(n_ieqtls_per_sample_a) <= 1:
+                self.log.error("\t\t  Some samples have no or not enough ieQTLs for optimization")
+                if iteration == 0:
+                    context_a = None
+                    stop = False
+                break
+
             # Safe that interaction vector.
             if iteration == 0:
                 iterations_m[iteration, :] = context_a
@@ -308,7 +316,6 @@ class InteractionOptimizer:
                            log=self.log)
 
             del n_ieqtls_per_sample_df, n_ieqtls_per_sample_m, info_df, info_m
-        self.log.info("")
 
         return context_a, n_ieqtls, stop
 

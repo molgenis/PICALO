@@ -381,6 +381,8 @@ class Main:
                                index=True,
                                log=self.log)
 
+            self.log.info("")
+
         if n_components_performed == 0:
             self.log.error("No PICs identified. Stopping PICALO.")
 
