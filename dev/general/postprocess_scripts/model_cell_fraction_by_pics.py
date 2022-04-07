@@ -55,10 +55,35 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./model_cell_fraction_by_pics.py -h
 
+### BIOS ###
+
+./model_cell_fraction_by_pics.py \
+    -cf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -od 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_NormalRes \
+    -on 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_NormalRes
+    
+    
+./model_cell_fraction_by_pics.py \
+    -cf /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -od 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_HighRes \
+    -on 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_HighRes
+
 ### MetaBrain ###
 
-### BIOS ###
+./model_cell_fraction_by_pics.py \
+    -cf /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -od 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-NormalRes \
+    -on 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-NormalRes
     
+./model_cell_fraction_by_pics.py \
+    -cf /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table_complete.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -od 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-HighRes \
+    -on 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-HighRes
+
 """
 
 
@@ -68,11 +93,12 @@ class main():
         arguments = self.create_argument_parser()
         self.cf_path = getattr(arguments, 'cell_fractions')
         self.pics_path = getattr(arguments, 'pics')
-        self.out_filename = getattr(arguments, 'outfile')
+        outdir = getattr(arguments, 'outdir')
+        self.outname = getattr(arguments, 'outname')
 
         # Set variables.
         base_dir = str(os.path.dirname(os.path.abspath(__file__)))
-        self.file_outdir = os.path.join(base_dir, 'model_cell_fraction_by_pics')
+        self.file_outdir = os.path.join(base_dir, 'model_cell_fraction_by_pics', outdir)
         self.plot_outdir = os.path.join(self.file_outdir, 'plot')
         for outdir in [self.plot_outdir, self.file_outdir]:
             if not os.path.exists(outdir):
@@ -151,11 +177,17 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the PICS matrix.")
-        parser.add_argument("-o",
-                            "--outfile",
+        parser.add_argument("-od",
+                            "--outdir",
                             type=str,
-                            default="output",
-                            help="The name of the outfile. Default: output.")
+                            required=False,
+                            default=None,
+                            help="The name of the output path.")
+        parser.add_argument("-on",
+                            "--outname",
+                            type=str,
+                            required=True,
+                            help="The name of the output files.")
 
         return parser.parse_args()
 
@@ -218,7 +250,6 @@ class main():
                                       index=index,
                                       columns=pics
                                       )
-        print(correlation_df)
         pvalue_df = pd.DataFrame(pvalue_m,
                                  index=index,
                                  columns=pics
@@ -241,11 +272,11 @@ class main():
 
         print("Saving file.")
         self.save_file(df=correlation_df,
-                       outpath=os.path.join(self.file_outdir, "{}_correlation_df.txt.gz".format(self.out_filename)))
+                       outpath=os.path.join(self.file_outdir, "{}_correlation_df.txt.gz".format(self.outname)))
         self.save_file(df=y_hat_df,
-                       outpath=os.path.join(self.file_outdir, "{}_y_hat_df.txt.gz".format(self.out_filename)))
+                       outpath=os.path.join(self.file_outdir, "{}_y_hat_df.txt.gz".format(self.outname)))
         self.save_file(df=ols_results_df,
-                       outpath=os.path.join(self.file_outdir, "{}_ols_results_df.txt.gz".format(self.out_filename)))
+                       outpath=os.path.join(self.file_outdir, "{}_ols_results_df.txt.gz".format(self.outname)))
 
         print("Visualising")
         bar_df = ols_results_df[["R2"]].copy()
@@ -262,7 +293,7 @@ class main():
             xlabel="R\u00b2",
             ylabel="cell type",
             palette=palette,
-            appendix="_R2_barplot"
+            filename="{}_R2_barplot".format(self.outname)
         )
 
         correlation_df.index = full_index
@@ -277,7 +308,7 @@ class main():
                           xlabel="PICs",
                           ylabel="cell fraction %",
                           title="Pearson correlations",
-                          appendix="correlation_heatmap")
+                          filename="{}_correlation_heatmap".format(self.outname))
 
         tvalue_df = ols_results_df.loc[:, [col for col in ols_results_df.columns if col.endswith(" t-value")]].copy()
         tvalue_df.index = full_index
@@ -290,7 +321,7 @@ class main():
                           xlabel="PICs",
                           ylabel="cell fraction %",
                           title="OLS t-values",
-                          appendix="tvalue_heatmap")
+                          filename="{}_tvalue_heatmap".format(self.outname))
 
     @staticmethod
     def load_file(inpath, header=0, index_col=0, sep="\t", low_memory=True,
@@ -315,7 +346,7 @@ class main():
                                       df.shape))
 
     def plot_barplot(self, df, x="x", y="y", xlabel="", ylabel="", title="",
-                     palette=None, appendix=""):
+                     palette=None, filename=""):
         sns.set_style("ticks")
         fig, ax = plt.subplots(figsize=(12, 12))
 
@@ -344,11 +375,11 @@ class main():
                       fontweight='bold')
 
         plt.tight_layout()
-        fig.savefig(os.path.join(self.plot_outdir, "{}_{}.png".format(self.out_filename, appendix)))
+        fig.savefig(os.path.join(self.plot_outdir, "{}.png".format(filename)))
         plt.close()
 
     def plot_heatmap(self, df, annot_df, vmin=None, vmax=None, xlabel="",
-                     ylabel="", title="", appendix=""):
+                     ylabel="", title="", filename=""):
         sns.set_style("ticks")
         annot_df.fillna("", inplace=True)
 
@@ -383,15 +414,16 @@ class main():
                      fontweight='bold')
 
         plt.tight_layout()
-        fig.savefig(os.path.join(self.plot_outdir, "{}_{}.png".format(self.out_filename, appendix)))
+        fig.savefig(os.path.join(self.plot_outdir, "{}.png".format(filename)))
         plt.close()
 
     def print_arguments(self):
         print("Arguments:")
         print("  > Cell fraction path: {}".format(self.cf_path))
         print("  > PICs path: {}".format(self.pics_path))
-        print("  > Plot output directory {}".format(self.plot_outdir))
-        print("  > File output directory {}".format(self.file_outdir))
+        print("  > Output name: {}".format(self.outname))
+        print("  > Plot output directory: {}".format(self.plot_outdir))
+        print("  > File output directory: {}".format(self.file_outdir))
         print("")
 
 

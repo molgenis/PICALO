@@ -56,8 +56,23 @@ Syntax:
 ./gene_set_enrichment.py -h
 
 ### BIOS ###
-    
+
+./gene_set_enrichment.py \
+    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
+    -mae 1 \
+    -pi  /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
+    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
+
 ### MetaBrain ###
+
+./gene_set_enrichment.py \
+    -avge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/calc_avg_gene_expression/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.AverageExpression.txt.gz \
+    -mae 1 \
+    -pi /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
+    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
+
 
 """
 
@@ -83,26 +98,6 @@ class main():
         for outdir in [self.outdir, self.file_outdir]:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
-
-        # MetaBrain gene network.
-        self.gn_matrix_basedir = '/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-02-28-MetaBrainNetwork/output/11_ImportToWebsite'
-        self.gn_matrix_subdirs = {
-            'goP': '150/2020-03-23-goa_human_P.150_eigenvectors.predictions.bonSigOnly_termNames_tranposed.txt.gz',
-            'goC': '575/2020-03-23-goa_human_C.575_eigenvectors.predictions.bonSigOnly_termNames_tranposed.txt.gz',
-            'goF': '225/2020-03-23-goa_human_F.225_eigenvectors.predictions.bonSigOnly_termNames_tranposed.txt.gz',
-            'kegg': '500/2020-03-28-c2.cp.kegg.v7.0.500_eigenvectors.predictions.bonSigOnly_termNames_tranposed.txt.gz',
-            'reactome': '700/2020-03-28-Ensembl2Reactome_All_Levels.700_eigenvectors.predictions.bonSigOnly_termNames_tranposed.txt',
-            'HPO': '1000/2020-03-28-HPO-phenotype-to-genes.1000_eigenvectors.predictions.bonSigOnly_termNames_tranposed.txt.gz'
-        }
-        self.gn_annotation_basedir = '/groups/umcg-biogen/tmp01/annotation/genenetworkAnnotations/'
-        self.gn_annotation_files = {
-            'goP': 'go_P_prepared_predictions.colAnnotations.txt',
-            'goC': 'go_C_prepared_predictions.colAnnotations.txt',
-            'goF': 'go_F_prepared_predictions.colAnnotations.txt',
-            'kegg': '',
-            'reactome': 'reactome_prepared_predictions.colAnnotations_filter.txt',
-            'HPO': 'hpo_prepared_predictions.colAnnotations.txt'
-        }
 
     @staticmethod
     def create_argument_parser():
@@ -362,7 +357,7 @@ class main():
         return [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', text)]
 
     @staticmethod
-    def toppgene_gene_lookup(genes, chunk_size=30000):
+    def toppgene_gene_lookup(genes, chunk_size=25000):
         chuncks = [genes[i * chunk_size:(i + 1) * chunk_size] for i in range((len(genes) + chunk_size - 1) // chunk_size)]
 
         result_list = []

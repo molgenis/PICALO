@@ -53,6 +53,23 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./compare_explained_variance.py -h
+
+### BIOS ###
+
+./compare_explained_variance.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov/results.txt.gz \
+    -n PICs PCs \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -e png pdf
+    
+### MetaBrain ###
+
+./compare_explained_variance.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov/results.txt.gz /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov/results.txt.gz \
+    -n PICs PCs \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -e png pdf
+
 """
 
 
@@ -64,6 +81,7 @@ class main():
         self.interaction_paths = getattr(arguments, 'interaction')
         self.names = getattr(arguments, 'names')
         self.output_filename = getattr(arguments, 'output')
+        self.extensions = getattr(arguments, 'extension')
 
         # Set variables.
         self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
@@ -74,6 +92,10 @@ class main():
             "PICs": "#0072B2",
             "PCs": "#808080",
         }
+
+        # Set the right pdf font for exporting.
+        matplotlib.rcParams['pdf.fonttype'] = 42
+        matplotlib.rcParams['ps.fonttype'] = 42
 
     @staticmethod
     def create_argument_parser():
@@ -110,6 +132,14 @@ class main():
                             type=str,
                             default="PlotPerColumn_ColorByCohort",
                             help="The name of the output file.")
+        parser.add_argument("-e",
+                            "--extension",
+                            nargs="+",
+                            type=str,
+                            choices=["png", "pdf", "eps"],
+                            default=["png"],
+                            help="The figure file extension. "
+                                 "Default: 'png'.")
 
         return parser.parse_args()
 
@@ -141,14 +171,15 @@ class main():
         rsquared_df = pd.concat(rsquared_df_list, axis=1)
         tvalue_dfm = pd.concat(tvalue_dfm_list, axis=0)
 
-        print("Filtering on significant ieQTLs.")
-        for name, fpath in zip(self.names, self.interaction_paths):
-            fdr_df = self.load_file(fpath, sep=",", header=0, index_col=0)
-            ieqtls = list(fdr_df.loc[fdr_df.sum(axis=1) == 0, :].index)
-            rsquared_df.loc[ieqtls, name] = np.nan
-            tvalue_dfm.loc[(tvalue_dfm["index"].isin(rsquared_df)) & (tvalue_dfm["name"] == name), "value"] = np.nan
-        print(rsquared_df)
-        print(tvalue_dfm)
+        if self.interaction_paths is not None:
+            print("Filtering on significant ieQTLs.")
+            for name, fpath in zip(self.names, self.interaction_paths):
+                fdr_df = self.load_file(fpath, sep=",", header=0, index_col=0)
+                ieqtls = list(fdr_df.loc[fdr_df.sum(axis=1) == 0, :].index)
+                rsquared_df.loc[ieqtls, name] = np.nan
+                tvalue_dfm.loc[(tvalue_dfm["index"].isin(rsquared_df)) & (tvalue_dfm["name"] == name), "value"] = np.nan
+            print(rsquared_df)
+            print(tvalue_dfm)
 
         rsquared_dfm = rsquared_df.melt()
         rsquared_dfm.dropna(inplace=True)
@@ -161,15 +192,24 @@ class main():
                           xlabel="R\u00b2",
                           ylabel="density",
                           title="Explained variance\nby context components",
-                          filename="{}_kdeplot".format(self.output_filename)
+                          filename="{}_rsquared_kdeplot".format(self.output_filename)
                           )
-        self.plot_boxplot(df=tvalue_dfm,
-                          hue="name",
-                          palette=self.palette,
-                          xlabel="component",
-                          ylabel="t-value",
-                          name="{}_boxplot".format(self.output_filename)
-                          )
+        self.plot_rsquared_boxplot(
+            df=rsquared_dfm,
+            hue="variable",
+            palette=self.palette,
+            xlabel="",
+            ylabel="R\u00b2",
+            filename="{}_rsquared_boxplot".format(self.output_filename)
+        )
+        self.plot_tvalue_boxplot(
+            df=tvalue_dfm,
+            hue="name",
+            palette=self.palette,
+            xlabel="component",
+            ylabel="t-value",
+            filename="{}_tvalue_boxplot".format(self.output_filename)
+        )
 
         tvalue_dfm["value"] = tvalue_dfm["value"].abs()
         self.plot_barplot(
@@ -181,7 +221,7 @@ class main():
             xlabel="",
             ylabel="",
             palette=self.palette,
-            filename="{}_barplot".format(self.output_filename)
+            filename="{}_tvalue_barplot".format(self.output_filename)
         )
 
     @staticmethod
@@ -261,12 +301,13 @@ class main():
                       fontsize=14,
                       fontweight='bold')
 
-        outpath = os.path.join(self.outdir, "{}.png".format(filename))
-        fig.savefig(outpath)
+        for extension in self.extensions:
+            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
+            fig.savefig(outpath)
         plt.close()
 
-    def plot_boxplot(self, df, x="variable", y="value", hue=None, palette=None,
-                     xlabel="", ylabel="", name=""):
+    def plot_tvalue_boxplot(self, df, x="variable", y="value", hue=None,
+                            palette=None, xlabel="", ylabel="", filename=""):
         width = 9
         if hue is not None:
             width = len(df[x].unique()) * 0.5
@@ -306,17 +347,46 @@ class main():
                          )
 
         plt.tight_layout()
-        fig.savefig(os.path.join(self.outdir, "{}.png".format(name)))
+        for extension in self.extensions:
+            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
+            fig.savefig(outpath)
+        plt.close()
+
+    def plot_rsquared_boxplot(self, df, x="variable", y="value", hue=None,
+                              palette=None, xlabel="", ylabel="", title="",
+                              filename=""):
+
+        sns.set_style("ticks")
+        fig, ax = plt.subplots()
+
+        self.boxplot(fig=fig,
+                     ax=ax,
+                     df=df,
+                     x=x,
+                     y=y,
+                     hue=hue,
+                     palette=palette,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     title=title
+                     )
+
+        plt.tight_layout()
+        for extension in self.extensions:
+            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
+            fig.savefig(outpath)
         plt.close()
 
     @staticmethod
-    def boxplot(fig, ax, df, x="variable", y="value", color="#404040",
-                title="", xlabel="", ylabel=""):
+    def boxplot(fig, ax, df, x="variable", y="value", hue=None, palette=None,
+                color="#404040", title="", xlabel="", ylabel=""):
         sns.despine(fig=fig, ax=ax)
         sns.violinplot(x=x,
                        y=y,
+                       hue=hue,
                        data=df,
                        color=color,
+                       palette=palette,
                        cut=0,
                        dodge=False,
                        ax=ax)
@@ -417,12 +487,14 @@ class main():
         outpath = os.path.join(self.outdir, "{}.png".format(filename))
         fig.savefig(outpath)
         plt.close()
-        print("\tSaved: {}".format(outpath))
 
     def print_arguments(self):
         print("Arguments:")
         print("  > Data:")
-        for i, (name, data_fpath, interaction_fpath) in enumerate(zip(self.names, self.data_paths, self.interaction_paths)):
+        interaction_paths = self.interaction_paths
+        if self.interaction_paths is None:
+            interaction_paths = [None] * len(self.names)
+        for i, (name, data_fpath, interaction_fpath) in enumerate(zip(self.names, self.data_paths, interaction_paths)):
             print("  > {} = {} / {}".format(name, data_fpath, interaction_fpath))
         print("  > Output filename: {}".format(self.output_filename))
         print("  > Output directory {}".format(self.outdir))
