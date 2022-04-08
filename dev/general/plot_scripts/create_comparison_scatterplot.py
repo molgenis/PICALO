@@ -136,7 +136,7 @@ class main():
         hue = None
         palette = None
         if self.std_path is not None:
-            sa_df = self.load_file(self.std_path, header=None, index_col=None)
+            sa_df = self.load_file(self.std_path, header=0, index_col=None)
             sa_df.set_index(sa_df.columns[0], inplace=True)
             sa_df.columns = ["hue"]
             df = df.merge(sa_df, left_index=True, right_index=True)
