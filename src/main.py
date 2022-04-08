@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2022/02/10
+Last Changed: 2022/04/08
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -408,59 +408,60 @@ class Main:
 
         ########################################################################
 
-        self.log.info("Map interactions with PICs without correcting previous "
-                      "PICs.")
-        self.log.info("\t  Correcting expression matrix")
-        # Prepare output directory.
-        pic_ieqtl_outdir = os.path.join(self.outdir, "PIC_interactions")
-        if not os.path.exists(pic_ieqtl_outdir):
-            os.makedirs(pic_ieqtl_outdir)
+        if pics_df.shape[0] > 0 :
+            self.log.info("Map interactions with PICs without correcting "
+                          "previous PICs.")
+            self.log.info("\t  Correcting expression matrix")
+            # Prepare output directory.
+            pic_ieqtl_outdir = os.path.join(self.outdir, "PIC_interactions")
+            if not os.path.exists(pic_ieqtl_outdir):
+                os.makedirs(pic_ieqtl_outdir)
 
-        # Correct the gene expression matrix.
-        corrected_expr_m = remove_covariates(y_m=expr_m,
-                                             X_m=corr_m,
-                                             X_inter_m=corr_inter_m,
-                                             inter_m=geno_m,
-                                             log=self.log)
+            # Correct the gene expression matrix.
+            corrected_expr_m = remove_covariates(y_m=expr_m,
+                                                 X_m=corr_m,
+                                                 X_inter_m=corr_inter_m,
+                                                 inter_m=geno_m,
+                                                 log=self.log)
 
-        fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
+            fn = ForceNormaliser(dataset_m=dataset_m, samples=samples, log=self.log)
 
-        self.log.info("\t  Mapping ieQTLs")
-        for pic_index, pic in enumerate(pics_df.index):
-            # Extract the PIC we are working on.
-            pic_a = pics_df.iloc[pic_index, :].to_numpy()
+            self.log.info("\t  Mapping ieQTLs")
+            for pic_index, pic in enumerate(pics_df.index):
+                # Extract the PIC we are working on.
+                pic_a = pics_df.iloc[pic_index, :].to_numpy()
 
-            # Clean the expression matrix.
-            pic_expr_m = remove_covariates_elementwise(y_m=corrected_expr_m,
-                                                       X_m=geno_m,
-                                                       a=pic_a)
+                # Clean the expression matrix.
+                pic_expr_m = remove_covariates_elementwise(y_m=corrected_expr_m,
+                                                           X_m=geno_m,
+                                                           a=pic_a)
 
-            # Force normalise the expression matrix.
-            pic_expr_m = fn.process(data=pic_expr_m)
-            fn_pic_a = fn.process(data=pic_a)
+                # Force normalise the expression matrix.
+                pic_expr_m = fn.process(data=pic_expr_m)
+                fn_pic_a = fn.process(data=pic_a)
 
-            # Find the significant ieQTLs.
-            n_hits, _, results_df = get_ieqtls(
-                eqtl_m=eqtl_m,
-                geno_m=geno_m,
-                expr_m=pic_expr_m,
-                context_a=fn_pic_a,
-                cov=pics_df.index[pic_index],
-                alpha=self.ieqtl_alpha
-            )
-            self.log.info("\t\t{} has {:,} significant ieQTLs".format(pic, n_hits))
+                # Find the significant ieQTLs.
+                n_hits, _, results_df = get_ieqtls(
+                    eqtl_m=eqtl_m,
+                    geno_m=geno_m,
+                    expr_m=pic_expr_m,
+                    context_a=fn_pic_a,
+                    cov=pics_df.index[pic_index],
+                    alpha=self.ieqtl_alpha
+                )
+                self.log.info("\t\t{} has {:,} significant ieQTLs".format(pic, n_hits))
 
-            # Save results.
-            save_dataframe(df=results_df,
-                           outpath=os.path.join(pic_ieqtl_outdir, "{}.txt.gz".format(pic)),
-                           header=True,
-                           index=False,
-                           log=self.log)
-            summary_stats_m[pic_index, 1] = n_hits
+                # Save results.
+                save_dataframe(df=results_df,
+                               outpath=os.path.join(pic_ieqtl_outdir, "{}.txt.gz".format(pic)),
+                               header=True,
+                               index=False,
+                               log=self.log)
+                summary_stats_m[pic_index, 1] = n_hits
 
-            del pic_expr_m, pic_a, results_df
+                del pic_expr_m, pic_a, results_df
 
-        del corrected_expr_m
+            del corrected_expr_m
 
         ########################################################################
 

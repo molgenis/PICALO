@@ -1,7 +1,7 @@
 """
 File:         inter_optimizer.py
 Created:      2021/03/25
-Last Changed: 2022/04/01
+Last Changed: 2022/04/08
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -213,13 +213,6 @@ class InteractionOptimizer:
                                              sum_abs_norm_delta_ll,
                                              pearsonr])
 
-            # Print stats.
-            rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
-            self.log.debug("\t\t  Finished in {} minute(s) and "
-                           "{} second(s)".format(int(rt_min),
-                                                 int(rt_sec)))
-            self.log.info("")
-
             # Check if we are stuck in an oscillating loop. Start checking
             # this once we reached the minimum number of iterations + 1.
             if iteration >= 3 and iteration >= self.min_iter:
@@ -235,27 +228,31 @@ class InteractionOptimizer:
                     x=iterations_m[iteration - 2, :],
                     y=iterations_m[iteration, :]
                 )
+                self.log.info("\t\t\titeration{} vs iteration{}:"
+                              "\tr = {:.6f}".format(iteration,
+                                                    iteration - 2,
+                                                    pearsonr1))
+                self.log.info("\t\t\titeration{} vs iteration{}:"
+                              "\tr = {:.6f}".format(iteration - 1,
+                                                    iteration - 3,
+                                                    pearsonr2))
 
-                # If both are highly correlated that means we are in an
+                # If one if these is highly correlated that means we are in an
                 # oscillating loop.
-                if (1 - pearsonr1) < self.tol and (1 - pearsonr2) < self.tol:
-                    self.log.warning("\t\tIterations are oscillating.")
-                    self.log.warning("\t\t  iteration{} vs iteration{}:"
-                                     "\tr = {:.6f}".format(iteration,
-                                                           iteration - 2,
-                                                           pearsonr1))
-                    self.log.warning("\t\t  iteration{} vs iteration{}:"
-                                     "\tr = {:.6f}".format(iteration - 1,
-                                                           iteration - 3,
-                                                           pearsonr2))
+                current_iter_passed_tol = (1 - pearsonr1) < self.tol
+                previous_iter_passed_tol = (1 - pearsonr2) < self.tol
+                if current_iter_passed_tol or previous_iter_passed_tol:
                     self.log.warning("")
+                    self.log.warning("\t\tIterations are oscillating")
 
-                    # Check which of the recurring components has the
-                    # highest amount of interaction.
-                    if prev_included_ieqtls[0] > n_ieqtls:
+                    # Roll back to the previous iteration if that one converged
+                    # but the current one did not. ALternatively, roll back
+                    # if both converged but the previous iteration had more
+                    # ieQTLs.
+                    if (not current_iter_passed_tol and previous_iter_passed_tol) or \
+                            (current_iter_passed_tol and previous_iter_passed_tol and prev_included_ieqtls[0] > n_ieqtls):
                         self.log.warning("\t\t  Rolling back to previous "
-                                         "iteration since it had {:,} more "
-                                         "ieQTLs.".format(prev_included_ieqtls[0] - n_ieqtls))
+                                         "iteration.")
                         self.log.warning("")
                         context_a = iterations_m[iteration, :]
                         n_ieqtls = prev_included_ieqtls[0]
@@ -266,6 +263,13 @@ class InteractionOptimizer:
                     self.log.info("")
                     stop = False
                     break
+
+            # Print stats.
+            rt_min, rt_sec = divmod(int(time.time()) - start_time, 60)
+            self.log.debug("\t\t  Finished in {} minute(s) and "
+                           "{} second(s)".format(int(rt_min),
+                                                 int(rt_sec)))
+            self.log.info("")
 
             # Overwrite the variables for the next round. This has to be
             # before the break because we define context_a as the end result.
