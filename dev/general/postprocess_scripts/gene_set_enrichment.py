@@ -3,7 +3,7 @@
 """
 File:         gene_set_enrichment.py
 Created:      2022/02/24
-Last Changed: 2022/03/04
+Last Changed: 2022/04/13
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -62,7 +62,7 @@ Syntax:
     -mae 1 \
     -pi  /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
     -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
+    -o 2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
 
 ### MetaBrain ###
 
@@ -70,8 +70,8 @@ Syntax:
     -avge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/calc_avg_gene_expression/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.AverageExpression.txt.gz \
     -mae 1 \
     -pi /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
-    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
-    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
+    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -o 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
 
 
 """
@@ -86,10 +86,9 @@ class main():
         self.picalo_indir = getattr(arguments, 'picalo')
         self.covariates = getattr(arguments, 'covariates')
         self.gene_correlations_path = getattr(arguments, 'gene_correlations')
+        self.min_corr = getattr(arguments, 'min_corr')
+        self.top_n = getattr(arguments, 'top_n')
         self.out_filename = getattr(arguments, 'outfile')
-
-        self.top_n = 200
-        self.min_corr = 0.01
 
         # Set variables.
         base_dir = str(os.path.dirname(os.path.abspath(__file__)))
@@ -141,6 +140,18 @@ class main():
                             required=True,
                             help="The path to the covariate-gene correlations "
                                  "matrix.")
+        parser.add_argument("-mc",
+                            "--min_corr",
+                            type=float,
+                            default=0.1,
+                            help="The minimal correlation of a gene "
+                                 "for inclusion. Default 0.1.")
+        parser.add_argument("-tn",
+                            "--top_n",
+                            type=int,
+                            default=200,
+                            help="The top n genes to include in the "
+                                 "enrichment analysis. Default: 200.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
@@ -428,6 +439,8 @@ class main():
         print("  > PICALO directory: {}".format(self.picalo_indir))
         print("  > Covariates: {}".format(self.covariates))
         print("  > Gene correlations path: {}".format(self.gene_correlations_path))
+        print("  > Minimal correlation: {}".format(self.min_corr))
+        print("  > Top-N: {}".format(self.top_n))
         print("  > Output directory {}".format(self.outdir))
         print("  > File output directory {}".format(self.file_outdir))
         print("  > Output filename: {}".format(self.out_filename))
