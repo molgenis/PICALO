@@ -41,7 +41,7 @@ from matplotlib import pyplot as plt
 __program__ = "PICALO Graphical Plot"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
-__email__ = "m.vochteloo@st.hanze.nl"
+__email__ = "m.vochteloo@rug.nl"
 __license__ = "GPLv3"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \

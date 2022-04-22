@@ -51,6 +51,34 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./count_n_ieqtls.py -h
+
+### MetaBrain ###
+
+./count_n_ieqtls.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PCsAsCov
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PCsAsCov-Conditional
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov-Conditional
+
+### BIOS ###
+
+./count_n_ieqtls.py \
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov
+
+./count_n_ieqtls.py \
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-Conditional
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-Conditional
 """
 
 
@@ -59,6 +87,7 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.indir = getattr(arguments, 'indir')
+        self.exclude = getattr(arguments, 'exclude')
         self.n_files = getattr(arguments, 'n_files')
         self.conditional = getattr(arguments, 'conditional')
 
@@ -79,6 +108,12 @@ class main():
                             type=str,
                             required=True,
                             help="The path to input directory.")
+        parser.add_argument("-e",
+                            "--exclude",
+                            nargs="*",
+                            type=str,
+                            default=None,
+                            help="The covariates to exclude.")
         parser.add_argument("-n",
                             "--n_files",
                             type=int,
@@ -109,10 +144,8 @@ class main():
                 continue
 
             filename = os.path.basename(inpath).split(".")[0].replace("_conditional", "")
-            if filename in ["call_rate", "genotype_stats", "PIC1", "PIC4", "Comp1", "Comp2"]:
+            if filename in ["call_rate", "genotype_stats"] or (self.exclude is not None and filename in self.exclude):
                 continue
-            # if filename in ["call_rate", "genotype_stats"]:
-            #     continue
 
             df = self.load_file(inpath, header=0, index_col=None)
             signif_col = "FDR"
@@ -127,7 +160,6 @@ class main():
             count += 1
 
         ieqtl_fdr_df = pd.concat(ieqtl_fdr_df_list, axis=1)
-        ieqtl_fdr_df.to_csv("b.txt.gz", sep="\t", header=True, index=True, compression="gzip")
         cov_sum = ieqtl_fdr_df.sum(axis=0)
         print(cov_sum)
 
@@ -163,6 +195,7 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.indir))
+        print("  > Exclude: {}".format(self.exclude))
         if self.n_files is None:
             print("  > N-files: all")
         else:

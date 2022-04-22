@@ -3,7 +3,7 @@
 """
 File:         pic_replication.py
 Created:      2022/04/14
-Last Changed:
+Last Changed: 2022/04/19
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -53,6 +53,15 @@ Syntax:
     -ra /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
     -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_Replication \
+    -e png pdf
+    
+./pic_replication.py \
+    -di /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov \
+    -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ri /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA_noFNPD_CortexEURPICLoadingsAsCov \
+    -ra /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_Replication_noFNPD \
     -e png pdf
 """
 
@@ -199,6 +208,7 @@ class main():
         flip_dict = dict(zip(df["SNP"], (df["AlleleAssessed"] == df["AFR AlleleAssessed"]).map({True: 1, False: -1})))
         df = df.loc[:, ["SNP", "Alleles", "AlleleAssessed", "EUR N", "EUR MAF", "AFR N", "AFR MAF"]]
         print(df)
+        del discovery_df, replication_df
 
         print("Loading interaction results.")
         ieqtl_data_list = []
@@ -249,7 +259,7 @@ class main():
 
         print("Saving output")
         self.save_file(df=df,
-                       outpath=os.path.join(self.outdir, "pic_replication.txt.gz"),
+                       outpath=os.path.join(self.outdir, "{}_pic_replication.txt.gz".format(self.out_filename)),
                        index=False)
 
         # df = self.load_file(os.path.join(self.outdir, "pic_replication.txt.gz"),
@@ -259,11 +269,16 @@ class main():
         print("Visualizing")
         pics = [col.replace("EUR ", "").replace(" FDR", "") for col in df.columns if col.startswith("EUR") and col.endswith("FDR")]
         pics.sort(key=self.natural_keys)
-        pics = pics[:5]
         for pic in pics:
             if pic not in self.palette:
                 self.palette[pic] = "#000000"
-        self.plot(df=df, cols=pics)
+
+        chuncks = [pics[i * 5:(i + 1) * 5] for i in range((len(pics) + 5 - 1) // 5)]
+        for chunck in chuncks:
+            print(chunck)
+            self.plot(df=df,
+                      cols=chunck,
+                      plot_appendix="_{}_to_{}".format(chunck[0], chunck[-1]))
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -299,7 +314,7 @@ class main():
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
 
-    def plot(self, df, cols):
+    def plot(self, df, cols, plot_appendix=""):
         nrows = 3
         ncols = len(cols)
 
@@ -338,7 +353,7 @@ class main():
                                "AFR beta",
                                "AFR std",
                                "AFR tvalue"]
-            plot_df = plot_df.loc[~plot_df["AFR FDR"].isna(), :]
+            plot_df = plot_df.loc[~plot_df["AFR tvalue"].isna(), :]
             plot_df.sort_values(by="EUR pvalue", inplace=True)
 
             include_ylabel = False
@@ -410,7 +425,7 @@ class main():
                      weight='bold')
 
         for extension in self.extensions:
-            fig.savefig(os.path.join(self.outdir, "PIC_replication.{}".format(extension)))
+            fig.savefig(os.path.join(self.outdir, "{}_PIC_replication{}.{}".format(self.out_filename, plot_appendix, extension)))
         plt.close()
 
     @staticmethod
