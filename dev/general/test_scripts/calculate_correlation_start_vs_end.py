@@ -53,12 +53,12 @@ Syntax:
 ### MetaBrain ###
 
 ./calculate_correlation_start_vs_end.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2021-12-09-MetaBrain-CortexEUR-cis-NoENA-NoMDSOutlier-GT1AvgExprFilter-PrimaryeQTLs/
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/
 
 ### BIOS ###
 
 ./calculate_correlation_start_vs_end.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/output/2021-12-09-BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/
+    -i /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/
 """
 
 
@@ -100,16 +100,26 @@ class main():
         coefficient_data = []
         for i in range(101):
             covariate = "PIC{}".format(i)
-            fpath1 = os.path.join(self.indir, "PIC_interactions", "{}.txt.gz".format(covariate))
             fpath2 = os.path.join(self.indir, covariate, "iteration.txt.gz")
             print(fpath2)
-            if os.path.exists(fpath1) and os.path.exists(fpath2):
+            if os.path.exists(fpath2):
                 df = pd.read_csv(fpath2, sep="\t", header=0, index_col=0)
                 coef, _ = stats.spearmanr(df.loc[df.index[0], :], df.loc[df.index[-1], :])
                 coefficient_data.append([covariate, coef])
 
         coef_df = pd.DataFrame(coefficient_data, columns=["covariate", "coef"])
         print(coef_df)
+
+        n = 5
+        print(coef_df.iloc[:n, :])
+        print("Spearman correlations first {}:".format(n))
+        print("\tMean: {:.2f}".format(coef_df.iloc[:n, :]["coef"].mean()))
+        print("\tSD: {:.2f}".format(coef_df.iloc[:n, :]["coef"].std()))
+
+        print(coef_df.iloc[n:, :])
+        print("Spearman correlations rest")
+        print("\tMean: {:.2f}".format(coef_df.iloc[n:, :]["coef"].mean()))
+        print("\tSD: {:.2f}".format(coef_df.iloc[n:, :]["coef"].std()))
 
         print("Spearman correlations:")
         print("\tMean: {:.2f}".format(coef_df["coef"].mean()))

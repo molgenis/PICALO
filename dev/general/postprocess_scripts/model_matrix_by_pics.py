@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         model_cell_fractions_by_pics.py
+File:         model_matrix_by_pics.py
 Created:      2022/02/25
-Last Changed: 2022/03/04
+Last Changed: 2022/04/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -38,7 +38,7 @@ from scipy import stats
 # Local application imports.
 
 # Metadata
-__program__ = "Model Cell Fractions by PICS"
+__program__ = "Model Matrix by PICS"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -53,37 +53,61 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./model_cell_fraction_by_pics.py -h
+./model_matrix_by_pics.py -h
 
 ### BIOS ###
 
-./model_cell_fraction_by_pics.py \
-    -cf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz \
+./model_matrix_by_pics.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz \
     -p /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -od 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_NormalRes \
     -on 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_NormalRes
     
     
-./model_cell_fraction_by_pics.py \
-    -cf /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz \
+./model_matrix_by_pics.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_cell_types_DeconCell_2019-03-08.txt.gz \
     -p /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -od 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_HighRes \
     -on 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_HighRes
 
+
+./model_matrix_by_pics.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -od 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_RNASeqAlignmentMetrics \
+    -on 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_RNASeqAlignmentMetrics
+    
+./model_matrix_by_pics.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first31ExpressionPCs.txt.gz \
+    -od 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_RNASeqAlignmentMetrics_PCs \
+    -on 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_RNASeqAlignmentMetrics_PCs
+    
 ### MetaBrain ###
 
-./model_cell_fraction_by_pics.py \
-    -cf /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table.txt.gz \
+./model_matrix_by_pics.py \
+    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table.txt.gz \
     -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -od 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-NormalRes \
     -on 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-NormalRes
     
-./model_cell_fraction_by_pics.py \
-    -cf /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table_complete.txt.gz \
+./model_matrix_by_pics.py \
+    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/2022-01-21-CortexEUR-cis-NegativeToZero-DatasetAndRAMCorrected/perform_deconvolution/deconvolution_table_complete.txt.gz \
     -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -od 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-HighRes \
     -on 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-HighRes
 
+./model_matrix_by_pics.py \
+    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -od 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RNASeqAlignmentMetrics \
+    -on 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RNASeqAlignmentMetrics
+    
+./model_matrix_by_pics.py \
+    -d /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first21ExpressionPCs.txt.gz \
+    -od 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RNASeqAlignmentMetrics-PCs \
+    -on 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RNASeqAlignmentMetrics-PCs
 """
 
 
@@ -91,14 +115,14 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.cf_path = getattr(arguments, 'cell_fractions')
+        self.data_path = getattr(arguments, 'data')
         self.pics_path = getattr(arguments, 'pics')
         outdir = getattr(arguments, 'outdir')
         self.outname = getattr(arguments, 'outname')
 
         # Set variables.
         base_dir = str(os.path.dirname(os.path.abspath(__file__)))
-        self.file_outdir = os.path.join(base_dir, 'model_cell_fraction_by_pics', outdir)
+        self.file_outdir = os.path.join(base_dir, 'model_matrix_by_pics', outdir)
         self.plot_outdir = os.path.join(self.file_outdir, 'plot')
         for outdir in [self.plot_outdir, self.file_outdir]:
             if not os.path.exists(outdir):
@@ -167,11 +191,11 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit.")
-        parser.add_argument("-cf",
-                            "--cell_fractions",
+        parser.add_argument("-d",
+                            "--data",
                             type=str,
                             required=True,
-                            help="The path to the cell fraction matrix.")
+                            help="The path to the data matrix.")
         parser.add_argument("-p",
                             "--pics",
                             type=str,
@@ -196,48 +220,47 @@ class main():
         self.print_arguments()
 
         print("Loading data")
-        cf_df = self.load_file(self.cf_path)
+        data_df = self.load_file(self.data_path)
         pics_df = self.load_file(self.pics_path)
 
         print("Preprocessing data")
         pics_df = pics_df.T
-        if cf_df.shape[0] < cf_df.shape[1]:
-            cf_df = cf_df.T
+        if data_df.shape[0] < data_df.shape[1]:
+            data_df = data_df.T
 
-        samples = [sample for sample in pics_df.index if sample in cf_df.index]
+        samples = [sample for sample in pics_df.index if sample in data_df.index]
         print("\tUsing {} samples".format(len(samples)))
         pics_df = pics_df.loc[samples, :]
-        cf_df = cf_df.loc[samples, :]
+        data_df = data_df.loc[samples, :]
         pics = pics_df.columns
 
-        cf_df.columns = [col.split("_")[0] for col in cf_df.columns]
-        cf_df.columns = [self.ct_trans_dict[col] if col in self.ct_trans_dict else col for col in cf_df.columns]
+        data_df.columns = [self.ct_trans_dict[col.split("_")[0]] if col.split("_")[0] in self.ct_trans_dict else col for col in data_df.columns]
 
         pics_df.insert(0, "INTERCEPT", 1)
 
         print("Modelling")
-        correlation_m = np.empty((cf_df.shape[1], len(pics)), dtype=np.float64)
-        pvalue_m = np.empty((cf_df.shape[1], len(pics)), dtype=np.float64)
-        y_hat_m = np.empty_like(cf_df, dtype=np.float64)
+        correlation_m = np.empty((data_df.shape[1], len(pics)), dtype=np.float64)
+        pvalue_m = np.empty((data_df.shape[1], len(pics)), dtype=np.float64)
+        y_hat_m = np.empty_like(data_df, dtype=np.float64)
         y_hat_m[:] = np.nan
-        ols_results_m = np.empty((cf_df.shape[1], 2 + (len(pics) * 2)), dtype=np.float64)
+        ols_results_m = np.empty((data_df.shape[1], 2 + (len(pics) * 2)), dtype=np.float64)
         index = []
         full_index = []
-        for i, cell_type in enumerate(cf_df.columns):
+        for i, cell_type in enumerate(data_df.columns):
             # Creat mask.
-            mask = ~cf_df.loc[:, cell_type].isna()
+            mask = ~data_df.loc[:, cell_type].isna()
             n = mask.sum()
 
             print("\t{} [N={:,}]".format(cell_type, n))
 
             # Correlations.
             for j, pic in enumerate(pics):
-                coef, pvalue = stats.pearsonr(cf_df.loc[mask, cell_type], pics_df.loc[mask, pic])
+                coef, pvalue = stats.pearsonr(data_df.loc[mask, cell_type], pics_df.loc[mask, pic])
                 correlation_m[i, j] = coef
                 pvalue_m[i, j] = pvalue
 
             # OLS model.
-            ols = OLS(cf_df.loc[mask, cell_type], pics_df.loc[mask, :])
+            ols = OLS(data_df.loc[mask, cell_type], pics_df.loc[mask, :])
             results = ols.fit()
 
             # Save results.
@@ -257,7 +280,7 @@ class main():
 
         y_hat_df = pd.DataFrame(y_hat_m,
                                 index=samples,
-                                columns=cf_df.columns
+                                columns=data_df.columns
                                 )
 
         ols_results_df = pd.DataFrame(ols_results_m,
@@ -419,7 +442,7 @@ class main():
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > Cell fraction path: {}".format(self.cf_path))
+        print("  > Data path: {}".format(self.data_path))
         print("  > PICs path: {}".format(self.pics_path))
         print("  > Output name: {}".format(self.outname))
         print("  > Plot output directory: {}".format(self.plot_outdir))

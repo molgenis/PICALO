@@ -54,6 +54,25 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_correlation_heatmap.py -h
+
+### MetaBrain ###
+
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -rn PICs \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+
+### BIOS ###
+
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -rn PICs \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-bios/tmp01/projects/PICALO/run_PICALO_with_multiple_start_pos/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC1/PICBasedOnPCX.txt.gz \
+    -rn PICs \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
 """
 
 
@@ -196,13 +215,16 @@ class main():
 
             print(corr_df)
             print(pvalue_df)
+            corr_m = corr_df.to_numpy()
             if triangle:
-                corr_m = corr_df.to_numpy()
                 np.fill_diagonal(corr_m, np.nan)
-                print(corr_m)
-                print(corr_m[np.tril_indices(corr_m.shape[0])])
-                print(np.nanmean(np.abs(corr_m[np.tril_indices(corr_m.shape[0])])))
-
+                corr_values = np.abs(corr_m[np.tril_indices(corr_m.shape[0])])
+                print("Lower triangle correlations = mean: {:.4f}\tstd {:.4f}".format(np.nanmean(corr_values),
+                                                                                      np.nanstd(corr_values)))
+            else:
+                corr_values = np.abs(corr_m)
+                print("All correlations = mean: {:.4f}\tstd {:.4f}".format(np.nanmean(corr_values),
+                                                                           np.nanstd(corr_values)))
 
             print("Masking non-significant")
             signif_df = self.mask_non_significant(df=corr_df,

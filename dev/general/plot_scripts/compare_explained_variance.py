@@ -29,6 +29,7 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
+from scipy import stats
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
@@ -169,6 +170,11 @@ class main():
             tvalue_dfm_list.append(inter_tvalue_dfm)
 
         rsquared_df = pd.concat(rsquared_df_list, axis=1)
+        # print(rsquared_df)
+        # print(rsquared_df.mean(axis=0))
+        # print(rsquared_df.std(axis=0))
+        # print(rsquared_df.median(axis=0))
+        # print(stats.mannwhitneyu(rsquared_df["PICs"], rsquared_df["PCs"]))
         tvalue_dfm = pd.concat(tvalue_dfm_list, axis=0)
 
         if self.interaction_paths is not None:

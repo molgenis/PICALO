@@ -321,7 +321,7 @@ class main():
                     )
                     self.save_file(df=enrich_df,
                                    outpath=os.path.join(covariate_outdir,
-                                                        "toppgene_enrichment_{}_{}_ieQTL_genes_data.txt.gz".format(
+                                                        "toppgene_enrichment_{}_{}_ieQTL_genes.txt.gz".format(
                                                             covariate,
                                                             correlation_direction)))
                     print("")

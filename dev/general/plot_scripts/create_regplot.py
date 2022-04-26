@@ -55,6 +55,15 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_regplot.py -h
+
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/run_PICALO_with_multiple_start_pos/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC2/SummaryStats.txt.gz \
+    -x_transpose \
+    -xi start \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/run_PICALO_with_multiple_start_pos/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC2/SummaryStats.txt.gz \
+    -y_transpose \
+    -yi end \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC2
 """
 
 

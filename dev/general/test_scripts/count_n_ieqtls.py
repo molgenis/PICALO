@@ -61,10 +61,20 @@ Syntax:
     -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PCsAsCov-Conditional
     
 ./count_n_ieqtls.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICSRemoved-PCsAsCov \
+    -s 25 \
+    -n 25
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICSRemoved-PCsAsCov-Conditional \
+    -n 21
+    
+./count_n_ieqtls.py \
     -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov
     
 ./count_n_ieqtls.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov-Conditional
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov-Conditional \
+    -e PIC1 PIC4 PIC7
 
 ### BIOS ###
 
@@ -75,10 +85,19 @@ Syntax:
     -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-Conditional
     
 ./count_n_ieqtls.py \
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsRemoved-PCsAsCov \
+    -n 25
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsRemoved-PCsAsCov-Conditional \
+    -n 31
+    
+./count_n_ieqtls.py \
     -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov
     
 ./count_n_ieqtls.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-Conditional
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-Conditional \
+    -e PIC1 PIC4 PIC8
 """
 
 
@@ -88,6 +107,7 @@ class main():
         arguments = self.create_argument_parser()
         self.indir = getattr(arguments, 'indir')
         self.exclude = getattr(arguments, 'exclude')
+        self.skip_files = getattr(arguments, 'skip_files')
         self.n_files = getattr(arguments, 'n_files')
         self.conditional = getattr(arguments, 'conditional')
 
@@ -114,6 +134,12 @@ class main():
                             type=str,
                             default=None,
                             help="The covariates to exclude.")
+        parser.add_argument("-s",
+                            "--skip_files",
+                            type=int,
+                            default=0,
+                            help="The number of files to load. "
+                                 "Default: 0.")
         parser.add_argument("-n",
                             "--n_files",
                             type=int,
@@ -138,9 +164,9 @@ class main():
         else:
             inpaths = [inpath for inpath in inpaths if not inpath.endswith("_conditional")]
         inpaths.sort(key=self.natural_keys)
-        count = 0
-        for inpath in inpaths:
-            if self.n_files is not None and count == self.n_files:
+        for i, inpath in enumerate(inpaths):
+            if (self.skip_files is not None and i < self.skip_files) or \
+                    (self.n_files is not None and len(ieqtl_fdr_df_list) == self.n_files):
                 continue
 
             filename = os.path.basename(inpath).split(".")[0].replace("_conditional", "")
@@ -157,7 +183,6 @@ class main():
             ieqtl_fdr_df_list.append(ieqtl_fdr_df)
 
             del ieqtl_fdr_df
-            count += 1
 
         ieqtl_fdr_df = pd.concat(ieqtl_fdr_df_list, axis=1)
         cov_sum = ieqtl_fdr_df.sum(axis=0)
@@ -196,6 +221,7 @@ class main():
         print("Arguments:")
         print("  > Input directory: {}".format(self.indir))
         print("  > Exclude: {}".format(self.exclude))
+        print("  > Skip-files: {:,}".format(self.skip_files))
         if self.n_files is None:
             print("  > N-files: all")
         else:
