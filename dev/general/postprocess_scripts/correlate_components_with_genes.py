@@ -3,7 +3,7 @@
 """
 File:         correlate_components_with_genes.py
 Created:      2021/05/25
-Last Changed: 2021/11/03
+Last Changed: 2022/05/02
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -68,6 +68,16 @@ Syntax:
     -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
     -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
     -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+    
+./correlate_components_with_genes.py \
+    -c /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -g /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
+    -gi /groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_CorrelationsWithTMMGeneExpression
+
 
 ### MetaBrain ###
 
@@ -173,10 +183,7 @@ class main():
         genes_df = self.load_file(self.genes_path, header=0, index_col=0, nrows=None)
         gene_info_df = self.load_file(self.gene_info_path, header=0, index_col=None)
         gene_dict = dict(zip(gene_info_df["ArrayAddress"], gene_info_df["Symbol"]))
-        avg_ge_df = self.load_file(self.avg_ge_path, header=0, index_col=0)
-        print(avg_ge_df)
-        avg_ge_dict = dict(zip(avg_ge_df.index, avg_ge_df["average"]))
-        del gene_info_df, avg_ge_df
+        del gene_info_df
 
         print("Pre-processing data.")
         # Make sure order is the same.
@@ -203,12 +210,18 @@ class main():
         corr_df.insert(0, "index", np.arange(0, corr_df.shape[0]))
         corr_df.insert(1, "ProbeName", genes)
         corr_df.insert(2, 'HGNCName', corr_df["ProbeName"].map(gene_dict))
-        corr_df.insert(2, 'avgExpression', corr_df["ProbeName"].map(avg_ge_dict))
+        file_appendix = ""
+        if self.avg_ge_path is not None:
+            avg_ge_df = self.load_file(self.avg_ge_path, header=0, index_col=0)
+            avg_ge_dict = dict(zip(avg_ge_df.index, avg_ge_df["average"]))
+            corr_df.insert(2, 'avgExpression', corr_df["ProbeName"].map(avg_ge_dict))
+            file_appendix = "-avgExpressionAdded"
+            del avg_ge_df
 
         print("Saving file.")
-        self.save_file(df=corr_df, outpath=os.path.join(self.file_outdir, "{}_gene_correlations-avgExpressionAdded.txt.gz".format(self.out_filename)),
+        self.save_file(df=corr_df, outpath=os.path.join(self.file_outdir, "{}_gene_correlations{}.txt.gz".format(self.out_filename, file_appendix)),
                        index=False)
-        corr_df.to_excel(os.path.join(self.file_outdir, "{}_gene_correlations-avgExpressionAdded.xlsx".format(self.out_filename)))
+        corr_df.to_excel(os.path.join(self.file_outdir, "{}_gene_correlations{}.xlsx".format(self.out_filename, file_appendix)))
         exit()
 
         corr_df_m = corr_df.melt(id_vars=["index", "ProbeName", "HGNCName"])
