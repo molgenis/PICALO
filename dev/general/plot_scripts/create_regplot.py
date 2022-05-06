@@ -29,6 +29,7 @@ import os
 
 # Third party imports.
 import pandas as pd
+import numpy as np
 from scipy import stats
 import seaborn as sns
 import matplotlib
@@ -67,14 +68,34 @@ Syntax:
     
 ./create_regplot.py \
     -xd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
-    -xi PIC2 \
-    -yd /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.describe.txt.gz \
-    -yi mean \
-    -yl average_TMM_log2_gene_expression \
+    -xi PIC7 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages.txt.gz \
+    -y_transpose \
+    -yi Eos_Perc \
+    -yl Eosinophil% \
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
     -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC2_vs_AverageTMMGeneExpressionLog2Transformed
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC7_vs_Eos
     
+./create_regplot.py \
+    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -x_transpose \
+    -xi PIC1 r \
+    -yd /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
+    -y_transpose \
+    -yi TotalGeneLength \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC1_vs_TotalGeneLength
+
+./create_regplot.py \
+    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -x_transpose \
+    -xi PIC1 r \
+    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/gencode.v32.primary_assembly.annotation-genelengths-eQTLFilter.txt.gz \
+    -y_transpose \
+    -yi MergedExonLength \
+    -y_log10 \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC1_vs_MergedExonLengtheQTLFilter
+
 """
 
 
@@ -86,6 +107,7 @@ class main():
         self.x_transpose = getattr(arguments, 'x_transpose')
         self.x_index = " ".join(getattr(arguments, 'x_index'))
         self.x_ranked = getattr(arguments, 'x_ranked')
+        self.x_log10 = getattr(arguments, 'x_log10')
         x_label = getattr(arguments, 'x_label')
         if x_label is None:
             x_label = self.x_index
@@ -94,6 +116,7 @@ class main():
         self.y_transpose = getattr(arguments, 'y_transpose')
         self.y_index = " ".join(getattr(arguments, 'y_index'))
         self.y_ranked = getattr(arguments, 'y_ranked')
+        self.y_log10 = getattr(arguments, 'y_log10')
         y_label = getattr(arguments, 'y_label')
         if y_label is None:
             y_label = self.y_index
@@ -143,6 +166,10 @@ class main():
         parser.add_argument("-x_ranked",
                             action='store_true',
                             help="Rank X.")
+        parser.add_argument("-x_log10",
+                            action='store_true',
+                            help="-log10 transform the x values."
+                                 " Default: False.")
         parser.add_argument("-xl",
                             "--x_label",
                             type=str,
@@ -166,6 +193,10 @@ class main():
         parser.add_argument("-y_ranked",
                             action='store_true',
                             help="Rank Y.")
+        parser.add_argument("-y_log10",
+                            action='store_true',
+                            help="-log10 transform the y values."
+                                 " Default: False.")
         parser.add_argument("-yl",
                             "--y_label",
                             type=str,
@@ -245,6 +276,13 @@ class main():
         if self.y_ranked:
             plot_df["y"] = plot_df["y"].rank()
             ylabel += " - ranked"
+
+        if self.x_log10:
+            plot_df["x"] = np.log10(plot_df["x"])
+            xlabel = "log10 " + xlabel
+        if self.y_log10:
+            plot_df["y"] = np.log10(plot_df["y"])
+            ylabel = "log10 " + ylabel
 
         print("Loading color data.")
         hue = None
@@ -327,6 +365,8 @@ class main():
 
             sns.regplot(x=x, y=y, data=subset, ci=None,
                         scatter_kws={'facecolors': facecolors,
+                                     # 's': 10,
+                                     # 'alpha': 0.2,
                                      'linewidth': 0},
                         line_kws={"color": color},
                         ax=ax1)
@@ -386,12 +426,14 @@ class main():
         print("    > Transpose: {}".format(self.x_transpose))
         print("    > Index: {}".format(self.x_index))
         print("    > Ranked: {}".format(self.x_ranked))
+        print("    > Log10: {}".format(self.x_log10))
         print("    > Label: {}".format(self.x_label))
         print("  > Y-axis:")
         print("    > Data: {}".format(self.y_data_path))
         print("    > Transpose: {}".format(self.y_transpose))
         print("    > Index: {}".format(self.y_index))
         print("    > Ranked: {}".format(self.y_ranked))
+        print("    > Log10: {}".format(self.y_log10))
         print("    > Label: {}".format(self.y_label))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))

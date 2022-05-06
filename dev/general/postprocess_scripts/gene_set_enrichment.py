@@ -30,10 +30,10 @@ import os
 import re
 
 # Third party imports.
-import pandas as pd
 import numpy as np
+import pandas as pd
 import requests
-from scipy import stats
+from statsmodels.stats import multitest
 
 # Local application imports.
 
@@ -64,6 +64,14 @@ Syntax:
     -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
     -o 2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
 
+./gene_set_enrichment.py \
+    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
+    -mae 1 \
+    -pi  /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
+    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -mc 0 \
+    -o 2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_PvalueFiltering
+
 ### MetaBrain ###
 
 ./gene_set_enrichment.py \
@@ -73,6 +81,13 @@ Syntax:
     -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
     -o 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
 
+./gene_set_enrichment.py \
+    -avge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/calc_avg_gene_expression/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.AverageExpression.txt.gz \
+    -mae 1 \
+    -pi /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
+    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -mc 0 \
+    -o 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_PvalueFiltering
 
 """
 
@@ -87,6 +102,7 @@ class main():
         self.covariates = getattr(arguments, 'covariates')
         self.gene_correlations_path = getattr(arguments, 'gene_correlations')
         self.min_corr = getattr(arguments, 'min_corr')
+        self.alpha = getattr(arguments, 'alpha')
         self.top_n = getattr(arguments, 'top_n')
         self.out_filename = getattr(arguments, 'outfile')
 
@@ -146,6 +162,12 @@ class main():
                             default=0.1,
                             help="The minimal correlation of a gene "
                                  "for inclusion. Default 0.1.")
+        parser.add_argument("-a",
+                            "--alpha",
+                            type=float,
+                            required=False,
+                            default=0.05,
+                            help="The significance cut-off. Default: 0.05.")
         parser.add_argument("-tn",
                             "--top_n",
                             type=int,
@@ -182,11 +204,10 @@ class main():
         print(df)
 
         print("Loading gene correlations.")
-        gene_corr_df = self.load_file(self.gene_correlations_path, header=0, index_col=0)
+        gene_corr_df = self.load_file(self.gene_correlations_path, header=0, index_col=None)
         if "ProbeName" in gene_corr_df.columns:
             gene_corr_df.index = gene_corr_df["ProbeName"].str.split(".", n=1, expand=True)[0]
             gene_corr_df = gene_corr_df.loc[:, [col for col in gene_corr_df if col.startswith("PIC")]]
-        gene_corr_df.columns = ["{} r".format(col) for col in gene_corr_df.columns]
         df = df.merge(gene_corr_df, left_index=True, right_index=True, how="left")
         print(df)
 
@@ -254,13 +275,17 @@ class main():
                                        "OfficialSymbol",
                                        "Entrez",
                                        "{} r".format(covariate),
+                                       "{} p".format(covariate),
                                        "{} FDR".format(covariate),
                                        "{} direction".format(covariate),
                                        ]].copy()
-                subset_df.columns = ["avg expression", "symbol", "entrez", "correlation", "FDR", "direction"]
+                subset_df.columns = ["avg expression", "symbol", "entrez", "correlation", "correlation p-value", "FDR", "direction"]
+                subset_df["correlation FDR"] = multitest.multipletests(subset_df["correlation p-value"], method='fdr_bh')[1]
+                subset_df["correlation ieQTL FDR"] = np.nan
+                subset_df.loc[subset_df["FDR"] < self.alpha, "correlation ieQTL FDR"] = multitest.multipletests(subset_df.loc[subset_df["FDR"] < self.alpha, "correlation p-value"], method='fdr_bh')[1]
+                subset_df = subset_df.loc[~subset_df["entrez"].isna(), :]
                 subset_df["abs correlation"] = subset_df["correlation"].abs()
                 subset_df.sort_values(by="abs correlation", ascending=False, inplace=True)
-                subset_df = subset_df.loc[~subset_df["entrez"].isna(), :]
 
                 if correlation_direction == "positive":
                     subset_df = subset_df.loc[(subset_df["correlation"] > 0) & (subset_df["abs correlation"] > self.min_corr), :]
@@ -271,6 +296,7 @@ class main():
                     exit()
 
                 corr_subset_df = subset_df.iloc[:self.top_n, :].copy()
+                corr_subset_df = corr_subset_df.loc[corr_subset_df["correlation FDR"] < self.alpha, :]
                 if corr_subset_df.shape[0] > 0:
                     print("\t{} correlation (abs r > {:.2f})".format(correlation_direction, self.min_corr))
                     print("\tAnalyzing {:,} genes".format(corr_subset_df.shape[0]))
@@ -303,9 +329,9 @@ class main():
                 ################################################################
 
                 # Filter on eQTL genes.
-                signif_subset_df = subset_df.loc[subset_df["FDR"] < 0.05, :].copy()
+                signif_subset_df = subset_df.loc[subset_df["FDR"] < self.alpha, :].iloc[:self.top_n, :].copy()
                 if signif_subset_df.shape[0] > 0:
-                    print("\t{} correlation (ieQTL FDR < 0.05)".format(correlation_direction))
+                    print("\t{} correlation (ieQTL FDR < {})".format(correlation_direction, self.alpha))
                     print("\tAnalyzing {:,} genes".format(signif_subset_df.shape[0]))
 
                     # Saving data.
@@ -399,16 +425,15 @@ class main():
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
 
-    @staticmethod
-    def toppgene_func_enrichment(entrez_ids, n_print=4):
+    def toppgene_func_enrichment(self, entrez_ids, n_print=4):
         print("\t### ToppGene ###")
 
         data = json.dumps({"Genes": [int(entrez_id) for entrez_id in entrez_ids],
                            "Categories": [{"Type": "Pathway",
-                                           "PValue": 0.05,
+                                           "PValue": self.alpha,
                                            "Correction": "FDR"},
                                           {"Type": "ToppCell",
-                                           "PValue": 0.05,
+                                           "PValue": self.alpha,
                                            "Correction": "FDR"},
                                           ]})
         response = requests.post("https://toppgene.cchmc.org/API/enrich",
@@ -440,6 +465,7 @@ class main():
         print("  > Covariates: {}".format(self.covariates))
         print("  > Gene correlations path: {}".format(self.gene_correlations_path))
         print("  > Minimal correlation: {}".format(self.min_corr))
+        print("  > Alpha: {}".format(self.alpha))
         print("  > Top-N: {}".format(self.top_n))
         print("  > Output directory {}".format(self.outdir))
         print("  > File output directory {}".format(self.file_outdir))

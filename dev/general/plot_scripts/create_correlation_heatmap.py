@@ -62,6 +62,14 @@ Syntax:
     -rn PICs \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
 
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -rn PIC - gene correlations \
+    -cd /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
+    -cn Gene stats \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC_vs_Genestats
+
+
 ### BIOS ###
 
 ./create_correlation_heatmap.py \
@@ -169,12 +177,14 @@ class main():
 
         print("Loading row data.")
         row_df = self.load_file(self.row_data_path, header=0, index_col=0)
+        row_df = row_df._get_numeric_data()
 
         col_df = row_df
         triangle = True
         if self.col_data_path is not None:
             print("Loading column data.")
             col_df = self.load_file(self.col_data_path, header=0, index_col=0)
+            col_df = col_df._get_numeric_data()
             triangle = False
 
         if row_df.shape[1] > row_df.shape[0]:

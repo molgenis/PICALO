@@ -32,6 +32,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy import stats
+from scipy.special import betainc
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
@@ -202,14 +203,13 @@ class main():
 
         # Calculate correlating.
         print("Correlating.")
-        corr_m = np.corrcoef(comp_m, genes_m)[:comp_m.shape[0], comp_m.shape[0]:]
-        corr_df = pd.DataFrame(corr_m, index=components)
+        corr_m, pvalue_m = self.corrcoef(genes_m.T, comp_m.T)
+        corr_df = pd.DataFrame(np.hstack((corr_m, pvalue_m)),
+                               columns=["{} r".format(comp) for comp in components] + ["{} p".format(comp) for comp in components])
 
         print("Post-processing data.")
-        corr_df = corr_df.T
-        corr_df.insert(0, "index", np.arange(0, corr_df.shape[0]))
-        corr_df.insert(1, "ProbeName", genes)
-        corr_df.insert(2, 'HGNCName', corr_df["ProbeName"].map(gene_dict))
+        corr_df.insert(0, "ProbeName", genes)
+        corr_df.insert(1, 'HGNCName', corr_df["ProbeName"].map(gene_dict))
         file_appendix = ""
         if self.avg_ge_path is not None:
             avg_ge_df = self.load_file(self.avg_ge_path, header=0, index_col=0)
@@ -219,6 +219,7 @@ class main():
             del avg_ge_df
 
         print("Saving file.")
+        print(corr_df)
         self.save_file(df=corr_df, outpath=os.path.join(self.file_outdir, "{}_gene_correlations{}.txt.gz".format(self.out_filename, file_appendix)),
                        index=False)
         corr_df.to_excel(os.path.join(self.file_outdir, "{}_gene_correlations{}.xlsx".format(self.out_filename, file_appendix)))
@@ -279,6 +280,31 @@ class main():
               "with shape: {}".format(os.path.basename(inpath),
                                       df.shape))
         return df
+
+    @staticmethod
+    def corrcoef(m1, m2):
+        """
+        Pearson correlation over the columns.
+
+        https://stackoverflow.com/questions/24432101/correlation-coefficients-and-p-values-for-all-pairs-of-rows-of-a-matrix
+        """
+        m1_dev = m1 - np.mean(m1, axis=0)
+        m2_dev = m2 - np.mean(m2, axis=0)
+
+        m1_rss = np.sum(m1_dev * m1_dev, axis=0)
+        m2_rss = np.sum(m2_dev * m2_dev, axis=0)
+
+        r = np.empty((m1_dev.shape[1], m2_dev.shape[1]), dtype=np.float64)
+        for i in range(m1_dev.shape[1]):
+            for j in range(m2_dev.shape[1]):
+                r[i, j] = np.sum(m1_dev[:, i] * m2_dev[:, j]) / np.sqrt(m1_rss[i] * m2_rss[j])
+
+        rf = r.flatten()
+        df = m1.shape[0] - 2
+        ts = rf * rf * (df / (1 - rf * rf))
+        pf = betainc(0.5 * df, 0.5, df / (df + ts))
+        p = pf.reshape(m1.shape[1], m2.shape[1])
+        return r, p
 
     @staticmethod
     def save_file(df, outpath, header=True, index=False, sep="\t"):
