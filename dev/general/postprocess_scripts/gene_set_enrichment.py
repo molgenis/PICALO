@@ -3,7 +3,7 @@
 """
 File:         gene_set_enrichment.py
 Created:      2022/02/24
-Last Changed: 2022/04/13
+Last Changed: 2022/05/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -58,36 +58,34 @@ Syntax:
 ### BIOS ###
 
 ./gene_set_enrichment.py \
-    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
+    -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
+    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_results-avgExpressionAdded.txt.gz \
     -mae 1 \
-    -pi  /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
-    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -mc 0.1 \
     -o 2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
 
 ./gene_set_enrichment.py \
-    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
+    -pi /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
+    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_results-avgExpressionAdded.txt.gz \
+    -pc /groups/umcg-biogen/tmp01/annotation/2020-02-16-gencode.v32.primary_assembly.annotation.collapsedGenes.proteincoding.txt.gz \
     -mae 1 \
-    -pi  /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
-    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
-    -mc 0 \
-    -o 2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_PvalueFiltering
+    -o 2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_ZscoreFiltering
 
 ### MetaBrain ###
 
 ./gene_set_enrichment.py \
-    -avge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/calc_avg_gene_expression/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.AverageExpression.txt.gz \
-    -mae 1 \
     -pi /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
-    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
+    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_results-avgExpressionAdded.txt.gz \
+    -mae 1 \
+    -mc 0.1 \
     -o 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
 
 ./gene_set_enrichment.py \
-    -avge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/calc_avg_gene_expression/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.AverageExpression.txt.gz \
-    -mae 1 \
     -pi /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PIC_interactions \
-    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
-    -mc 0 \
-    -o 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_PvalueFiltering
+    -gc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_results-avgExpressionAdded.txt.gz \
+    -pc /groups/umcg-biogen/tmp01/annotation/2020-02-16-gencode.v32.primary_assembly.annotation.collapsedGenes.proteincoding.txt.gz \
+    -mae 1 \
+    -o 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_ZscoreFiltering
 
 """
 
@@ -96,11 +94,11 @@ class main():
     def __init__(self):
         # Get the command line arguments.
         arguments = self.create_argument_parser()
-        self.avg_ge_path = getattr(arguments, 'average_gene_expression')
-        self.min_avg_expression = getattr(arguments, 'min_avg_expression')
         self.picalo_indir = getattr(arguments, 'picalo')
         self.covariates = getattr(arguments, 'covariates')
         self.gene_correlations_path = getattr(arguments, 'gene_correlations')
+        self.protein_coding_path = getattr(arguments, 'protein_coding')
+        self.min_avg_expression = getattr(arguments, 'min_avg_expression')
         self.min_corr = getattr(arguments, 'min_corr')
         self.alpha = getattr(arguments, 'alpha')
         self.top_n = getattr(arguments, 'top_n')
@@ -126,18 +124,6 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit.")
-        parser.add_argument("-avge",
-                            "--average_gene_expression",
-                            type=str,
-                            required=True,
-                            help="The path to the average gene expression "
-                                 "matrix.")
-        parser.add_argument("-mae",
-                            "--min_avg_expression",
-                            type=float,
-                            default=None,
-                            help="The minimal average expression of a gene."
-                                 "Default: None.")
         parser.add_argument("-pi",
                             "--picalo",
                             type=str,
@@ -156,12 +142,23 @@ class main():
                             required=True,
                             help="The path to the covariate-gene correlations "
                                  "matrix.")
+        parser.add_argument("-pc",
+                            "--protein_coding",
+                            type=str,
+                            default=None,
+                            help="The path to the protein coding genes list.")
+        parser.add_argument("-mae",
+                            "--min_avg_expression",
+                            type=int,
+                            default=0,
+                            help="The minimal average expression of a gene."
+                                 "Default: 0.")
         parser.add_argument("-mc",
                             "--min_corr",
                             type=float,
-                            default=0.1,
+                            default=0,
                             help="The minimal correlation of a gene "
-                                 "for inclusion. Default 0.1.")
+                                 "for inclusion. Default 0.")
         parser.add_argument("-a",
                             "--alpha",
                             type=float,
@@ -185,30 +182,30 @@ class main():
     def start(self):
         self.print_arguments()
 
-        print("Loading average gene expression.")
-        df = self.load_file(self.avg_ge_path, header=0, index_col=0)
-        df.columns = ["avg expression"]
-        df.index = [x.split(".")[0] for x in df.index]
+        print("Loading gene correlations.")
+        df = self.load_file(self.gene_correlations_path, header=0, index_col=None)
+        if "ProbeName" in df.columns:
+            df.index = df["ProbeName"].str.split(".", n=1, expand=True)[0]
         print(df)
 
-        if self.min_avg_expression is not None:
-            print("\tFiltering on eQTLs with >{} average gene expression".format(self.min_avg_expression))
+        if self.min_avg_expression > 0:
+            print("\tFiltering genes with >{} average gene expression".format(self.min_avg_expression))
             pre_shape = df.shape[0]
-            df = df.loc[df["avg expression"] > self.min_avg_expression, :]
+            df = df.loc[df["avgExpression"] > self.min_avg_expression, :]
+            print("\t  Removed {:,} genes".format(pre_shape - df.shape[0]))
+
+        if self.protein_coding_path is not None:
+            print("\tFiltering protein coding genes")
+            protein_coding_df = self.load_file(self.protein_coding_path, header=None, index_col=None)
+            pre_shape = df.shape[0]
+            protein_coding_df.index = protein_coding_df.iloc[:, 0].str.split(".", n=1, expand=True)[0]
+            df = df.loc[df.index.isin(protein_coding_df.index), :]
             print("\t  Removed {:,} genes".format(pre_shape - df.shape[0]))
 
         print("Lookup gene symbols.")
         gi_df = self.toppgene_gene_lookup(df.index)
         gi_df.set_index("Submitted", inplace=True)
         df = df.merge(gi_df, left_index=True, right_index=True, how="left")
-        print(df)
-
-        print("Loading gene correlations.")
-        gene_corr_df = self.load_file(self.gene_correlations_path, header=0, index_col=None)
-        if "ProbeName" in gene_corr_df.columns:
-            gene_corr_df.index = gene_corr_df["ProbeName"].str.split(".", n=1, expand=True)[0]
-            gene_corr_df = gene_corr_df.loc[:, [col for col in gene_corr_df if col.startswith("PIC")]]
-        df = df.merge(gene_corr_df, left_index=True, right_index=True, how="left")
         print(df)
 
         print("Loading ieQTL results data.")
@@ -252,7 +249,7 @@ class main():
         self.save_file(df=df,
                        outpath=os.path.join(self.file_outdir, "info.txt.gz"))
         # exit()
-
+        #
         # print("Loading files.")
         # df = self.load_file(os.path.join(self.file_outdir, "info.txt.gz"))
         # print(df)
@@ -271,29 +268,30 @@ class main():
 
             for correlation_direction in ["positive", "negative"]:
                 # Select, filter, and sort.
-                subset_df = df.loc[:, ["avg expression",
+                subset_df = df.loc[:, ["avgExpression",
                                        "OfficialSymbol",
                                        "Entrez",
                                        "{} r".format(covariate),
-                                       "{} p".format(covariate),
+                                       "{} pvalue".format(covariate),
+                                       "{} zscore".format(covariate),
                                        "{} FDR".format(covariate),
                                        "{} direction".format(covariate),
                                        ]].copy()
-                subset_df.columns = ["avg expression", "symbol", "entrez", "correlation", "correlation p-value", "FDR", "direction"]
+                subset_df.columns = ["avg expression", "symbol", "entrez", "correlation coefficient", "correlation p-value", "correlation zscore", "ieQTL FDR", "ieQTL direction"]
                 subset_df["correlation FDR"] = multitest.multipletests(subset_df["correlation p-value"], method='fdr_bh')[1]
-                subset_df["correlation ieQTL FDR"] = np.nan
-                subset_df.loc[subset_df["FDR"] < self.alpha, "correlation ieQTL FDR"] = multitest.multipletests(subset_df.loc[subset_df["FDR"] < self.alpha, "correlation p-value"], method='fdr_bh')[1]
                 subset_df = subset_df.loc[~subset_df["entrez"].isna(), :]
-                subset_df["abs correlation"] = subset_df["correlation"].abs()
-                subset_df.sort_values(by="abs correlation", ascending=False, inplace=True)
+                subset_df["abs correlation zscore"] = subset_df["correlation zscore"].abs()
+                subset_df.sort_values(by="abs correlation zscore", ascending=False, inplace=True)
 
                 if correlation_direction == "positive":
-                    subset_df = subset_df.loc[(subset_df["correlation"] > 0) & (subset_df["abs correlation"] > self.min_corr), :]
+                    subset_df = subset_df.loc[(subset_df["correlation zscore"] > 0) & (subset_df["abs correlation zscore"] > self.min_corr), :]
                 elif correlation_direction == "negative":
-                    subset_df = subset_df.loc[(subset_df["correlation"] < 0) & (subset_df["abs correlation"] > self.min_corr), :]
+                    subset_df = subset_df.loc[(subset_df["correlation zscore"] < 0) & (subset_df["abs correlation zscore"] > self.min_corr), :]
                 else:
                     print("huh")
                     exit()
+
+                print(subset_df)
 
                 corr_subset_df = subset_df.iloc[:self.top_n, :].copy()
                 corr_subset_df = corr_subset_df.loc[corr_subset_df["correlation FDR"] < self.alpha, :]
@@ -318,8 +316,8 @@ class main():
                     if enrich_df.shape[0] > 0:
                         enrich_df["covariate"] = covariate
                         enrich_df["correlation_direction"] = correlation_direction
-                        enrich_df["correlation_inTerm"] = [subset_df.loc[subset_df["symbol"].isin(genes.split(", ")), "correlation"].mean() for genes in enrich_df["Genes"]]
-                        enrich_df["correlation_Overall"] = corr_subset_df["correlation"].mean()
+                        enrich_df["avg_abs_correlation_zscore_inTerm"] = [corr_subset_df.loc[corr_subset_df["symbol"].isin(genes.split(", ")), "correlation zscore"].abs().mean() for genes in enrich_df["Genes"]]
+                        enrich_df["avg_abs_correlation_zscore_Overall"] = corr_subset_df["correlation zscore"].abs().mean()
                         enrich_df["subset"] = "genes"
                         enrich_df["N"] = corr_subset_df.shape[0]
                         toppgene_enrichment_list.append(enrich_df)
@@ -329,7 +327,7 @@ class main():
                 ################################################################
 
                 # Filter on eQTL genes.
-                signif_subset_df = subset_df.loc[subset_df["FDR"] < self.alpha, :].iloc[:self.top_n, :].copy()
+                signif_subset_df = subset_df.loc[subset_df["ieQTL FDR"] < self.alpha, :].iloc[:self.top_n, :].copy()
                 if signif_subset_df.shape[0] > 0:
                     print("\t{} correlation (ieQTL FDR < {})".format(correlation_direction, self.alpha))
                     print("\tAnalyzing {:,} genes".format(signif_subset_df.shape[0]))
@@ -354,8 +352,8 @@ class main():
                     if enrich_df.shape[0] > 0:
                         enrich_df["covariate"] = covariate
                         enrich_df["correlation_direction"] = correlation_direction
-                        enrich_df["correlation_inTerm"] = [signif_subset_df.loc[subset_df["symbol"].isin(genes.split(", ")), "correlation"].mean() for genes in enrich_df["Genes"]]
-                        enrich_df["correlation_Overall"] = signif_subset_df["correlation"].mean()
+                        enrich_df["avg_abs_correlation_zscore_inTerm"] = [signif_subset_df.loc[subset_df["symbol"].isin(genes.split(", ")), "correlation zscore"].abs().mean() for genes in enrich_df["Genes"]]
+                        enrich_df["avg_abs_correlation_zscore_Overall"] = signif_subset_df["correlation zscore"].abs().mean()
                         enrich_df["subset"] = "ieQTL genes"
                         enrich_df["N"] = signif_subset_df.shape[0]
                         toppgene_enrichment_list.append(enrich_df)
@@ -459,11 +457,11 @@ class main():
 
     def print_arguments(self):
         print("Arguments:")
-        print("  > Average gene expression path: {}".format(self.avg_ge_path))
-        print("  > Minimal gene expression: {}".format(self.min_avg_expression))
         print("  > PICALO directory: {}".format(self.picalo_indir))
         print("  > Covariates: {}".format(self.covariates))
         print("  > Gene correlations path: {}".format(self.gene_correlations_path))
+        print("  > Protein coding genes path: {}".format(self.protein_coding_path))
+        print("  > Minimal gene expression: {}".format(self.min_avg_expression))
         print("  > Minimal correlation: {}".format(self.min_corr))
         print("  > Alpha: {}".format(self.alpha))
         print("  > Top-N: {}".format(self.top_n))

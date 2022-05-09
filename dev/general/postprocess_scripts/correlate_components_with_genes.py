@@ -3,7 +3,7 @@
 """
 File:         correlate_components_with_genes.py
 Created:      2021/05/25
-Last Changed: 2022/05/02
+Last Changed: 2022/05/09
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -24,7 +24,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 import argparse
-import math
 import json
 import os
 
@@ -33,11 +32,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from scipy.special import betainc
-import seaborn as sns
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 
 # Local application imports.
 
@@ -65,31 +59,20 @@ Syntax:
     -c /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -g /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/force_normalise_matrix/2021-12-10-gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS_ForceNormalised.txt.gz \
     -gi /groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
     -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+    -od 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -of 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
     
-./correlate_components_with_genes.py \
-    -c /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
-    -g /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
-    -gi /groups/umcg-bios/tmp01/projects/PICALO/data/ArrayAddressToSymbol.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
-    -avge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/calc_avg_gene_expression/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.AverageExpression.txt.gz \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_CorrelationsWithTMMGeneExpression
-
-
 ### MetaBrain ###
 
 ./correlate_components_with_genes.py \
     -c /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -g /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/force_normalise_matrix/2022-04-13-MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS_ForceNormalised.txt.gz \
     -gi /groups/umcg-biogen/tmp01/annotation/gencode.v32.primary_assembly.annotation.collapsedGenes.ProbeAnnotation.TSS.txt.gz \
-    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
     -avge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/calc_avg_gene_expression/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.AverageExpression.txt.gz \
-    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
-    -o 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+    -od 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -of 2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+
 """
 
 
@@ -100,25 +83,14 @@ class main():
         self.components_path = getattr(arguments, 'components')
         self.genes_path = getattr(arguments, 'genes')
         self.gene_info_path = getattr(arguments, 'gene_info')
-        self.std_path = getattr(arguments, 'sample_to_dataset')
         self.avg_ge_path = getattr(arguments, 'average_gene_expression')
-        self.palette_path = getattr(arguments, 'palette')
-        self.out_filename = getattr(arguments, 'outfile')
+        outdir = getattr(arguments, 'out_directory')
+        self.out_filename = getattr(arguments, 'out_filename')
 
         # Set variables.
-        base_dir = str(os.path.dirname(os.path.abspath(__file__)))
-        self.file_outdir = os.path.join(base_dir, 'correlate_components_with_genes')
-        self.plot_outdir = os.path.join(self.file_outdir, 'plot')
-        for outdir in [self.plot_outdir, self.file_outdir]:
-            if not os.path.exists(outdir):
-                os.makedirs(outdir)
-
-        # Loading palette.
-        self.palette = None
-        if self.palette_path is not None:
-            with open(self.palette_path) as f:
-                self.palette = json.load(f)
-            f.close()
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'correlate_components_with_genes', outdir)
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
 
     @staticmethod
     def create_argument_parser():
@@ -147,12 +119,6 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the gene info matrix.")
-        parser.add_argument("-std",
-                            "--sample_to_dataset",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The path to the sample-dataset link matrix.")
         parser.add_argument("-avge",
                             "--average_gene_expression",
                             type=str,
@@ -160,18 +126,18 @@ class main():
                             default=None,
                             help="The path to the average gene expression "
                                  "matrix.")
-        parser.add_argument("-p",
-                            "--palette",
+        parser.add_argument("-od",
+                            "--out_directory",
                             type=str,
                             required=False,
                             default=None,
-                            help="The path to a json file with the"
-                                 "dataset to color combinations.")
-        parser.add_argument("-o",
-                            "--outfile",
+                            help="The name of the output directory.")
+        parser.add_argument("-of",
+                            "--out_filename",
                             type=str,
+                            required=False,
                             default="output",
-                            help="The name of the outfile. Default: output.")
+                            help="The name of the output files.")
 
         return parser.parse_args()
 
@@ -204,10 +170,31 @@ class main():
         # Calculate correlating.
         print("Correlating.")
         corr_m, pvalue_m = self.corrcoef(genes_m.T, comp_m.T)
-        corr_df = pd.DataFrame(np.hstack((corr_m, pvalue_m)),
-                               columns=["{} r".format(comp) for comp in components] + ["{} p".format(comp) for comp in components])
+
+        # Calculating z-scores.
+        flip_m = np.ones_like(corr_m)
+        flip_m[corr_m > 0] = -1
+        tmp_pvalue_m = np.copy(pvalue_m)
+        tmp_pvalue_m[tmp_pvalue_m < 1e-323] = 1e-323
+        zscore_m = stats.norm.ppf(tmp_pvalue_m / 2) * flip_m
+        del tmp_pvalue_m
+
+        print("Saving output.")
+        for m, suffix in ([corr_m, "correlation_coefficient"],
+                          [pvalue_m, "correlation_pvalue"],
+                          [zscore_m, "correlation_zscore"]):
+            df = pd.DataFrame(m, index=genes, columns=components)
+            self.save_file(df=df,
+                           outpath=os.path.join(self.outdir,
+                                                "{}_{}.txt.gz".format(self.out_filename, suffix)),
+                           index=True)
+            del df
 
         print("Post-processing data.")
+        corr_df = pd.DataFrame(np.hstack((corr_m, pvalue_m, zscore_m)),
+                               columns=["{} r".format(comp) for comp in components] +
+                                       ["{} pvalue".format(comp) for comp in components] +
+                                       ["{} zscore".format(comp) for comp in components])
         corr_df.insert(0, "ProbeName", genes)
         corr_df.insert(1, 'HGNCName', corr_df["ProbeName"].map(gene_dict))
         file_appendix = ""
@@ -220,56 +207,10 @@ class main():
 
         print("Saving file.")
         print(corr_df)
-        self.save_file(df=corr_df, outpath=os.path.join(self.file_outdir, "{}_gene_correlations{}.txt.gz".format(self.out_filename, file_appendix)),
+        self.save_file(df=corr_df,
+                       outpath=os.path.join(self.outdir, "{}_results{}.txt.gz".format(self.out_filename, file_appendix)),
                        index=False)
-        corr_df.to_excel(os.path.join(self.file_outdir, "{}_gene_correlations{}.xlsx".format(self.out_filename, file_appendix)))
-        exit()
-
-        corr_df_m = corr_df.melt(id_vars=["index", "ProbeName", "HGNCName"])
-        corr_df_m["abs value"] = corr_df_m["value"].abs()
-        corr_df_m.sort_values(by="abs value", ascending=False, inplace=True)
-
-        print("Loading color data.")
-        facecolors = None
-        palette = {}
-        if self.palette is not None and self.std_path is not None:
-            std_df = self.load_file(self.std_path, header=0, index_col=None)
-            std_dict = dict(zip(std_df.iloc[:, 0], std_df.iloc[:, 1]))
-            facecolors = []
-            for sample in samples:
-                facecolors.append(self.palette[std_dict[sample]])
-                palette[std_dict[sample]] = self.palette[std_dict[sample]]
-
-        print("Plotting.")
-        self.plot_distribution(df_m=corr_df_m, value='abs value', outdir=self.plot_outdir)
-
-        n_plots_per_component = 5
-        for i, component in enumerate(components):
-            plot_df = pd.DataFrame(comp_m[i, :], index=samples, columns=[component])
-
-            genes = []
-            correlations = {}
-            for i, (_, row) in enumerate(corr_df_m.loc[corr_df_m["variable"] == component, :].iterrows()):
-                if i >= n_plots_per_component:
-                    break
-                plot_df[row["HGNCName"]] = genes_m[row["index"], :]
-                genes.append(row["HGNCName"])
-                correlations[row["HGNCName"]] = row["value"]
-
-            self.plot_regplot(df=plot_df, x=component, columns=genes,
-                              facecolors=facecolors, palette=palette,
-                              outdir=self.plot_outdir)
-
-        print("Printing overview")
-        for component in components:
-            print("\t{}".format(component))
-            for cut_off in [0.9, 0.8, 0.7, 0.6]:
-                pos_genes = corr_df.loc[corr_df[component] >= cut_off, "HGNCName"].values.tolist()
-                neg_genes = corr_df.loc[corr_df[component] <= -cut_off, "HGNCName"].values.tolist()
-                print("\t\t abs(correlation) > {} [{}]:".format(cut_off, len(pos_genes) + len(neg_genes)))
-                print("\t\t\t positive [{}]: {}".format(len(pos_genes), ", ".join(pos_genes)))
-                print("\t\t\t negative [{}]: {}".format(len(neg_genes), ", ".join(neg_genes)))
-            print("")
+        corr_df.to_excel(os.path.join(self.outdir, "{}_results{}.xlsx".format(self.out_filename, file_appendix)))
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -318,121 +259,14 @@ class main():
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
 
-    @staticmethod
-    def plot_distribution(df_m, variable='variable', value='value', outdir=None):
-        outpath = "abs_correlation_distributions.png"
-        if outdir is not None:
-            outpath = os.path.join(outdir, outpath)
-
-        sns.set(style="ticks", color_codes=True)
-        g = sns.FacetGrid(df_m, col=variable, sharex=True, sharey=True)
-        g.map(sns.distplot, value)
-        g.set_titles('{col_name}')
-        plt.tight_layout()
-        g.savefig(outpath)
-        plt.close()
-
-    def plot_regplot(self, df, columns, x="x", facecolors=None, palette=None,
-                     outdir=None):
-        outpath = "{}_correlations_with_genes.png".format(x)
-        if outdir is not None:
-            outpath = os.path.join(outdir, outpath)
-
-        accent_color = "#000000"
-        if facecolors is None:
-            facecolors = "#000000"
-            accent_color = "#b22222"
-
-        nplots = len(columns) + 1
-        ncols = math.ceil(np.sqrt(nplots))
-        nrows = math.ceil(nplots / ncols)
-        sns.set_style("ticks")
-        fig, axes = plt.subplots(nrows=nrows,
-                                 ncols=ncols,
-                                 figsize=(12 * ncols, 12 * nrows))
-        sns.set(color_codes=True)
-
-        row_index = 0
-        col_index = 0
-        for i in range(ncols * nrows):
-            if nrows == 1 and ncols == 1:
-                ax = axes
-            elif nrows == 1 and ncols > 1:
-                ax = axes[col_index]
-            elif nrows > 1 and ncols == 1:
-                ax = axes[row_index]
-            else:
-                ax = axes[row_index, col_index]
-
-            if i < len(columns):
-                y = columns[i]
-
-                sns.despine(fig=fig, ax=ax)
-
-                coef, _ = stats.pearsonr(df[y], df[x])
-
-                sns.regplot(x=x, y=y, data=df, ci=95,
-                            scatter_kws={'facecolors': facecolors,
-                                         'linewidth': 0,
-                                         'alpha': 0.75},
-                            line_kws={"color": accent_color,
-                                      'linewidth': 5},
-                            ax=ax)
-
-                ax.annotate(
-                    'N = {}'.format(df.shape[0]),
-                    xy=(0.03, 0.94),
-                    xycoords=ax.transAxes,
-                    color=accent_color,
-                    alpha=1,
-                    fontsize=18,
-                    fontweight='bold')
-                ax.annotate(
-                    'r = {:.2f}'.format(coef),
-                    xy=(0.03, 0.90),
-                    xycoords=ax.transAxes,
-                    color=accent_color,
-                    alpha=1,
-                    fontsize=18,
-                    fontweight='bold')
-
-                ax.axhline(0, ls='--', color=accent_color, zorder=-1)
-                ax.axvline(0, ls='--', color=accent_color, zorder=-1)
-
-                ax.set_xlabel("{}".format(x),
-                              fontsize=20,
-                              fontweight='bold')
-                ax.set_ylabel("{} expression".format(y),
-                              fontsize=20,
-                              fontweight='bold')
-            else:
-                ax.set_axis_off()
-
-                if palette is not None and i == (nplots - 1):
-                    handles = []
-                    for key, value in palette.items():
-                        handles.append(mpatches.Patch(color=value, label=key))
-                    ax.legend(handles=handles, loc=4, fontsize=25)
-
-            col_index += 1
-            if col_index > (ncols - 1):
-                col_index = 0
-                row_index += 1
-
-        fig.savefig(outpath)
-        plt.close()
-
     def print_arguments(self):
         print("Arguments:")
         print("  > Components: {}".format(self.components_path))
         print("  > Gene expression: {}".format(self.genes_path))
         print("  > Gene info: {}".format(self.gene_info_path))
-        print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Average gene epxression path: {}".format(self.avg_ge_path))
-        print("  > Palette path: {}".format(self.palette_path))
-        print("  > Plot output directory {}".format(self.plot_outdir))
-        print("  > File output directory {}".format(self.file_outdir))
-        print("  > Output filename: {}".format(self.out_filename))
+        print("  > Output directory: {}".format(self.outdir))
+        print("  > output filename: {}".format(self.out_filename))
         print("")
 
 
