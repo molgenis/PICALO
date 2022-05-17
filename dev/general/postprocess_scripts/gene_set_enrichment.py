@@ -3,7 +3,7 @@
 """
 File:         gene_set_enrichment.py
 Created:      2022/02/24
-Last Changed: 2022/05/09
+Last Changed: 2022/05/17
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -30,7 +30,6 @@ import os
 import re
 
 # Third party imports.
-import numpy as np
 import pandas as pd
 import requests
 from statsmodels.stats import multitest
@@ -236,14 +235,18 @@ class main():
             ieqtl_result_df["direction"] = ((ieqtl_result_df[beta_geno_col] * ieqtl_result_df[beta_inter_col]) > 0).map({True: "induces", False: "inhibits"})
             if len(ieqtl_results) == 0:
                 ieqtl_result_df = ieqtl_result_df[[snp_col, fdr_col, "direction"]]
-                ieqtl_result_df.columns = ["SNP", "{} FDR".format(covariate), "{} direction".format(covariate)]
+                ieqtl_result_df.columns = ["SNP", "{} ieQTL FDR".format(covariate), "{} ieQTL direction".format(covariate)]
             else:
                 ieqtl_result_df = ieqtl_result_df[[fdr_col, "direction"]]
-                ieqtl_result_df.columns = ["{} FDR".format(covariate), "{} direction".format(covariate)]
+                ieqtl_result_df.columns = ["{} ieQTL FDR".format(covariate), "{} ieQTL direction".format(covariate)]
             ieqtl_results.append(ieqtl_result_df)
         ieqtl_result_df = pd.concat(ieqtl_results, axis=1)
         df = df.merge(ieqtl_result_df, left_index=True, right_index=True, how="left")
         print(df)
+
+        print("Recalculate correlation FDR")
+        for pvalue_col in [col for col in df.columns if "pvalue" in col]:
+            df[pvalue_col.replace("pvalue", "FDR")] = multitest.multipletests(df[pvalue_col], method='fdr_bh')[1]
 
         print("Saving file.")
         self.save_file(df=df,
@@ -273,12 +276,12 @@ class main():
                                        "Entrez",
                                        "{} r".format(covariate),
                                        "{} pvalue".format(covariate),
-                                       "{} zscore".format(covariate),
                                        "{} FDR".format(covariate),
-                                       "{} direction".format(covariate),
+                                       "{} zscore".format(covariate),
+                                       "{} ieQTL FDR".format(covariate),
+                                       "{} ieQTL direction".format(covariate),
                                        ]].copy()
-                subset_df.columns = ["avg expression", "symbol", "entrez", "correlation coefficient", "correlation p-value", "correlation zscore", "ieQTL FDR", "ieQTL direction"]
-                subset_df["correlation FDR"] = multitest.multipletests(subset_df["correlation p-value"], method='fdr_bh')[1]
+                subset_df.columns = ["avg expression", "symbol", "entrez", "correlation coefficient", "correlation p-value", "correlation FDR", "correlation zscore", "ieQTL FDR", "ieQTL direction"]
                 subset_df = subset_df.loc[~subset_df["entrez"].isna(), :]
                 subset_df["abs correlation zscore"] = subset_df["correlation zscore"].abs()
                 subset_df.sort_values(by="abs correlation zscore", ascending=False, inplace=True)

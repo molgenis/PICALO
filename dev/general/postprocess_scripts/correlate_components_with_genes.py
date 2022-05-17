@@ -3,7 +3,7 @@
 """
 File:         correlate_components_with_genes.py
 Created:      2021/05/25
-Last Changed: 2022/05/09
+Last Changed: 2022/05/17
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -24,7 +24,6 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 # Standard imports.
 from __future__ import print_function
 import argparse
-import json
 import os
 
 # Third party imports.
@@ -32,6 +31,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from scipy.special import betainc
+from statsmodels.stats import multitest
 
 # Local application imports.
 
@@ -167,21 +167,28 @@ class main():
         genes_m = genes_df.to_numpy()
         del comp_df, genes_df
 
-        # Calculate correlating.
         print("Correlating.")
         corr_m, pvalue_m = self.corrcoef(genes_m.T, comp_m.T)
 
-        # Calculating z-scores.
+        print("Calculating FDR values.")
+        fdr_m = np.empty_like(pvalue_m)
+        for j in range(pvalue_m.shape[1]):
+            fdr_m[:, j] = multitest.multipletests(pvalue_m[:, j], method='fdr_bh')[1]
+
+        print("Calculating z-scores.")
         flip_m = np.ones_like(corr_m)
         flip_m[corr_m > 0] = -1
         tmp_pvalue_m = np.copy(pvalue_m)
-        tmp_pvalue_m[tmp_pvalue_m < 1e-323] = 1e-323
-        zscore_m = stats.norm.ppf(tmp_pvalue_m / 2) * flip_m
+        tmp_pvalue_m = tmp_pvalue_m / 2  # two sided test
+        tmp_pvalue_m[tmp_pvalue_m > (1-1e-16)] = (1-1e-16)  # precision upper limit
+        tmp_pvalue_m[tmp_pvalue_m < 2.4703282292062328e-324] = 2.4703282292062328e-324  # precision lower limit
+        zscore_m = stats.norm.ppf(tmp_pvalue_m) * flip_m
         del tmp_pvalue_m
 
         print("Saving output.")
         for m, suffix in ([corr_m, "correlation_coefficient"],
                           [pvalue_m, "correlation_pvalue"],
+                          [fdr_m, "correlation_FDR"],
                           [zscore_m, "correlation_zscore"]):
             df = pd.DataFrame(m, index=genes, columns=components)
             self.save_file(df=df,
@@ -191,9 +198,10 @@ class main():
             del df
 
         print("Post-processing data.")
-        corr_df = pd.DataFrame(np.hstack((corr_m, pvalue_m, zscore_m)),
+        corr_df = pd.DataFrame(np.hstack((corr_m, pvalue_m, fdr_m, zscore_m)),
                                columns=["{} r".format(comp) for comp in components] +
                                        ["{} pvalue".format(comp) for comp in components] +
+                                       ["{} FDR".format(comp) for comp in components] +
                                        ["{} zscore".format(comp) for comp in components])
         corr_df.insert(0, "ProbeName", genes)
         corr_df.insert(1, 'HGNCName', corr_df["ProbeName"].map(gene_dict))
@@ -202,7 +210,7 @@ class main():
             avg_ge_df = self.load_file(self.avg_ge_path, header=0, index_col=0)
             avg_ge_dict = dict(zip(avg_ge_df.index, avg_ge_df["average"]))
             corr_df.insert(2, 'avgExpression', corr_df["ProbeName"].map(avg_ge_dict))
-            file_appendix = "-avgExpressionAdded"
+            file_appendix += "-avgExpressionAdded"
             del avg_ge_df
 
         print("Saving file.")
