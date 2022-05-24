@@ -207,6 +207,9 @@ class main():
         else:
             df = np.log2(df + 1)
 
+        print("\tSaving file.")
+        self.save_file(df=df, outpath=os.path.join(self.file_outdir, "{}.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz".format(filename)))
+
         print("Step 4: PCA analysis.")
         self.pca(df=df,
                  filename=filename,

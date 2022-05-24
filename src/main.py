@@ -252,10 +252,10 @@ class Main:
 
         self.log.info("Loading technical covariates")
         tcov_df = self.data.get_tcov_df()
-        get_tcov_inter_df = self.data.get_tcov_inter_df()
+        tcov_inter_df = self.data.get_tcov_inter_df()
 
         tcov_m, tcov_labels = self.load_tech_cov(df=tcov_df, name="tech. cov. without interaction", std_df=std_df)
-        tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=get_tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
+        tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
 
         corr_m, corr_inter_m, correction_m_labels = \
             self.construct_correct_matrices(dataset_m=dataset_m,

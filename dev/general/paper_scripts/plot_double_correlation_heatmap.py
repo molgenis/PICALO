@@ -31,7 +31,7 @@ import numpy as np
 import pandas as pd
 from scipy.special import betainc
 from statsmodels.stats import multitest
-from scipy import stats
+from statsmodels.regression.linear_model import OLS
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
@@ -61,7 +61,7 @@ Syntax:
     -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -metabrain_file1_transpose \
     -m1n PICs \
-    -m2 /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
+    -m2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
     -m2n RNA-seq_alignment_metrics \
     -b1 /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -bios_file1_transpose \
@@ -71,10 +71,24 @@ Syntax:
     -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_RNASeqAlignmentMetrics
     
 ./plot_double_correlation_heatmap.py \
+    -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -metabrain_file1_transpose \
+    -m1n PICs \
+    -m2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CellFractionPercentages_forPlotting.txt.gz \
+    -m2n CellFraction% \
+    -b1 /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -bios_file1_transpose \
+    -b1n PICs \
+    -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
+    -b2n CellFraction% \
+    -r2 2 \
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_CellFractionPercentages
+    
+./plot_double_correlation_heatmap.py \
     -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
     -metabrain_file1_transpose \
     -m1n Expression_PCs \
-    -m2 /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
+    -m2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
     -m2n RNA-seq_alignment_metrics \
     -b1 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
     -bios_file1_transpose \
@@ -82,6 +96,20 @@ Syntax:
     -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz \
     -b2n RNA-seq_alignment_metrics \
     -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ExprPCs_vs_RNASeqAlignmentMetrics
+    
+./plot_double_correlation_heatmap.py \
+    -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -metabrain_file1_transpose \
+    -m1n Expression_PCs \
+    -m2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CellFractionPercentages_forPlotting.txt.gz \
+    -m2n CellFraction% \
+    -b1 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -bios_file1_transpose \
+    -b1n Expression_PCs \
+    -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
+    -b2n CellFraction% \
+    -r2 2 \
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ExprPCs_vs_CellFractionPercentages
 
 """
 
@@ -106,6 +134,7 @@ class main():
         self.bios2_transpose = getattr(arguments, 'bios_file2_transpose')
         self.bios2_name = getattr(arguments, 'bios_file2_name').replace("_", " ")
 
+        self.rsquared_threshold = getattr(arguments, 'rsquared_threshold')
         self.extensions = getattr(arguments, 'extensions')
         self.outfile = getattr(arguments, 'outfile')
 
@@ -186,7 +215,12 @@ class main():
                             type=str,
                             default="bios2",
                             help="The name of the BIOS second file.")
-
+        parser.add_argument("-r2",
+                            "--rsquared_threshold",
+                            type=float,
+                            default=0.99,
+                            help="The rsquared threshold to remove multicolinearity."
+                                 "Default: 0.99")
         parser.add_argument("-e",
                             "--extensions",
                             type=str,
@@ -217,8 +251,14 @@ class main():
                                  transpose2=self.bios2_transpose,
                                  )
 
-        print(meta_df)
-        print(bios_df)
+        # print(meta_df)
+        # print(bios_df)
+        #
+        # meta_df.to_csv("meta_df.txt.gz", sep="\t", header=True, index=True, compression="gzip")
+        # bios_df.to_csv("bios_df.txt.gz", sep="\t", header=True, index=True, compression="gzip")
+
+        # meta_df = pd.read_csv("meta_df.txt.gz", sep="\t", header=0, index_col=0)
+        # bios_df = pd.read_csv("bios_df.txt.gz", sep="\t", header=0, index_col=0)
 
         print("Plotting heatmap")
         self.plot_heatmap(df1=bios_df,
@@ -241,6 +281,14 @@ class main():
         overlap = list(set(df1.index).intersection(set(df2.index)))
         df1 = df1.loc[overlap, :]
         df2 = df2.loc[overlap, :]
+
+        print("Remove non variable column")
+        df1 = df1.loc[:, df1.std(axis=0) > 0]
+        df2 = df2.loc[:, df2.std(axis=0) > 0]
+
+        print("Remove multicollinearity")
+        df1 = self.remove_multicollinearity(df=df1)
+        df2 = self.remove_multicollinearity(df=df2)
 
         print("Correlating")
         corr_m, pvalue_m = self.corrcoef(m1=df1.to_numpy(),
@@ -267,6 +315,27 @@ class main():
               "with shape: {}".format(os.path.basename(inpath),
                                       df.shape))
         return df
+
+    def remove_multicollinearity(self, df):
+        indices = np.arange(df.shape[1])
+        max_r2 = np.inf
+        while len(indices) > 1 and max_r2 > self.rsquared_threshold:
+            r2 = np.array([self.calc_ols_rsquared(df=df.iloc[:, indices], idx=ix) for ix in range(len(indices))])
+            max_r2 = max(r2)
+
+            if max_r2 > self.rsquared_threshold:
+                max_index = np.where(r2 == max_r2)[0][0]
+                indices = np.delete(indices, max_index)
+
+        return df.iloc[:, indices]
+
+    @staticmethod
+    def calc_ols_rsquared(df, idx):
+        tmp_df = df.copy()
+        tmp_df.dropna(inplace=True)
+        rsquared = OLS(tmp_df.iloc[:, idx], tmp_df.loc[:, np.arange(tmp_df.shape[1]) != idx]).fit().rsquared
+        del tmp_df
+        return rsquared
 
     @staticmethod
     def corrcoef(m1, m2):
@@ -319,7 +388,7 @@ class main():
         axes[1, 1].set_axis_off()
 
         for extension in self.extensions:
-            fig.savefig(os.path.join(self.outdir, "{}.{}".format(self.outfile, extension)))
+            fig.savefig(os.path.join(self.outdir, "{}_{}RSquaredFiltering.{}".format(self.outfile, str(self.rsquared_threshold).replace(".", ""), extension)))
         plt.close()
 
     @staticmethod
@@ -356,6 +425,7 @@ class main():
         print("  > BIOS:")
         print("  >     (1) {}: {} {}".format(self.bios1_name, self.bios1_path, "[T]" if self.bios1_transpose else ""))
         print("  >     (2) {}: {} {}".format(self.bios2_name, self.bios2_path, "[T]" if self.bios2_transpose else ""))
+        print("  > R2 threshold: {}".format(self.rsquared_threshold))
         print("  > Extensions: {}".format(self.extensions))
         print("  > Outfile: {}".format(self.outfile))
         print("  > Output directory: {}".format(self.outdir))

@@ -62,7 +62,8 @@ Syntax:
     -i2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov-Conditional \
     -l2 brain \
     -n2 10 \
-    -o ieqtl_barplot_blood_and_brain
+    -o ieqtl_barplot_blood_and_brain \
+    -e png pdf
 """
 
 

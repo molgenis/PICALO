@@ -233,7 +233,7 @@ class main():
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs RNA alignment metrics.
-            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz", "-cn", "RNAseq alignment metrics", "-o", self.outname + "_vs_RNASeqAlignmentMetrics"]
+            command = ['python3', 'create_correlation_heatmap.py', '-rd', components_path, "-rn", self.outname, "-cd", "/groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz", "-cn", "RNAseq alignment metrics", "-o", self.outname + "_vs_RNASeqAlignmentMetrics"]
             self.run_command(command)
 
             # Plot correlation_heatmap of components vs Sex.
