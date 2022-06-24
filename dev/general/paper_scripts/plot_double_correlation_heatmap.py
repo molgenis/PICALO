@@ -68,7 +68,8 @@ Syntax:
     -b1n PICs \
     -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz \
     -b2n RNA-seq_alignment_metrics \
-    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_RNASeqAlignmentMetrics
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_RNASeqAlignmentMetrics \
+    -e png pdf
     
 ./plot_double_correlation_heatmap.py \
     -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
@@ -82,8 +83,9 @@ Syntax:
     -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
     -b2n CellFraction% \
     -r2 2 \
-    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_CellFractionPercentages
-    
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_CellFractionPercentages \
+    -e png pdf       
+
 ./plot_double_correlation_heatmap.py \
     -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
     -metabrain_file1_transpose \
@@ -95,7 +97,36 @@ Syntax:
     -b1n Expression_PCs \
     -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz \
     -b2n RNA-seq_alignment_metrics \
-    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ExprPCs_vs_RNASeqAlignmentMetrics
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ExprPCs_vs_RNASeqAlignmentMetrics \
+    -e png pdf
+    
+./plot_double_correlation_heatmap.py \
+    -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -metabrain_file1_transpose \
+    -m1n PICs \
+    -m2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
+    -m2n RNA-seq_alignment_metrics \
+    -b1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -bios_file1_transpose \
+    -b1n Expression_PCs \
+    -b2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
+    -b2n RNA-seq_alignment_metrics \
+    -o 2022-03-24-MetaBrain_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_and_ExprPCs_vs_RNASeqAlignmentMetrics \
+    -e png pdf
+    
+./plot_double_correlation_heatmap.py \
+    -m1 /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -metabrain_file1_transpose \
+    -m1n PICs \
+    -m2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz \
+    -m2n RNA-seq_alignment_metrics \
+    -b1 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first35ExpressionPCs.txt.gz \
+    -bios_file1_transpose \
+    -b1n Expression_PCs \
+    -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_RNA_AlignmentMetrics.txt.gz \
+    -b2n RNA-seq_alignment_metrics \
+    -o 2022-03-24-BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_and_ExprPCs_vs_RNASeqAlignmentMetrics \
+    -e png pdf
     
 ./plot_double_correlation_heatmap.py \
     -m1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
@@ -109,7 +140,8 @@ Syntax:
     -b2 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
     -b2n CellFraction% \
     -r2 2 \
-    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ExprPCs_vs_CellFractionPercentages
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ExprPCs_vs_CellFractionPercentages \
+    -e png pdf
 
 """
 
@@ -277,6 +309,9 @@ class main():
 
         if transpose2:
             df2 = df2.T
+
+        print(df1)
+        print(df2)
 
         overlap = list(set(df1.index).intersection(set(df2.index)))
         df1 = df1.loc[overlap, :]

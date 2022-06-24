@@ -65,7 +65,8 @@ Syntax:
     -i /groups/umcg-bios/tmp01/projects/PICALO/output \
     -f 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
     -rx PIC2-Comp13 \
-    -ry PIC3-Comp13
+    -ry PIC3-Comp13 \
+    -e png pdf
 
 """
 
@@ -79,7 +80,7 @@ class main():
         self.rx = getattr(arguments, 'regplot_x')
         self.ry = getattr(arguments, 'regplot_y')
         self.extensions = getattr(arguments, 'extension')
-        self.n_pics = 3
+        self.n_pics = 5
         self.n_comps = 25
 
         # Set variables.
@@ -184,9 +185,9 @@ class main():
         #                    outpath=os.path.join(self.file_outdir,
         #                                         "{}_{}.txt.gz".format(self.filename, suffix)))
         #     del tmp_df
-        # # exit()
-        #
-        # corr_df = pd.DataFrame(pd.DataFrame(m, index=indices, columns=indices), index=indices, columns=indices)
+        # exit()
+
+        # corr_df = pd.DataFrame(m, index=indices, columns=indices)
         # fdr_df = pd.DataFrame(fdr_m, index=indices, columns=indices)
         df = self.load_file(os.path.join(self.file_outdir, "{}_data.txt.gz".format(self.filename)), header=0, index_col=0)
         corr_df = self.load_file(os.path.join(self.file_outdir, "{}_correlation_coefficient.txt.gz".format(self.filename)), header=0, index_col=0)
@@ -194,6 +195,8 @@ class main():
         print(df)
         print(corr_df)
         print(fdr_df)
+
+        corr_df = corr_df * corr_df
 
         print("Masking matrix.")
         color_corr_df = corr_df.copy()

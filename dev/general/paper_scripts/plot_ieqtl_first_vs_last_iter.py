@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-File:         visualise_picalo_optimization.py
+File:         plot_ieqtl_first_vs_last_iter.py
 Created:      2021/05/24
 Last Changed:
 Author:       M.Vochteloo
@@ -38,7 +38,6 @@ import matplotlib.pyplot as plt
 from statsmodels.regression.linear_model import OLS
 
 # Local application imports.
-from src.statistics import remove_covariates
 
 # Metadata
 __program__ = "Visualisae PICALO optimization"
@@ -56,9 +55,26 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-./visualise_picalo_optimization.py -h
+./plot_ieqtl_first_vs_last_iter.py -h
 
-./visualise_picalo_optimization.py \
+### BIOS ###
+
+./plot_ieqtl_first_vs_last_iter.py \
+    -pp /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first40ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -i rs2155218+ENSG00000236304+PIC2 \
+    -n 250 \
+    -e png pdf \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+
+### MetaBrain ###
+
+./plot_ieqtl_first_vs_last_iter.py \
     -pp /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/ \
     -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
     -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
@@ -66,8 +82,9 @@ Syntax:
     -tc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first80ExpressionPCs.txt.gz \
     -tci /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
     -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
-    -i 12:31073901:rs7953706:T_A+ENSG00000013573.17+PIC1 20:54173204:rs2248137:C_G+ENSG00000019186.10+PIC2 \
-    -n 1250 \
+    -i 12:31073901:rs7953706:T_A+ENSG00000013573.17+PIC1 \
+    -n 10 \
+    -e png pdf \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
     
 """
@@ -93,7 +110,7 @@ class main():
         self.outfile = getattr(arguments, 'outfile')
 
         # Set variables.
-        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'visualise_picalo_optimization')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -287,7 +304,6 @@ class main():
                 with open(os.path.join(self.picalo_path, pic, "component.npy"), 'rb') as f:
                     pic_a = np.load(f)
                 f.close()
-                print(pic_a)
 
                 if pic_corr_m is not None:
                     pic_corr_m = np.hstack((pic_corr_m, pic_a[:, np.newaxis]))
@@ -300,7 +316,7 @@ class main():
                     pic_corr_inter_m = pic_a[:, np.newaxis]
 
             if pic not in plot_ids:
-                print("Skipping PIC")
+                print("Skipping PIC{}".format(pic_index))
                 continue
             pic_plot_ids = plot_ids[pic]
 
@@ -361,8 +377,11 @@ class main():
                               2.0: "{}/{}".format(two_allele, two_allele)}
 
                 # Fill the interaction plot annotation.
+                snp_name = snp
+                if not snp_name.startswith("rs"):
+                    snp_name = snp.split(":")[2]
                 annot = [
-                    "{} - {}".format(snp.split(":")[2], two_allele),
+                    "{} - {}".format(snp_name, two_allele),
                     "N: {}".format(df.shape[0])]
 
                 self.inter_plot(
@@ -376,7 +395,7 @@ class main():
                     allele_map=allele_map,
                     annot=annot,
                     ylabel="{} expression".format(gene),
-                    filename="{}_{}_{}_ieqtl_before_and_after".format(gene, snp, pic)
+                    filename="{}_{}_{}_{}_ieqtl_before_and_after".format(self.outfile, gene, snp, pic)
                 )
 
     @staticmethod
@@ -483,11 +502,10 @@ class main():
         if len(set(df[group_round].unique()).symmetric_difference({0, 1, 2})) > 0:
             return
 
-        sns.set(rc={'figure.figsize': (24, 9)})
         sns.set_style("ticks")
         fig, axes = plt.subplots(nrows=2,
                                  ncols=2,
-                                 figsize=(24, 10),
+                                 figsize=(18, 10),
                                  sharex="none",
                                  sharey="none",
                                  gridspec_kw={"height_ratios": [0.1, 0.9]})

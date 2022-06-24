@@ -3,7 +3,7 @@
 """
 File:         manim_scene2.py
 Created:      2022/02/10
-Last Changed:
+Last Changed: 2022/06/24
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -67,9 +67,9 @@ class GraphicalAbstractPart3(Scene):
         }
 
         # Loading data.
-        iterations_df = pd.read_csv(os.path.join("/Users/mvochteloo/Downloads/PICALO_animations/PIC1/iteration.txt.gz"), sep="\t", header=0, index_col=0)
-        std_df = pd.read_csv(os.path.join("/Users/mvochteloo/Downloads/PICALO_animations/sample_to_dataset.txt.gz"), sep="\t", header=0, index_col=None)
-        info_df = pd.read_csv(os.path.join("/Users/mvochteloo/Downloads/PICALO_animations/PIC1/info.txt.gz"), sep="\t", header=0, index_col=0)
+        iterations_df = pd.read_csv(os.path.join("/Users/mvochteloo/Documents/PhD/Presentations/FrankeSwertzMeeting/20220214/animation_real_data/PIC1/iteration.txt.gz"), sep="\t", header=0, index_col=0)
+        std_df = pd.read_csv(os.path.join("/Users/mvochteloo/Documents/PhD/Presentations/FrankeSwertzMeeting/20220214/animation_real_data/sample_to_dataset.txt.gz"), sep="\t", header=0, index_col=None)
+        info_df = pd.read_csv(os.path.join("/Users/mvochteloo/Documents/PhD/Presentations/FrankeSwertzMeeting/20220214/animation_real_data/PIC1/info.txt.gz"), sep="\t", header=0, index_col=0)
 
         iterations_df = iterations_df.iloc[:17, :]
         info_df = info_df.iloc[:16, :]

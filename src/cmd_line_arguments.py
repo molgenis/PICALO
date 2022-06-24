@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2022/02/10
+Last Changed: 2022/06/24
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -91,9 +91,9 @@ class CommandLineArguments:
                             "--covariate",
                             type=str,
                             required=True,
-                            help="The path to the covariate matrix (i.e. the"
-                                 "matrix used as starting vector for the "
-                                 "interaction term).")
+                            help="The path to the covariate matrix (i.e. the "
+                                 "matrix used as initial guess for the "
+                                 "optimization)")
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,

@@ -46,7 +46,7 @@ from adjustText import adjust_text
 
 """
 Syntax:
-./pic_replication.py \
+./afr_pic_replication.py \
     -di /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov \
     -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
     -ri /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA_CortexEURPICLoadingsAsCov \
@@ -55,7 +55,7 @@ Syntax:
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_Replication \
     -e png pdf
     
-./pic_replication.py \
+./afr_pic_replication.py \
     -di /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov \
     -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
     -ri /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA_noFNPD_CortexEURPICLoadingsAsCov \
@@ -66,7 +66,7 @@ Syntax:
 """
 
 # Metadata
-__program__ = "PIC Replication"
+__program__ = "AFR PIC Replication"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -93,7 +93,7 @@ class main():
         self.extensions = getattr(arguments, 'extension')
 
         # Set variables.
-        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'pic_replication')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'afr_pic_replication')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 

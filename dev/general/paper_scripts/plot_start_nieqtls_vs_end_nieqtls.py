@@ -62,7 +62,8 @@ Syntax:
     -mf 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
     -bi /groups/umcg-bios/tmp01/projects/PICALO/output/ \
     -bf 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -e png pdf 
 
 """
 
@@ -240,6 +241,9 @@ class main():
                             title=""):
         sns.despine(fig=fig, ax=ax)
 
+        df[x] = np.log10(df[x])
+        df[y] = np.log10(df[y])
+
         group_column = hue
         if hue is None:
             df["hue"] = "#000000"
@@ -291,9 +295,6 @@ class main():
         ax.set_title(title,
                      fontsize=18,
                      fontweight='bold')
-
-        ax.set_xscale('log')
-        ax.set_yscale('log')
 
     def print_arguments(self):
         print("Arguments:")

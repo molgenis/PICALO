@@ -85,9 +85,35 @@ Syntax:
 ./create_correlation_heatmap.py \
     -rd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -rn PICs \
-    -cd /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.Log2Transformed.describe.txt.gz \
-    -rn GeneExpressionStats \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_vs_GeneExpressionStatsLog2Transformed
+    -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
+    -cn CellFraction% \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_vs_CellFractionPercentages
+
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -rn PICs \
+    -cd /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2020-02-05-step0-correlate-covariates-with-expression/2020-02-05-freeze2dot1.TMM.Covariates.withBrainRegion-noncategorical-variable.txt.gz \
+    -cn RNA-seq_alignment_metrics \
+    -m Pearson \
+    -o 
+
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -rn PICs \
+    -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CellFractionPercentages_forPlotting.txt.gz \
+    -cn CellFraction% \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC_vs_CellFractionPercentages
+
+
+### Both ###
+
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/gene_set_enrichment/2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_ZscoreFiltering/info.txt.gz \
+    -rn blood \
+    -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/gene_set_enrichment/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_ZscoreFiltering/info.txt.gz \
+    -cn brain \
+    -m Pearson \
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_zscore_comparison
     
 """
 
@@ -192,6 +218,16 @@ class main():
 
         if col_df.shape[1] > col_df.shape[0]:
             col_df = col_df.T
+
+        # row_df = row_df.loc[:, [col for col in row_df.columns if "zscore" in col]]
+        # row_df.columns = [col.replace(" zscore", "") for col in row_df.columns]
+        # row_df.index = [value.split(".")[0] for value in row_df.index]
+        # row_df = row_df.groupby(row_df.index).first()
+        #
+        # col_df = col_df.loc[:, [col for col in col_df.columns if "zscore" in col]]
+        # col_df.columns = [col.replace(" zscore", "") for col in col_df.columns]
+        # col_df.index = [value.split(".")[0] for value in col_df.index]
+        # col_df = col_df.groupby(col_df.index).first()
 
         print("Getting overlap.")
         overlap = list(set(row_df.index).intersection(set(col_df.index)))

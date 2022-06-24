@@ -58,10 +58,8 @@ Syntax:
 ./plot_ieqtl_barplot.py \
     -i1 /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-Conditional \
     -l1 blood \
-    -n1 10 \
     -i2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov-Conditional \
     -l2 brain \
-    -n2 10 \
     -o ieqtl_barplot_blood_and_brain \
     -e png pdf
 """
@@ -241,7 +239,7 @@ class main():
 
     def barplot(self, df, x="x", y="y", hue=None, palette=None, xlabel="",
                  ylabel="", title="", filename="plot"):
-        sns.set(rc={'figure.figsize': (12, 9)})
+        sns.set(rc={'figure.figsize': (24, 9)})
         sns.set_style("ticks")
         fig, ax = plt.subplots()
         sns.despine(fig=fig, ax=ax)

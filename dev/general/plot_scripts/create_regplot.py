@@ -96,6 +96,49 @@ Syntax:
     -y_log10 \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC1_vs_MergedExonLengtheQTLFilter
 
+./create_regplot.py \
+    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -xi PIC1 \
+    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/ENSG00000130540.txt.gz \
+    -yi ENSG00000130540.14 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC1_vs_SULT4A1
+
+./create_regplot.py \
+    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/correlate_samples_with_avg_gene_expression/MetaBrain_CorrelationsWithAverageExpression.txt.gz \
+    -x_transpose \
+    -xi AvgExprCorrelation \
+    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/plot_scripts/ENSG00000130540.txt.gz \
+    -yi ENSG00000130540.14 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_AvgExprCorrelation_vs_SULT4A1
+    
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_correlation_zscore.txt.gz \
+    -x_transpose \
+    -xi PIC1 \
+    -xl blood_PIC1 \
+    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_correlation_zscore.txt.gz \
+    -y_transpose \
+    -yi PIC7 \
+    -yl brain_PIC7 \
+    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_zscore_bloodPIC1_vs_brainPIC7
+
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/antibodyPc2VsPic3.txt \
+    -x_transpose \
+    -xi antiBodyPc2 \
+    -xl Anti-Body_PC2 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/antibodyPc2VsPic3.txt \
+    -y_transpose \
+    -yi pic3 \
+    -yl blood_PIC3 \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2022-03-24-BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_PIC3_vs_ABPC2
+
 """
 
 
@@ -230,6 +273,11 @@ class main():
         print("Loading data.")
         x_df = self.load_file(self.x_data_path, header=0, index_col=0)
         y_df = self.load_file(self.y_data_path, header=0, index_col=0)
+
+        # x_df.index = [value.split(".")[0] for value in x_df.index]
+        # x_df = x_df.groupby(x_df.index).first()
+        # y_df.index = [value.split(".")[0] for value in y_df.index]
+        # y_df = y_df.groupby(y_df.index).first()
 
         # x_df["t-value"] = x_df["beta-interaction"].astype(float) / x_df["std-interaction"].astype(float)
         # y_df["t-value"] = y_df["beta-interaction"].astype(float) / y_df["std-interaction"].astype(float)
