@@ -88,6 +88,27 @@ Syntax:
     -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
     -cn CellFraction% \
     -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_vs_CellFractionPercentages
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -rn PICs \
+    -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
+    -cn CellFraction% \
+    -m Pearson \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_CellFractionPercentages \
+    -e png pdf
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -rn PCs \
+    -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
+    -cn CellFraction% \
+    -m Pearson \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PCs_vs_CellFractionPercentages \
+    -e png pdf
+    
+    
+### BIOGEN ####
 
 ./create_correlation_heatmap.py \
     -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
@@ -129,6 +150,7 @@ class main():
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.method = getattr(arguments, 'method')
         self.out_filename = getattr(arguments, 'outfile')
+        self.extensions = getattr(arguments, 'extensions')
 
         # Set variables.
         self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
@@ -195,6 +217,13 @@ class main():
                             type=str,
                             required=True,
                             help="The name of the outfile.")
+        parser.add_argument("-e",
+                            "--extensions",
+                            type=str,
+                            nargs="+",
+                            default=["png"],
+                            choices=["eps", "pdf", "pgf", "png", "ps", "raw", "rgba", "svg", "svgz"],
+                            help="The output file format(s), default: ['png']")
 
         return parser.parse_args()
 
@@ -381,7 +410,8 @@ class main():
                 row_index += 1
 
         plt.tight_layout()
-        fig.savefig(os.path.join(self.outdir, "{}_corr_heatmap_{}_{}.png".format(self.out_filename, self.method, appendix)))
+        for extension in self.extensions:
+            fig.savefig(os.path.join(self.outdir, "{}_corr_heatmap_{}_{}.{}".format(self.out_filename, self.method, appendix, extension)))
         plt.close()
 
     def print_arguments(self):
@@ -394,6 +424,7 @@ class main():
         print("  > Correlation method: {}".format(self.method))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
+        print("  > Extensions: {}".format(self.extensions))
         print("")
 
 

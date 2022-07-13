@@ -160,9 +160,9 @@ class main():
         ieqtl_fdr_df_list = []
         inpaths = glob.glob(os.path.join(self.indir, "*.txt.gz"))
         if self.conditional:
-            inpaths = [inpath for inpath in inpaths if inpath.endswith("_conditional")]
+            inpaths = [inpath for inpath in inpaths if inpath.endswith("_conditional.txt.gz")]
         else:
-            inpaths = [inpath for inpath in inpaths if not inpath.endswith("_conditional")]
+            inpaths = [inpath for inpath in inpaths if not inpath.endswith("_conditional.txt.gz")]
         inpaths.sort(key=self.natural_keys)
         for i, inpath in enumerate(inpaths):
             if (self.skip_files is not None and i < self.skip_files) or \

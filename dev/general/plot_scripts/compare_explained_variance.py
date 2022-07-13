@@ -63,12 +63,24 @@ Syntax:
     -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
     -e png pdf
     
+./compare_explained_variance.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-FullModelR2/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-FullModelR2/results.txt.gz \
+    -n PICs PCs \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FullModelR2 \
+    -e png pdf
+    
 ### MetaBrain ###
 
 ./compare_explained_variance.py \
     -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov/results.txt.gz /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov/results.txt.gz \
     -n PICs PCs \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -e png pdf
+    
+./compare_explained_variance.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-FullModelR2/results.txt.gz /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-FullModelR2/results.txt.gz \
+    -n PICs PCs \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FullModelR2 \
     -e png pdf
 
 """
@@ -170,11 +182,11 @@ class main():
             tvalue_dfm_list.append(inter_tvalue_dfm)
 
         rsquared_df = pd.concat(rsquared_df_list, axis=1)
-        # print(rsquared_df)
-        # print(rsquared_df.mean(axis=0))
-        # print(rsquared_df.std(axis=0))
-        # print(rsquared_df.median(axis=0))
-        # print(stats.mannwhitneyu(rsquared_df["PICs"], rsquared_df["PCs"]))
+        print(rsquared_df)
+        print(rsquared_df.mean(axis=0))
+        print(rsquared_df.std(axis=0))
+        print(rsquared_df.median(axis=0))
+        print(stats.mannwhitneyu(rsquared_df["PICs"], rsquared_df["PCs"]))
         tvalue_dfm = pd.concat(tvalue_dfm_list, axis=0)
 
         if self.interaction_paths is not None:

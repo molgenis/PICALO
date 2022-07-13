@@ -3,7 +3,7 @@
 """
 File:         create_regplot.py
 Created:      2021/11/09
-Last Changed: 2021/12/06
+Last Changed: 2022/07/13
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -137,7 +137,52 @@ Syntax:
     -yl blood_PIC3 \
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
     -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2022-03-24-BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_PIC3_vs_ABPC2
+    -o 2022-03-24-BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_PIC3_vs_ABPC2 \
+    -e png pdf
+    
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/antibodyPc2VsPic3.txt \
+    -x_transpose \
+    -xi antiBodyPc2 \
+    -xl Anti-Body_PC2 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -yi Comp5 \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2022-03-24-BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_Comp5_vs_ABPC2 \
+    -e png pdf
+
+####
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -xi PIC3 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -yi Comp5 \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC3_vs_comp5
+
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -xi PIC3 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
+    -y_transpose \
+    -yi Granulocyte \
+    -yl Granulocyte% \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC3_vs_Granulocyte
+
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -xi Comp5 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
+    -y_transpose \
+    -yi Granulocyte \
+    -yl Granulocyte% \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_Comp5_vs_Granulocyte
 
 """
 
@@ -167,6 +212,7 @@ class main():
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.palette_path = getattr(arguments, 'palette')
         self.out_filename = getattr(arguments, 'outfile')
+        self.extensions = getattr(arguments, 'extension')
 
         # Set variables.
         self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
@@ -264,6 +310,14 @@ class main():
                             type=str,
                             required=True,
                             help="The name of the outfile.")
+        parser.add_argument("-e",
+                            "--extension",
+                            nargs="+",
+                            type=str,
+                            choices=["png", "pdf", "eps"],
+                            default=["png"],
+                            help="The figure file extension. "
+                                 "Default: 'png'.")
 
         return parser.parse_args()
 
@@ -377,7 +431,7 @@ class main():
         ax2.axis('off')
 
         # Set annotation.
-        pearson_coef, _ = stats.pearsonr(df[y], df[x])
+        pearson_coef, pearson_p = stats.pearsonr(df[y], df[x])
         ax1.annotate(
             'total N = {:,}'.format(df.shape[0]),
             xy=(0.03, 0.94),
@@ -386,7 +440,7 @@ class main():
             fontsize=14,
             fontweight='bold')
         ax1.annotate(
-            'total r = {:.2f}'.format(pearson_coef),
+            'total r = {:.2f} [p = {:.2e}'.format(pearson_coef, pearson_p),
             xy=(0.03, 0.90),
             xycoords=ax1.transAxes,
             color="#000000",
@@ -462,10 +516,9 @@ class main():
         ax1.set_xlim(new_xlim[0], new_xlim[1])
         ax1.set_ylim(new_ylim[0], new_ylim[1])
 
-        outpath = os.path.join(self.outdir, "{}.png".format(filename))
-        fig.savefig(outpath)
+        for extension in self.extensions:
+            fig.savefig(os.path.join(self.outdir, "{}.{}".format(filename, extension)))
         plt.close()
-        print("\tSaved figure: {} ".format(os.path.basename(outpath)))
 
     def print_arguments(self):
         print("Arguments:")
@@ -485,6 +538,7 @@ class main():
         print("    > Label: {}".format(self.y_label))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
+        print("  > Extensions: {}".format(self.extensions))
         print("")
 
 
