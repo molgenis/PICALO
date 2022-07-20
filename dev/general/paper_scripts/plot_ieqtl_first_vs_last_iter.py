@@ -3,7 +3,7 @@
 """
 File:         plot_ieqtl_first_vs_last_iter.py
 Created:      2021/05/24
-Last Changed:
+Last Changed: 2022/07/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -69,6 +69,19 @@ Syntax:
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
     -i rs2155218+ENSG00000236304+PIC2 \
     -n 250 \
+    -e png pdf \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+    
+./plot_ieqtl_first_vs_last_iter.py \
+    -pp /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first40ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -i rs1981760+ENSG00000167207+PIC2 \
+    -n 100 \
     -e png pdf \
     -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
 
@@ -240,8 +253,6 @@ class main():
             exit()
 
         expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=self.nrows)
-        tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
-        tcov_inter_df = self.load_file(self.tcov_inter_path, header=0, index_col=0)
         std_df = self.load_file(self.std_path, header=0, index_col=None)
         std_df.index = std_df.iloc[:, 0]
 
@@ -265,8 +276,17 @@ class main():
 
         ########################################################################
 
-        tcov_m, tcov_labels = self.load_tech_cov(df=tcov_df, name="tech. cov. without interaction", std_df=std_df)
-        tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
+        tcov_m = None
+        tcov_labels = None
+        if self.tcov_path is not None:
+            tcov_df = self.load_file(self.tcov_path, header=0, index_col=0)
+            tcov_m, tcov_labels = self.load_tech_cov(df=tcov_df, name="tech. cov. without interaction", std_df=std_df)
+
+        tcov_inter_m = None
+        tcov_inter_labels = None
+        if self.tcov_inter_path is not None:
+            tcov_inter_df = self.load_file(self.tcov_inter_path, header=0, index_col=0)
+            tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
 
         corr_m, corr_inter_m, correction_m_labels = \
             self.construct_correct_matrices(dataset_m=dataset_m,
@@ -361,7 +381,7 @@ class main():
                 #     X = np.hstack((X, X_inter_m * geno_m[row_index, :][mask, np.newaxis]))
                 df["expression"] = OLS(df["expression"], X).fit().resid
 
-                # Check the call rate.
+                # Force normalise.
                 for dataset in df["dataset"].unique():
                     sample_mask = (df["dataset"] == dataset).to_numpy(dtype=bool)
                     df.loc[sample_mask, "expression"] = ndtri((df.loc[sample_mask, "expression"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
