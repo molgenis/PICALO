@@ -6,17 +6,17 @@ Expression quantitative trait loci (eQTL) help explain the regulatory mechanisms
 
 PICALO is an expectation maximization (EM) based algorithm. Using an initial guess to start the optimization, PICALO identifies eQTLs that interact with this context (interaction eQTLs; ieQTLs) and subsequently optimizes this interaction. 
 
-### PICALO applied to a single eQTL
+### PICALO applied to a single ieQTL
 Per sample the context value is adjusted to maximize the log-likelihood of the whole model (i.e. minimize the residuals) while maintaining the model parameters. The underlying assumption is that while the per sample context value might be noisy, the whole model captures the true interaction. Considering the case in which only one ieQTL is optimized, this results in all samples moving towards their genotype's regression line:
 
 ![Single ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart1.gif)
 
-### Numerous eQTLs are included to prevent overfitting
+### A collection of ieQTLs are optimized simultaneously
 In practice, however, PICALO applies this optimization over all ieQTLs simultaneously. The optimal value is identified by modelling the log-likelihood function for different context values (x-axis) as a second-degree polynomial. By summing the polynomials, a new context value is identified per sample that maximizes the log-likelihood (i.e. minimized the residuals) over all ieQTLs. Repeat this for all samples and this will yield a new vector that maximally interacts with the ieQTLs. 
 
 ![Double ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart2.gif)
 
-### Process is repeated to identify Principal Interaction Components
+### Process is repeated to identify Principal Interaction Components (PICs)
 This process is then repeated using the optimized vector as input and reoptimized over an updated set of ieQTLs. Generally, with every iteration the number of ieQTLs increases. Shown below is that after a limited number of iterations an optimum can be reached. Once converged, the resulting vector is referred to as Principal Interaction Components (PICs).
 
 ![EM looping example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart3.gif)
@@ -60,11 +60,16 @@ deactivate
 ./picalo.py -h
 ```  
 
-### Information arguments:
+<details>
+  <summary>Information arguments</summary>
+
  * **-h**, **--help**: show this help message and exit
  * **-v**, **--version**: show program's version number and exit
+</details>
 
-### Required data arguments:
+<details>
+  <summary>Required data arguments</summary>
+
  * **-eq**, **--eqtl**: The path to the eqtl matrix. Expects to contain the columns 'Pvalue' (eQTL p-value), 'SNPName' (the eQTL SNP), and 'ProbeName' (the eQTL gene).
 
  * **-ge**, **--genotype**: The path to the genotype matrix. Expects to contain genotype dosages (between 0 en 2). Missing genotypes are by default -1 (can be changed used **-na** / **--genotype_na**). The rows should contain the SNPs on the same order as the **-eq** / **--eqtl** files. The columns should contain the samples on the same order as the **-ex** / **--expression** and **-co** / **--covariate** files.
@@ -72,8 +77,11 @@ deactivate
  * **-ex**, **--expression**: The path to the expression matrix. The rows should contain the gene expression on the same order as the **-eq** / **--eqtl** files. The columns should contain the samples on the same order as the **-ge** / **--genotype** and **-co** / **--covariate** files.
 
  * **-co**, **--covariate**: The path to the covariate matrix (i.e. the matrix used as initial guess for the optimization). The rows should contain the different covariates on the same order as the **-eq** / **--eqtl** files. The columns should contain the samples on the same order as the **-ge** / **--genotype** and **-ex** / **--expression** files.
+</details>
 
-### Optinal data arguments:
+<details>
+  <summary>Optional data arguments</summary>
+
  * **-na**, **--genotype_na**: The genotype value that equals a missing value. Default: -1.
 
  * **-tc**, **--tech_covariate**: The path to the technical covariate matrix (excluding an interaction with genotype). Default: None. The rows should contain the technical covariates to correct for. The columns should contain the samples on the same order as the **-ge** / **--genotype**, **-ex** / **--expression** file, and **-co** / **--covariate** files.
@@ -81,8 +89,11 @@ deactivate
  * **-tci**, **--tech_covariate_with_inter**: The path to the technical covariate matrix(including an interaction with genotype). Default: None. The rows should contain the technical covariates to correct for including an interaction term with genotype. The columns should contain the samples on the same order as the **-ge** / **--genotype**, **-ex** / **--expression** file, and **-co** / **--covariate** files.
 
  * **-std**, **--sample_to_dataset**: The path to the sample-dataset link matrix. Default: None. Note that his argument is required if the input data conists of multiple datasets. The rows should contain sample - dataset links on the same order as the **-ge** / **--genotype**, **-ex** / **--expression** file, and **-co** / **--covariate** files.
+</details>
 
-### eQTL inclusion arguments:
+<details>
+  <summary>eQTL inclusion arguments</summary>
+
  * **-mds**, **--min_dataset_size**: The minimal number of samples per dataset. Default: >=30.
  * **-ea**, **--eqtl_alpha**: The eQTL significance cut-off. Default: <=0.05.
  * **-cr**, **--call_rate**: The minimal call rate of a SNP (per dataset).Equals to (1 - missingness). Default: >= 0.95.
@@ -90,35 +101,50 @@ deactivate
  * **-maf**, **--minor_allele_frequency**: The MAF threshold. Default: >0.01.
  * **-mgs**, **--min_group_size**: The minimal number of samples per genotype group. Default: >= 2.
  * **-iea**, **--ieqtl_alpha**: The interaction eQTL significance cut-off. Default: <=0.05.
+</details>
 
-### PICALO optimization arguments:
+<details>
+  <summary>PICALO optimization arguments</summary>
+
  * **-n_components**: The number of components to extract. Default: 10.
  * **-min_iter**: The minimum number of optimization iterations to perform per component. Default: 5.
  * **-max_iter**: The maximum number of optimization iterations to perform per component. Default: 100.
  * **-tol**: The convergence threshold. The optimization will stop when the 1 - Pearson correlation coefficient is below this threshold. Default: 1e-3.
  * **-force_continue**: Force to identify more components even if the previous one did not converge. Default: False.
+</details>
 
-### Output arguments:
+<details>
+  <summary>Output arguments</summary>
+
  * **-o**, **--outdir**: The name of the output folder.
  * **-verbose**: Enable verbose output. Default: False.
+</details>
 
 ## Output
 
-PICALO generate the following output files:
+PICALO generates a set of general and PIC specific output files. Click on the headers for more information.
+
+<details>
+  <summary>General output files</summary>
+
  * **call_rate.txt.gz**: containing the per dataset SNP call rates.
  * **components.txt.gz**: containing the identified components (also including non-converged components in contrast to 'PICs.txt.gz').
  * **genotype_stats.txt.gz**: containing the genotype summary statistics like sample size, Hardy-Weinberg equilibrium p-value, minor allele frequency (MAF), etc.
  * **log.log**: log file containing all terminal output.
  * **PICs.txt.gz**: containing the identified PICs.
  * **SummaryStats.txt.gz**: containing the number of interacting eQTLs per PIC.
+</details>
 
-And per PIC the following output files:
+<details>
+  <summary>PIC specific output files</summary>
+
  * **PICN/component.npy**: numpy binary file containing the converged PIC for easy loading in case of a restart.
  * **PICN/covariate_selection.txt.gz**: containing the number of interacting eQTLs per initial guess (referred to as covariate).
  * **PICN/info.txt.gz**: containing optimization statistics per iteration like the number of interacting eQTLs, the correlation with the previous iteration etc.
  * **PICN/iteration.txt.gz**: containing the component loadings per iteration.
  * **PICN/n_ieqtls_per_sample.txt.gz**: containing the number of eQTLs used for optimization per sample per iteration.
  * **PICN/results_iterationN.txt.gz**: containing the interaction eQTL summary statistics per iteration.
+</details>
 
 Finally, the number of interacting eQTLs is determined without removing PICs. The summary statistics of which are stored as: **PIC_interactions/PICN.txt.gz**.
 
