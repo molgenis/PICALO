@@ -7,21 +7,21 @@ Expression quantitative trait loci (eQTL) help explain the regulatory mechanisms
 PICALO is an expectation maximization (EM) based algorithm. Using an initial guess to start the optimization, PICALO identifies eQTLs that interact with this context (interaction eQTLs; ieQTLs) and subsequently optimizes this interaction. 
 
 ### PICALO applied to a single eQTL
-Per sample the context value is adjusted to reduce maximize the log likelihood of the whole model (i.e. minimize the residuals) while maintaining the model parameters. The underlying assumption is that while the per sample context value might be noisy, the whole model captures the true interaction. Considering the case in which only one ieQTL is optimized, this results in all samples moving towards their genotype's regression line:
+Per sample the context value is adjusted to maximize the log-likelihood of the whole model (i.e. minimize the residuals) while maintaining the model parameters. The underlying assumption is that while the per sample context value might be noisy, the whole model captures the true interaction. Considering the case in which only one ieQTL is optimized, this results in all samples moving towards their genotype's regression line:
 
 ![Single ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart1.gif)
 
-### Numerous eQTLs are inlcuded to prevent overfitting
-In practise however, PICALO applies this optimization over all ieQTLs simultaneously. This will result in a new vector that maximally interacts with the eQTLs. 
+### Numerous eQTLs are included to prevent overfitting
+In practice, however, PICALO applies this optimization over all ieQTLs simultaneously. The optimal value is identified by modelling the log-likelihood function for different context values (x-axis) as a second-degree polynomial. By summing the polynomials, a new context value is identified per sample that maximizes the log-likelihood (i.e. minimized the residuals) over all ieQTLs. Repeat this for all samples and this will yield a new vector that maximally interacts with the ieQTLs. 
 
 ![Double ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart2.gif)
 
 ### Process is repeated to identify Principal Interaction Components
-Next, a new set eQTLs that interact with the optimized vector are identified over which the optimization step is repeated. This process repeats until convergence. The resulting vector is referred to as Principal Interaction Components (PICs), which maximally affect eQTL effect-sizes.
+This process is then repeated using the optimized vector as input and reoptimized over an updated set of ieQTLs. Generally, with every iteration the number of ieQTLs increases. Shown below is that after a limited number of iterations an optimum can be reached. Once converged, the resulting vector is referred to as Principal Interaction Components (PICs).
 
 ![EM looping example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart3.gif)
 
-Finally, multiple PICs are identified by removing the previous PICs and repeating the proces.
+Finally, multiple PICs are identified by removing the previous PICs and repeating the process.
 
 ## Prerequisites  
 
@@ -38,13 +38,13 @@ See 'Installing' on how to install these packages. Note that the performance / r
 
 ### Installing  
 
-Install the required packages. Consider using a virtual environment to ensure the right version of packages are used.
+Install the required packages. Consider using a virtual environment to ensure the right version of packages is used.
 ```  
 python3 -m venv <name of virtual environment>
 source <name of virtual environment>/bin/activate
 ```
 
-The python packager manager (pip) and the requirements file can be used to install all the necessary packages. Note that the [requirements.txt](requirements.txt) file includes depedencies with their correct versions. Therefore, include the flag --no-dependencies when installing the packages to prevent unnecessary upgrading. 
+The python packager manager (pip) and the requirements file can be used to install all the necessary packages. Note that the [requirements.txt](requirements.txt) file includes dependencies with their correct versions. Therefore, include the flag --no-dependencies when installing the packages to prevent unnecessary upgrading. 
 ```  
 pip install -r requirements.txt --no-dependencies
 ```
@@ -95,7 +95,7 @@ deactivate
  * **-n_components**: The number of components to extract. Default: 10.
  * **-min_iter**: The minimum number of optimization iterations to perform per component. Default: 5.
  * **-max_iter**: The maximum number of optimization iterations to perform per component. Default: 100.
- * **-tol**: The convergence threshold. The optimization will stop when the 1 - pearson correlation coefficient is below this threshold. Default: 1e-3.
+ * **-tol**: The convergence threshold. The optimization will stop when the 1 - Pearson correlation coefficient is below this threshold. Default: 1e-3.
  * **-force_continue**: Force to identify more components even if the previous one did not converge. Default: False.
 
 ### Output arguments:
@@ -105,22 +105,22 @@ deactivate
 ## Output
 
 PICALO generate the following output files:
- * **call_rate.txt.gz**: containing the per dataset snp call rates.
- * **components.txt.gz**: containing the identified components (also including non converged components in contrast to 'PICs.txt.gz').
- * **genotype_stats.txt.gz**: containing the gentype summary statistics like sample size, Hardy-Weinberg equilibrium p-value, minor allele frequency (MAF), etc.
+ * **call_rate.txt.gz**: containing the per dataset SNP call rates.
+ * **components.txt.gz**: containing the identified components (also including non-converged components in contrast to 'PICs.txt.gz').
+ * **genotype_stats.txt.gz**: containing the genotype summary statistics like sample size, Hardy-Weinberg equilibrium p-value, minor allele frequency (MAF), etc.
  * **log.log**: log file containing all terminal output.
  * **PICs.txt.gz**: containing the identified PICs.
  * **SummaryStats.txt.gz**: containing the number of interacting eQTLs per PIC.
 
 And per PIC the following output files:
  * **PICN/component.npy**: numpy binary file containing the converged PIC for easy loading in case of a restart.
- * **PICN/covariate_selection.txt.gz**: containing the number of interacting eQTLs per covaraite (i.e. initial guess).
- * **PICN/info.txt.gz**: containing optimization statistics per iterations like the number of interacting eQTLs, the correlation with the previous iteration etc.
+ * **PICN/covariate_selection.txt.gz**: containing the number of interacting eQTLs per initial guess (referred to as covariate).
+ * **PICN/info.txt.gz**: containing optimization statistics per iteration like the number of interacting eQTLs, the correlation with the previous iteration etc.
  * **PICN/iteration.txt.gz**: containing the component loadings per iteration.
  * **PICN/n_ieqtls_per_sample.txt.gz**: containing the number of eQTLs used for optimization per sample per iteration.
  * **PICN/results_iterationN.txt.gz**: containing the interaction eQTL summary statistics per iteration.
 
-Finally, the number of interacting eQTLs are determined without removal of PICs. The summary statistics of which are stored in: **PIC_interactions/PICN.txt.gz**.
+Finally, the number of interacting eQTLs is determined without removing PICs. The summary statistics of which are stored as: **PIC_interactions/PICN.txt.gz**.
 
 ## Github Content
 
@@ -138,7 +138,7 @@ The files are split between **general** and dataset specific scripts (**BIOS** /
 
 Martijn Vochteloo (m.vochteloo@umcg.nl) *(1)*
 
-1. University Medical Centre Groningen, Groningen, The Netherlands
+1. Department of Genetics, University Medical Center Groningen, University of Groningen, Hanzeplein 1, Groningen, The Netherlands
 
 ## License  
 
