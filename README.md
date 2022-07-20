@@ -9,17 +9,17 @@ PICALO is an expectation maximization (EM) based algorithm. Using an initial gue
 ### PICALO applied to a single eQTL
 Per sample the context value is adjusted to reduce maximize the log likelihood of the whole model (i.e. minimize the residuals) while maintaining the model parameters. The underlying assumption is that while the per sample context value might be noisy, the whole model captures the true interaction. Considering the case in which only one ieQTL is optimized, this results in all samples moving towards their genotype's regression line:
 
-![Single ieQTL optimization example]()
+![Single ieQTL optimization example](dev/general/presentation_scripts/videos/GraphicalAbstractPart1.gif)
 
 ### Numerous eQTLs are inlcuded to prevent overfitting
 In practise however, PICALO applies this optimization over all ieQTLs simultaneously. This will result in a new vector that maximally interacts with the eQTLs. 
 
-![Double ieQTL optimization example]()
+![Double ieQTL optimization example](dev/general/presentation_scripts/videos/GraphicalAbstractPart2.gif)
 
 ### Process is repeated to identify Principal Interaction Components
 Next, a new set eQTLs that interact with the optimized vector are identified over which the optimization step is repeated. This process repeats until convergence. The resulting vector is referred to as Principal Interaction Components (PICs), which maximally affect eQTL effect-sizes.
 
-![EM looping example]()
+![EM looping example](dev/general/presentation_scripts/videos/GraphicalAbstractPart3.gif)
 
 Finally, multiple PICs are identified by removing the previous PICs and repeating the proces.
 
