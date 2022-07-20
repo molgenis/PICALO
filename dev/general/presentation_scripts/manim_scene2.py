@@ -3,7 +3,7 @@
 """
 File:         manim_scene2.py
 Created:      2022/02/10
-Last Changed: 2022/06/24
+Last Changed: 2022/07/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -53,6 +53,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 class GraphicalAbstractPart3(Scene):
     def construct(self):
+        scale_wait = 0.8
+
         # Defining palette.
         colors = {
             "LL": GREEN_C,
@@ -143,7 +145,7 @@ class GraphicalAbstractPart3(Scene):
             DrawBorderThenFill(scatter_axes),
             Write(line_axes_labels),
             Write(scatter_axes_labels),
-            run_time=2
+            run_time=2 * scale_wait
         )
 
         # Initialize start positions.
@@ -177,10 +179,10 @@ class GraphicalAbstractPart3(Scene):
             FadeIn(VGroup(*sample_dots)),
             FadeIn(iteration_text)
         )
-        self.wait(3)
+        self.wait(3 * scale_wait)
 
         # Do the iterations.
-        run_time = 4
+        run_time = 4 * scale_wait
         run_time_change = 0.925
         prev_index = None
         prev_label = None
@@ -220,7 +222,7 @@ class GraphicalAbstractPart3(Scene):
                     ApplyMethod(n_ieqtls_dot.move_to,
                                 line_axes.c2p(row_index, new_n_ieqtls)),
                     run_time=run_time)
-            self.wait()
+            self.wait(1 * scale_wait)
 
             # Update the text.
             pearson_r = info_df.loc[iteration_label, "Pearson r"]
@@ -264,21 +266,21 @@ class GraphicalAbstractPart4(Scene):
 
         self.play(
             DrawBorderThenFill(axes),
-            run_time=1
+            run_time=1 * scale_wait
         )
         self.play(
             ShowCreation(graph),
-            run_time=2
+            run_time=2 * scale_wait
         )
-        self.wait()
+        self.wait(1 * scale_wait)
 
         local_text = Text("local minima").scale(0.6).move_to(axes.c2p(2.1, func(2.1) - 1.5))
         global_text = Text("global minima").scale(0.6).move_to(axes.c2p(8, func(8) - 1.5))
         self.play(
             FadeIn(VGroup(local_text, global_text)),
-            run_time=1
+            run_time=1 * scale_wait
         )
-        self.wait()
+        self.wait(1 * scale_wait)
 
         # Drop ball 1.
         start_x = 7
@@ -286,29 +288,29 @@ class GraphicalAbstractPart4(Scene):
         dot1 = Dot(point=axes.c2p(start_x, start_y), radius=radius, color=WHITE)
         data = calculate_drop(x=start_x, y=start_y, func=func, x_range=x_range)
         print(data)
-        run_time = (data.iloc[-1, :]["time"] / data.shape[0]) * 50
+        run_time = (data.iloc[-1, :]["time"] / data.shape[0]) * 50 * scale_wait
         print(run_time, data.shape[0] * run_time)
         for i, row in data.iterrows():
             self.play(dot1.animate.move_to(axes.c2p(row["x"], row["y"])),
                       run_time=run_time)
-        self.wait(3)
+        self.wait(3 * scale_wait)
 
         # Drop ball 2.
         start_x = 4
         dot2 = Dot(point=axes.c2p(start_x, start_y), radius=radius, color=WHITE)
         data = calculate_drop(x=start_x, y=start_y, func=func, x_range=x_range)
         print(data)
-        run_time = (data.iloc[-1, :]["time"] / data.shape[0]) * 50
+        run_time = (data.iloc[-1, :]["time"] / data.shape[0]) * 50 * scale_wait
         print(run_time, data.shape[0] * run_time)
         for i, row in data.iterrows():
             self.play(dot2.animate.move_to(axes.c2p(row["x"], row["y"])),
                       run_time=run_time)
-        self.wait()
+        self.wait(1 * scale_wait)
 
         # Remove.
         self.play(
             FadeOut(VGroup(dot1, dot2)),
-            run_time=1
+            run_time=1 * scale_wait
         )
 
         combined_data = []
@@ -326,7 +328,7 @@ class GraphicalAbstractPart4(Scene):
 
             combined_data.append((dot, data))
 
-        run_time = (max_time / max_rows) * 50
+        run_time = (max_time / max_rows) * 50 * scale_wait
         for i in range(max_rows):
             animations = []
             for (dot, data) in combined_data:
@@ -336,7 +338,7 @@ class GraphicalAbstractPart4(Scene):
             if len(animations) > 0:
                 self.play(*animations,
                           run_time=run_time)
-        self.wait()
+        self.wait(1 * scale_wait)
 
 
 def calculate_drop(x, y, func, x_range):

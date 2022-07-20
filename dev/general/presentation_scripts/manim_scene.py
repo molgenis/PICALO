@@ -3,7 +3,7 @@
 """
 File:         manim_scene.py
 Created:      2022/02/02
-Last Changed:
+Last Changed: 2022/07/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -53,6 +53,8 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 class GraphicalAbstractPart1(Scene):
     def construct(self):
+        scale_wait = 0.9
+
         example_index = 168
         example_name = "Jane Doe"
         n_points = 500
@@ -165,14 +167,14 @@ class GraphicalAbstractPart1(Scene):
             FadeIn(VGroup(*scatter_lines1)),
             FadeIn(example_dot_scatter1)
         )
-        self.wait(3)
+        self.wait(3 * scale_wait)
 
         # Remove the individual dots except the example dot.
         self.play(
             FadeOut(VGroup(*scatter_dots1)),
             FadeIn(example_text_scatter1)
         )
-        self.wait(2)
+        self.wait(2 * scale_wait)
         example_dot_scatter_fill1 = 1
 
         # Zoom out and add a second graph for the log likelihood.
@@ -182,11 +184,11 @@ class GraphicalAbstractPart1(Scene):
                    *scatter_lines1,
                    example_dot_scatter1,
                    example_text_scatter1).animate.scale(0.5).shift(LEFT * 3.5),
-            run_time=2
+            run_time=2*scale_wait
         )
         example_dot_scatter_radius1 = example_dot_scatter_radius1 * 0.5
         example_text_scatter_scale1 = example_text_scatter_scale1 * 0.5
-        self.wait(2)
+        self.wait(2 * scale_wait)
 
         # Add the x-axis movement line.
         start_dot = Dot().move_to(scatter_axes1.c2p(context_range1[0], example_dot_scatter_y1))
@@ -286,20 +288,20 @@ class GraphicalAbstractPart1(Scene):
                  example_dot_graph1,
                  example_vline_graph1,
                  value_text)
-        self.wait()
+        self.wait(1 * scale_wait)
 
         # Move the example dot along the x-axis.
         dps = 1
         self.play(context_value.animate.set_value(context_range1[0]),
                   ShowCreation(example_parabola1_left),
-                  run_time=abs(example_dot_scatter_x1 - context_range1[0]) / dps)
+                  run_time=(abs(example_dot_scatter_x1 - context_range1[0]) / dps) * scale_wait)
         self.play(context_value.animate.set_value(context_range1[1]),
                   ShowCreation(example_parabola1),
-                  run_time=abs(context_range1[0] - context_range1[1]) / dps)
+                  run_time=(abs(context_range1[0] - context_range1[1]) / dps) * scale_wait)
         self.play(context_value.animate.set_value(example_x_optimal1),
                   FadeOut(example_parabola1_left),
-                  run_time=3)
-        self.wait(2)
+                  run_time=3 * scale_wait)
+        self.wait(2 * scale_wait)
 
         self.play(
             FadeOut(VGroup(graph_axes1,
@@ -312,17 +314,17 @@ class GraphicalAbstractPart1(Scene):
                            example_parabola1_left,
                            example_parabola1,
                            value_text)),
-            run_time=2
+            run_time=2 * scale_wait
         )
-        self.wait()
+        self.wait(1 * scale_wait)
 
         self.play(
             VGroup(scatter_axes1,
                    scatter_axis_labels1,
                    *scatter_lines1).animate.scale(2).shift(RIGHT * 3.5),
-            run_time=2
+            run_time=2 * scale_wait
         )
-        self.wait(2)
+        self.wait(2 * scale_wait)
 
         scatter_dots1 = []
         animations = []
@@ -348,13 +350,15 @@ class GraphicalAbstractPart1(Scene):
         self.play(
             FadeIn(VGroup(*scatter_dots1))
         )
-        self.wait()
-        self.play(*animations, run_time=6)
-        self.wait(2)
+        self.wait(1 * scale_wait)
+        self.play(*animations, run_time=6 * scale_wait)
+        self.wait(2 * scale_wait)
 
 
 class GraphicalAbstractPart2(Scene):
     def construct(self):
+        scale_wait = 0.6
+
         example_index = 168
         example_name = "Jane Doe"
         n_points = 500
@@ -643,9 +647,9 @@ class GraphicalAbstractPart2(Scene):
             FadeIn(VGroup(*scatter_dots2)),
             FadeIn(VGroup(*scatter_lines2)),
             FadeIn(example_dot_scatter2),
-            run_time=2
+            run_time=2 * scale_wait
         )
-        self.wait(3)
+        self.wait(3 * scale_wait)
 
         ########################################################################
 
@@ -736,7 +740,7 @@ class GraphicalAbstractPart2(Scene):
                  example_vline_graph2,
                  value_text1,
                  value_text2)
-        self.wait(2)
+        self.wait(2 * scale_wait)
 
         # Move the example dot along the x-axis.
         dps = 1
@@ -744,18 +748,18 @@ class GraphicalAbstractPart2(Scene):
                   context_value2.animate.set_value(context_range1[0]),
                   ShowCreation(example_parabola1_left),
                   ShowCreation(example_parabola2_left),
-                  run_time=abs(example_dot_x - context_range1[0]) / dps)
+                  run_time=(abs(example_dot_x - context_range1[0]) / dps) * scale_wait)
         self.play(context_value1.animate.set_value(context_range1[1]),
                   context_value2.animate.set_value(context_range1[1]),
                   ShowCreation(example_parabola1),
                   ShowCreation(example_parabola2),
-                  run_time=abs(context_range1[0] - context_range1[1]) / dps)
+                  run_time=(abs(context_range1[0] - context_range1[1]) / dps) * scale_wait)
         self.play(context_value1.animate.set_value(example_x_optimal1),
                   context_value2.animate.set_value(example_x_optimal2),
                   FadeOut(example_parabola1_left),
                   FadeOut(example_parabola2_left),
-                  run_time=3)
-        self.wait(4)
+                  run_time=3 * scale_wait)
+        self.wait(4 * scale_wait)
 
         ########################################################################
 
@@ -791,47 +795,47 @@ class GraphicalAbstractPart2(Scene):
         self.play(
             FadeIn(lines[0]),
             FadeIn(lines[1]),
-            run_time=2
+            run_time=2 * scale_wait
         )
-        self.wait(2)
+        self.wait(2 * scale_wait)
 
         self.play(
             TransformMatchingTex(lines[0].copy(), lines[2]),
             TransformMatchingTex(lines[1].copy(), lines[2]),
-            run_time=2
+            run_time=2 * scale_wait
         )
-        self.wait(2)
+        self.wait(2 * scale_wait)
 
         self.play(
             TransformMatchingTex(lines[2].copy(), lines[3]),
-            run_time=2
+            run_time=2 * scale_wait
         )
-        self.wait(4)
+        self.wait(4 * scale_wait)
 
         self.play(
             FadeOut(lines),
             graph_objects.animate.shift(UP * 1.5),
-            run_time=2
+            run_time=2 * scale_wait
         )
 
         ########################################################################
 
         self.play(ShowCreation(example_parabola3),
-                  run_time=2)
-        self.wait()
+                  run_time=2 * scale_wait)
+        self.wait(1 * scale_wait)
 
         self.play(FadeIn(example_dot_graph3),
                   FadeIn(value_text3),
                   FadeIn(example_vline_graph3),
-                  run_time=2)
-        self.wait(2)
+                  run_time=2 * scale_wait)
+        self.wait(2 * scale_wait)
 
         self.play(context_value1.animate.set_value(example_x_optimal3),
                   context_value2.animate.set_value(example_x_optimal3),
                   FadeOut(example_parabola1_left),
                   FadeOut(example_parabola2_left),
-                  run_time=4)
-        self.wait()
+                  run_time=4 * scale_wait)
+        self.wait(1 * scale_wait)
 
         self.play(FadeOut(VGroup(example_dot_graph1,
                                  example_dot_graph2,
@@ -851,8 +855,8 @@ class GraphicalAbstractPart2(Scene):
                                  example_text_scatter2,
                                  graph_axes,
                                  graph_axes_labels)),
-                  run_time=2)
-        self.wait()
+                  run_time=2 * scale_wait)
+        self.wait(1 * scale_wait)
 
         ########################################################################
 
@@ -902,9 +906,9 @@ class GraphicalAbstractPart2(Scene):
             FadeIn(VGroup(*scatter_dots1)),
             FadeIn(VGroup(*scatter_dots2))
         )
-        self.wait()
-        self.play(*animations1, *animations2, run_time=6)
-        self.wait(2)
+        self.wait(1 * scale_wait)
+        self.play(*animations1, *animations2, run_time=6 * scale_wait)
+        self.wait(2 * scale_wait)
 
 
 def generate_base_model(example_index=0, example_name="Jane Doe", n_points=100,

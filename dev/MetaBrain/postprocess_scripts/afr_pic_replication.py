@@ -3,7 +3,7 @@
 """
 File:         pic_replication.py
 Created:      2022/04/14
-Last Changed: 2022/04/19
+Last Changed: 2022/07/18
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -262,7 +262,7 @@ class main():
                        outpath=os.path.join(self.outdir, "{}_pic_replication.txt.gz".format(self.out_filename)),
                        index=False)
 
-        # df = self.load_file(os.path.join(self.outdir, "pic_replication.txt.gz"),
+        # df = self.load_file(os.path.join(self.outdir, "{}_pic_replication.txt.gz".format(self.out_filename)),
         #                     header=0,
         #                     index_col=None)
 
@@ -274,11 +274,19 @@ class main():
                 self.palette[pic] = "#000000"
 
         chuncks = [pics[i * 5:(i + 1) * 5] for i in range((len(pics) + 5 - 1) // 5)]
+        replication_stats_df_list = []
         for chunck in chuncks:
             print(chunck)
-            self.plot(df=df,
-                      cols=chunck,
-                      plot_appendix="_{}_to_{}".format(chunck[0], chunck[-1]))
+            replication_stats_df = self.plot(df=df,
+                                             cols=chunck,
+                                             plot_appendix="_{}_to_{}".format(chunck[0], chunck[-1]) if len(chunck) > 1 else "_{}".format(chunck[0]))
+            replication_stats_df_list.append(replication_stats_df)
+
+        replication_stats_df = pd.concat(replication_stats_df_list, axis=0)
+        print(replication_stats_df)
+        self.save_file(df=replication_stats_df,
+                       outpath=os.path.join(self.outdir, "replication_stats.txt.gz"))
+
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -316,10 +324,12 @@ class main():
 
     def plot(self, df, cols, plot_appendix=""):
         nrows = 3
-        ncols = len(cols)
+        ncols = max(len(cols), 2)
 
         self.shared_ylim = {i: (0, 1) for i in range(nrows)}
         self.shared_xlim = {i: (0, 1) for i in range(ncols)}
+
+        replication_stats = []
 
         sns.set(rc={'figure.figsize': (ncols * 8, nrows * 6)})
         sns.set_style("ticks")
@@ -359,6 +369,16 @@ class main():
             include_ylabel = False
             if col_index == 0:
                 include_ylabel = True
+
+            if col_index == 0:
+                for row_index, panel in enumerate(["A", "B", "C"]):
+                    axes[row_index, col_index].annotate(
+                        panel,
+                        xy=(-0.3, 0.9),
+                        xycoords=axes[row_index, col_index].transAxes,
+                        color="#000000",
+                        fontsize=40
+                    )
 
             print("\tPlotting row 1.")
             xlim, ylim, stats1 = self.scatterplot(
@@ -408,6 +428,12 @@ class main():
             self.update_limits(xlim, ylim, 2, col_index)
             print("")
 
+            for stats, label in zip([stats1, stats2, stats3], ["all", "discovery significant", "both significant"]):
+                stats_m = stats.melt()
+                stats_m["label"] = label
+                stats_m["col"] = col
+                replication_stats.append(stats_m)
+
         for (m, n), ax in np.ndenumerate(axes):
             (xmin, xmax) = self.shared_xlim[n]
             (ymin, ymax) = self.shared_ylim[m]
@@ -427,6 +453,12 @@ class main():
         for extension in self.extensions:
             fig.savefig(os.path.join(self.outdir, "{}_PIC_replication{}.{}".format(self.out_filename, plot_appendix, extension)))
         plt.close()
+
+        # Construct the replication stats data frame.
+        replication_stats_df = pd.concat(replication_stats, axis=0)
+        replication_stats_df.dropna(inplace=True)
+
+        return replication_stats_df
 
     @staticmethod
     def pvalue_to_zscore(df, beta_col, p_col, prefix=""):

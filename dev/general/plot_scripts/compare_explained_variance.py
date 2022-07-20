@@ -69,6 +69,12 @@ Syntax:
     -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FullModelR2 \
     -e png pdf
     
+./compare_explained_variance.py \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-CovariatesCorrectedOLS/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-CovariatesCorrectedOLS/results.txt.gz \
+    -n PICs PCs \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_CovariatesCorrectedOLS \
+    -e png pdf
+    
 ### MetaBrain ###
 
 ./compare_explained_variance.py \

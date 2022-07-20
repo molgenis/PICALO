@@ -2,8 +2,8 @@
 
 """
 File:         visualise_interaction_eqtl.py
-Created:      2020/11/09
-Last Changed: 2021/11/10
+Created:      2022/04/07
+Last Changed: 2022/07/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,6 +23,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
+from pathlib import Path
 import argparse
 import os
 
@@ -33,8 +34,9 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from scipy import stats
-from scipy.special import betainc
+from statsmodels.regression.linear_model import OLS
 
 # Local application imports.
 
@@ -55,31 +57,93 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./visualise_interaction_eqtl.py -h
+
+### BIOS ###
+
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -i ENSG00000182534_rs62085145_PIC3 ENSG00000160305_rs9306156_PIC3 ENSG00000161055_rs2453176_PIC3 ENSG00000154027_rs4949655_PIC3 ENSG00000130590_rs816933_PIC3 \
+    -n 1000 \
+    -e png pdf
+    
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -i ENSG00000182534_rs62085145_Comp5 ENSG00000160305_rs9306156_Comp5 ENSG00000161055_rs2453176_Comp5 ENSG00000154027_rs4949655_Comp5 ENSG00000130590_rs816933_Comp5 \
+    -n 1000 \
+    -e png pdf
+    
+### MetaBrain ###
+
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -i ENSG00000237541.4_6:32623671:rs9271605:G_A_PIC13 \
+    -n 100 \
+    -e png pdf
+    
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -i ENSG00000237541.4_6:32623671:rs9271605:G_A_Comp14 \
+    -n 100 \
+    -e png pdf
+    
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/calc_replication_score/2022-04-14-MetaBrain-CortexAFR-ReplicationScore-CortexEUR-cis-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/2022-04-14-MetaBrain-CortexAFR-ReplicationScore-CortexEUR-cis-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs.txt.gz \
+    -i ENSG00000140873.16_16:77359175:rs891134:C_G_PIC2 ENSG00000153714.6_9:12760648:rs7025842:G_A_PIC2 ENSG00000112599.9_6:42198814:rs6907587:C_T_PIC2 \
+    -n 400 \
+    -e png pdf
+    
 """
 
 
 class main():
     def __init__(self):
+        # Get the command line arguments.
         arguments = self.create_argument_parser()
+        self.eqtl_path = getattr(arguments, 'eqtl')
         self.geno_path = getattr(arguments, 'genotype')
+        self.alleles_path = getattr(arguments, 'alleles')
         self.expr_path = getattr(arguments, 'expression')
-        self.cov_path = getattr(arguments, 'covariates')
-        self.alpha = getattr(arguments, 'alpha')
-        self.interest_path = getattr(arguments, 'interest')
+        self.cova_path = getattr(arguments, 'covariate')
+        self.std_path = getattr(arguments, 'sample_to_dataset')
+        self.interest = getattr(arguments, 'interest')
         self.nrows = getattr(arguments, 'nrows')
         self.extensions = getattr(arguments, 'extension')
 
         # Set variables.
-        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'visualise_interaction_eqtl')
+
+        self.palette = {
+            2.: "#E69F00",
+            1.: "#0072B2",
+            0.: "#D55E00"
+        }
+
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
         # Set the right pdf font for exporting.
         matplotlib.rcParams['pdf.fonttype'] = 42
         matplotlib.rcParams['ps.fonttype'] = 42
-
-        # Loading palette.
-        self.palette = {0.0: "#E69F00", 1.0: "#0072B2", 2.0: "#D55E00"}
 
     @staticmethod
     def create_argument_parser():
@@ -93,34 +157,42 @@ class main():
                             version="{} {}".format(__program__,
                                                    __version__),
                             help="show program's version number and exit")
+        parser.add_argument("-eq",
+                            "--eqtl",
+                            type=str,
+                            required=True,
+                            help="The path to the eqtl matrix")
         parser.add_argument("-ge",
                             "--genotype",
                             type=str,
                             required=True,
                             help="The path to the genotype matrix")
+        parser.add_argument("-al",
+                            "--alleles",
+                            type=str,
+                            required=True,
+                            help="The path to the alleles matrix")
         parser.add_argument("-ex",
                             "--expression",
                             type=str,
                             required=True,
                             help="The path to the deconvolution matrix")
         parser.add_argument("-co",
-                            "--covariates",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The path to the covariates matrix. Default:"
-                                 "same as -ex / --expression.")
-        parser.add_argument("-a",
-                            "--alpha",
-                            type=float,
-                            required=False,
-                            default=0.05,
-                            help="The significance cut-off. Default: 0.05.")
-        parser.add_argument("-i",
-                            "--interest",
+                            "--covariate",
                             type=str,
                             required=True,
-                            help="The interaction eQTL to plot.")
+                            help="The path to the covariate matrix.")
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
+                            type=str,
+                            required=False,
+                            help="The path to the sample-to-dataset matrix.")
+        parser.add_argument("-i",
+                            "--interest",
+                            nargs="+",
+                            type=str,
+                            required=True,
+                            help="The IDs to plot.")
         parser.add_argument("-n",
                             "--nrows",
                             type=int,
@@ -142,231 +214,215 @@ class main():
     def start(self):
         self.print_arguments()
 
-        print("Loading data.")
+        print("Loading data")
+        eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None, nrows=self.nrows)
         geno_df = self.load_file(self.geno_path, header=0, index_col=0, nrows=self.nrows)
-        geno_df = geno_df.groupby(geno_df.index).first()
+        alleles_df = self.load_file(self.alleles_path, header=0, index_col=0, nrows=self.nrows)
         expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=self.nrows)
-        expr_df = expr_df.groupby(expr_df.index).first()
+        cova_df = self.load_file(self.cova_path, header=0, index_col=0)
 
-        cov_df = expr_df
-        if self.cov_path is not None:
-            print("No -c /--covariates given. Using gene expression as "
-                  "covariates.")
-            cov_df = self.load_file(self.cov_path, header=0, index_col=0, nrows=self.nrows)
+        if self.std_path:
+            std_df = self.load_file(self.std_path, header=0, index_col=None)
 
-        interest_df = self.load_file(self.interest_path, sep=",", header=0, index_col=None)
+            print("Filter data")
+            samples = list(std_df.iloc[:, 0])
+            geno_df = geno_df.loc[:, samples]
+            expr_df = expr_df.loc[:, samples]
+            cova_df = cova_df.loc[samples, :]
 
-        ########################################################################
-
-        print("Checking loaded data.")
-        if list(geno_df.columns) != list(expr_df.columns):
-            print("Unequal input matrix.")
+        print("Validate data")
+        probes = list(eqtl_df["ProbeName"])
+        snps = list(eqtl_df["SNPName"])
+        samples = list(expr_df.columns)
+        if list(geno_df.index) != snps:
+            print("Error, genotype does not match eQTL file.")
+            exit()
+        if list(geno_df.columns) != samples:
+            print("Error, genotype does not match expression file.")
+            exit()
+        if list(alleles_df.index) != snps:
+            print("Error, allele does not match eQTL file.")
+            exit()
+        if list(expr_df.index) != probes:
+            print("Error, expression does not match eQTL file.")
+            exit()
+        if list(cova_df.columns) != samples:
+            print("Error, covariates header does not match expression file.")
             exit()
 
-        loaded_snps = set(geno_df.index)
-        loaded_genes = set(expr_df.index)
-        loaded_covs = set(cov_df.index)
+        print("Iterating over eQTLs.")
+        for row_index, (_, row) in enumerate(eqtl_df.iterrows()):
+            # Extract the usefull information from the row.
+            snp_name = row["SNPName"]
+            probe_name = row["ProbeName"]
+            hgnc_name = row["HGNCName"]
+            id = probe_name + "_" + snp_name
 
-        for _, (snp_name, probe_name, _, cov_name, _) in interest_df.iterrows():
-            if snp_name not in loaded_snps:
-                print("Cannot find SNP {}".format(snp_name))
+            interest_id = None
+            for interest in self.interest:
+                if interest.startswith(id):
+                    interest_id = interest
+
+            if interest_id is None:
+                continue
+
+            print("\tWorking on: {}\t{}\t{} [{}/{} "
+                  "{:.2f}%]".format(snp_name, probe_name, hgnc_name,
+                                    row_index + 1,
+                                    eqtl_df.shape[0],
+                                    (100 / eqtl_df.shape[0]) * (row_index + 1)))
+
+            # Get the genotype / expression data.
+            genotype = geno_df.iloc[[row_index], :].copy().T
+            if genotype.columns != [snp_name]:
+                print("\t\tGenotype file not in identical order as eQTL file.")
                 exit()
-
-            if probe_name not in loaded_genes:
-                print("Cannot find gene {}".format(probe_name))
+            expression = expr_df.iloc[[row_index], :].copy().T
+            if expression.columns != [probe_name]:
+                print("\t\tExpression file not in identical order as eQTL file.")
                 exit()
+            data = genotype.merge(expression, left_index=True, right_index=True)
+            data.columns = ["genotype", "expression"]
+            data.insert(0, "intercept", 1)
+            data["group"] = data["genotype"].round(0)
+            print(data["group"].value_counts())
 
-            if cov_name not in loaded_covs:
-                print("Cannot find covariate {}.".format(cov_name))
+            # Remove missing values.
+            data = data.loc[data['genotype'] != -1, :]
+
+            # Get the allele data.
+            alleles = alleles_df.iloc[row_index, :]
+            if alleles.name != snp_name:
+                print("\t\tAlleles file not in identical order as eQTL file.")
                 exit()
+            # A/T = 0.0/2.0
+            # by default we assume T = 2.0 to be minor
+            major_allele = alleles["Alleles"].split("/")[0]
+            minor_allele = alleles["Alleles"].split("/")[1]
 
-        ########################################################################
+            # Check if we need to flip the genotypes.
+            counts = data["group"].value_counts()
+            for x in [0.0, 1.0, 2.0]:
+                if x not in counts:
+                    counts.loc[x] = 0
+            zero_geno_count = (counts[0.0] * 2) + counts[1.0]
+            two_geno_count = (counts[2.0] * 2) + counts[1.0]
+            if two_geno_count > zero_geno_count:
+                # Turns out that 0.0 was the minor.
+                minor_allele = alleles["Alleles"].split("/")[0]
+                major_allele = alleles["Alleles"].split("/")[1]
+                data["genotype"] = 2.0 - data["genotype"]
+                data["group"] = 2.0 - data["group"]
 
-        print("Plotting.")
-        X = np.ones((geno_df.shape[1], 4), dtype=np.float64)
-        for _, (snp_name, probe_name, probe_label, cov_name, cov_label) in interest_df.iterrows():
-            print("\tSNP: {}\tprobe: {} ({})\tcovariate: {} ({})".format(snp_name, probe_name, probe_label, cov_name, cov_label))
-            y = expr_df.loc[probe_name, :].to_numpy()
+            allele_map = {0.0: "{}/{}".format(major_allele, major_allele),
+                          1.0: "{}/{}".format(major_allele, minor_allele),
+                          2.0: "{}/{}".format(minor_allele, minor_allele)}
 
-            X[:, 1] = geno_df.loc[snp_name, :].to_numpy()
-            X[:, 2] = cov_df.loc[cov_name, :].to_numpy()
-            X[:, 3] = X[:, 1] * X[:, 2]
+            # Add the covariate of interest.
+            covariate = interest_id.replace(probe_name + "_", "").replace(snp_name + "_", "").replace("_", " ")
+            covariate_df = cova_df.loc[[covariate], :].T
+            covariate_df.columns = ["covariate"]
+            data = data.merge(covariate_df, left_index=True, right_index=True)
+            data["interaction"] = data["genotype"] * data["covariate"]
 
-            mask = X[:, 1] != -1
+            # Remove missing values.
+            data = data.loc[data['covariate'] != -1, :]
 
-            # Calculate stats.
-            eqtl_stats = self.calculate_eqtl_stats(X=X[mask, :2], y=y[mask])
-            ieqtl_stats = self.calculate_interaction_eqtl_stats(X=X[mask, :], y=y[mask])
+            # Determine annotation stats.
+            eqtl_pvalue = OLS(data["expression"], data[["intercept", "genotype"]]).fit().pvalues[1]
+            eqtl_pvalue_str = "{:.2e}".format(eqtl_pvalue)
+            if eqtl_pvalue == 0:
+                eqtl_pvalue_str = "<{:.1e}".format(1e-308)
+            eqtl_pearsonr, _ = stats.pearsonr(data["expression"], data["genotype"])
+            minor_allele_frequency = min(zero_geno_count, two_geno_count) / (zero_geno_count + two_geno_count)
 
-            df = pd.DataFrame(X[mask, :], columns=["intercept", "genotype", "covariate", "interaction"], index=geno_df.columns)
-            df["expression"] = y[mask]
-            df["group"] = df["genotype"].round(0)
+            # Fill the eQTL plot annotation.
+            annot1 = ["N: {:,}".format(data.shape[0]),
+                      "r: {:.2f}".format(eqtl_pearsonr),
+                      "p-value: {}".format(eqtl_pvalue_str),
+                      "MAF: {:.2f}".format(minor_allele_frequency)]
 
-            # Plot.
-            self.create_overview_figure(df=df,
-                                        snp=snp_name,
-                                        plot1_annot=eqtl_stats,
-                                        plot2_annot=ieqtl_stats,
-                                        gene="{} ({})".format(probe_name, probe_label),
-                                        cov="{} ({})".format(cov_name, cov_label),
-                                        title="{}:{}:{}".format(probe_name, snp_name, cov_name),
-                                        outdir=self.outdir)
+            # Plot the main eQTL effect.
+            self.eqtl_plot(df=data,
+                           x="group",
+                           y="expression",
+                           palette=self.palette,
+                           allele_map=allele_map,
+                           xlabel=snp_name,
+                           ylabel="{} expression".format(hgnc_name),
+                           annot=annot1,
+                           title="eQTL",
+                           filename="{}_{}_{}_{}".format(row_index, probe_name, hgnc_name, snp_name)
+                           )
+
+            # Determine annotation stats.
+            interaction_pvalue = OLS(data["expression"], data[["intercept", "genotype", "covariate", "interaction"]]).fit().pvalues[3]
+            interaction_pvalue_str = "{:.2e}".format(interaction_pvalue)
+            if interaction_pvalue == 0:
+                interaction_pvalue_str = "<{:.1e}".format(1e-308)
+
+            # Fill the interaction plot annotation.
+            annot2 = ["{} - {}".format(snp_name, minor_allele),
+                      "N: {:,}".format(data.shape[0]),
+                      "interaction p-value: {}".format(interaction_pvalue_str),
+                      "eQTL p-value: {:.2e}".format(eqtl_pvalue),
+                      "MAF: {:.2f}".format(minor_allele_frequency)]
+
+            # Plot the interaction eQTL.
+            self.inter_plot(df=data,
+                            x="covariate",
+                            y="expression",
+                            group="group",
+                            palette=self.palette,
+                            allele_map=allele_map,
+                            xlabel="{}".format(covariate),
+                            ylabel="{} expression".format(hgnc_name),
+                            annot=annot2,
+                            title="ieQTL",
+                            filename="{}_{}_{}_{}_{}".format(row_index, probe_name, hgnc_name, snp_name, covariate)
+                            )
 
     @staticmethod
-    def load_file(path, header, index_col, sep="\t", nrows=None):
-        df = pd.read_csv(path, sep=sep, header=header, index_col=index_col,
-                         nrows=nrows)
+    def load_file(inpath, header, index_col, sep="\t", low_memory=True,
+                  nrows=None, skiprows=None):
+        df = pd.read_csv(inpath, sep=sep, header=header, index_col=index_col,
+                         low_memory=low_memory, nrows=nrows, skiprows=skiprows)
         print("\tLoaded dataframe: {} "
-              "with shape: {}".format(os.path.basename(path),
+              "with shape: {}".format(os.path.basename(inpath),
                                       df.shape))
         return df
 
-    @staticmethod
-    def calculate_eqtl_stats(X, y):
-        n = X.shape[0]
-        df = X.shape[1]
-
-        # Calculate alternative model.
-        inv_m = np.linalg.inv(X.T.dot(X))
-        betas = inv_m.dot(X.T).dot(y)
-        y_hat = np.dot(X, betas)
-
-        res = y - y_hat
-        rss = np.sum(res * res)
-
-        std = np.sqrt(rss / (n - df) * np.diag(inv_m))
-        t_values = betas / std
-
-        # Calculate null model.
-        null_y_hat = np.mean(y)
-        null_res = y - null_y_hat
-        null_rss = np.sum(null_res * null_res)
-
-        # Calculate p-value.
-        if rss >= null_rss:
-            return 1
-        dfn = 1
-        dfd = n - df
-        f_value = ((null_rss - rss) / dfn) / (rss / dfd)
-        p_value = betainc(dfd / 2, dfn / 2, 1 - ((dfn * f_value) / ((dfn * f_value) + dfd)))
-        if p_value == 0:
-            p_value = 2.2250738585072014e-308
-
-        return ["N = {:,}".format(n),
-                "Betas = {}".format(", ".join(["{:.2f}".format(x) for x in betas])),
-                "SD = {}".format(", ".join(["{:.2f}".format(x) for x in std])),
-                "t-values = {}".format(", ".join(["{:.2f}".format(x) for x in t_values])),
-                "p-value = {:.2e}".format(p_value)]
-
-    @staticmethod
-    def calculate_interaction_eqtl_stats(X, y):
-        n = X.shape[0]
-        df = X.shape[1]
-
-        # Calculate alternative model.
-        inv_m = np.linalg.inv(X.T.dot(X))
-        betas = inv_m.dot(X.T).dot(y)
-        y_hat = np.dot(X, betas)
-
-        res = y - y_hat
-        rss = np.sum(res * res)
-
-        std = np.sqrt(rss / (n - df) * np.diag(inv_m))
-        t_values = betas / std
-
-        # Calculate null model.
-        null_y_hat = np.dot(X[:, :3], np.linalg.inv(X[:, :3].T.dot(X[:, :3])).dot(X[:, :3].T).dot(y))
-        null_res = y - null_y_hat
-        null_rss = np.sum(null_res * null_res)
-
-        # Calculate p-value.
-        if rss >= null_rss:
-            return 1
-        dfn = 1
-        dfd = n - df
-        f_value = ((null_rss - rss) / dfn) / (rss / dfd)
-        p_value = betainc(dfd / 2, dfn / 2, 1 - ((dfn * f_value) / ((dfn * f_value) + dfd)))
-        if p_value == 0:
-            p_value = 2.2250738585072014e-308
-
-        return ["N = {:,}".format(n),
-                "Betas = {}".format(", ".join(["{:.2f}".format(x) for x in betas])),
-                "SD = {}".format(", ".join(["{:.2f}".format(x) for x in std])),
-                "t-values = {}".format(", ".join(["{:.2f}".format(x) for x in t_values])),
-                "p-value = {:.2e}".format(p_value)]
-
-    def create_overview_figure(self, df, snp, gene, cov, title, outdir,
-                               plot1_annot=None, plot2_annot=None):
+    def eqtl_plot(self, df, x="x", y="y", palette=None, allele_map=None,
+                  annot=None, xlabel="", ylabel="", title="",
+                  filename="eqtl_plot"):
+        sns.set(rc={'figure.figsize': (12, 9)})
         sns.set_style("ticks")
-        fig, (ax1, ax2) = plt.subplots(nrows=1,
-                                       ncols=2,
-                                       figsize=(24, 9))
-
-        self.eqtl_plot(fig=fig,
-                       ax=ax1,
-                       df=df,
-                       x="group",
-                       y="expression",
-                       palette=self.palette,
-                       xlabel=snp,
-                       ylabel=gene,
-                       title="eQTL",
-                       annot=plot1_annot,
-                       )
-
-        self.inter_plot(fig=fig,
-                        ax=ax2,
-                        df=df,
-                        x="covariate",
-                        y="expression",
-                        group="group",
-                        palette=self.palette,
-                        xlabel=cov,
-                        ylabel="",
-                        ci=None,
-                        title="interaction",
-                        annot=plot2_annot
-                        )
-
-        plt.suptitle(title, fontsize=18)
-
-        fig.savefig(os.path.join(outdir, "{}_overview_plot.png".format(title.replace(":", "-"))))
-        plt.close()
-
-    @staticmethod
-    def eqtl_plot(fig, ax, df, x="x", y="y", palette=None, xlabel="",
-                  ylabel="", title="", annot=None):
+        fig, ax = plt.subplots()
         sns.despine(fig=fig, ax=ax)
 
         sns.regplot(x=x,
                     y=y,
                     data=df,
                     scatter=False,
+                    ci=None,
                     line_kws={"color": "#000000"},
                     ax=ax)
+        sns.violinplot(x=x,
+                       y=y,
+                       data=df,
+                       palette=palette,
+                       cut=0,
+                       zorder=-1,
+                       ax=ax)
+        plt.setp(ax.collections, alpha=.75)
         sns.boxplot(x=x,
                     y=y,
                     data=df,
-                    palette=palette,
+                    whis=np.inf,
+                    color="white",
                     zorder=-1,
                     ax=ax)
 
-        # for i, sample in enumerate(["AC1C14ACXX-8-8", "AC1C40ACXX-8-8", "AC1C40ACXX-6-4", "AC1C14ACXX-7-22", "AC1C40ACXX-7-18", "AC1C40ACXX-8-6", "AC1C14ACXX-7-13", "AC1C40ACXX-7-22", "AC1C14ACXX-6-4", "AC1C14ACXX-8-6", "AC1C14ACXX-7-18"]):
-        #     ax.annotate(i,
-        #                 xy=(df.loc[sample, x], df.loc[sample, y]),
-        #                 horizontalalignment='left',
-        #                 color='#b22222',
-        #                 fontsize=12,
-        #                 fontweight='bold')
-
-        ax.annotate(
-            'N = {:,}'.format(df.shape[0]),
-            xy=(0.03, 0.94),
-            xycoords=ax.transAxes,
-            color="#000000",
-            alpha=1,
-            fontsize=12,
-            fontweight='bold')
         if annot is not None:
             for i, annot_label in enumerate(annot):
                 ax.annotate(annot_label,
@@ -377,6 +433,10 @@ class main():
                             fontsize=12,
                             fontweight='bold')
 
+        if allele_map is not None:
+            ax.set_xticks(range(3))
+            ax.set_xticklabels([allele_map[0.0], allele_map[1.0], allele_map[2.0]])
+
         ax.set_title(title,
                      fontsize=16,
                      fontweight='bold')
@@ -387,26 +447,43 @@ class main():
                       fontsize=14,
                       fontweight='bold')
 
-    @staticmethod
-    def inter_plot(fig, ax, df, x="x", y="y", group="group", palette=None,
-                   ci=95, xlabel="", ylabel="", title="", annot=None):
+        for extension in self.extensions:
+            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
+            print("\t\tSaving plot: {}".format(os.path.basename(outpath)))
+            fig.savefig(outpath)
+        plt.close()
+
+    def inter_plot(self, df, x="x", y="y", group="group", palette=None,
+                   allele_map=None, annot=None, xlabel="", ylabel="",
+                   title="", filename="ieqtl_plot"):
         if len(set(df[group].unique()).symmetric_difference({0, 1, 2})) > 0:
             return
 
+        sns.set(rc={'figure.figsize': (12, 12)})
+        sns.set_style("ticks")
+        fig, ax = plt.subplots()
         sns.despine(fig=fig, ax=ax)
 
         for i, group_id in enumerate([0, 1, 2]):
-            subset = df.loc[df[group] == group_id, :]
-            n = subset.shape[0]
+            subset = df.loc[df[group] == group_id, :].copy()
+            allele = group_id
+            if allele_map is not None:
+                allele = allele_map[group_id]
 
             coef_str = "NA"
+            r_annot_pos = (-1, -1)
             if len(subset.index) > 1:
-                # Regression.
-                coef, p = stats.spearmanr(subset[y], subset[x])
+                coef, p = stats.pearsonr(subset[y], subset[x])
                 coef_str = "{:.2f}".format(coef)
 
-                # Plot.
-                sns.regplot(x=x, y=y, data=subset, ci=ci,
+                subset["intercept"] = 1
+                betas = np.linalg.inv(subset[["intercept", x]].T.dot(subset[["intercept", x]])).dot(subset[["intercept", x]].T).dot(subset[y])
+                subset["y_hat"] = np.dot(subset[["intercept", x]], betas)
+                subset.sort_values(x, inplace=True)
+
+                r_annot_pos = (subset.iloc[-1, :][x] + (subset[x].max() * 0.05), subset.iloc[-1, :]["y_hat"])
+
+                sns.regplot(x=x, y=y, data=subset, ci=None,
                             scatter_kws={'facecolors': palette[group_id],
                                          'linewidth': 0,
                                          'alpha': 0.75},
@@ -414,33 +491,32 @@ class main():
                             ax=ax
                             )
 
-            # Add the text.
+            print(allele, coef_str)
             ax.annotate(
-                '{}: r = {} [n={}]'.format(group_id, coef_str, n),
-                xy=(0.03, 0.94 - (i * 0.04)),
-                xycoords=ax.transAxes,
+                '{}\n{}'.format(allele, coef_str),
+                xy=r_annot_pos,
                 color=palette[group_id],
                 alpha=0.75,
-                fontsize=12,
+                fontsize=16,
                 fontweight='bold')
 
         if annot is not None:
             for i, annot_label in enumerate(annot):
                 ax.annotate(annot_label,
-                            xy=(0.03, 0.82 - (i * 0.04)),
+                            xy=(0.03, 0.94 - (i * 0.04)),
                             xycoords=ax.transAxes,
                             color="#000000",
                             alpha=0.75,
                             fontsize=12,
                             fontweight='bold')
 
-        # for i, sample in enumerate(["AC1C14ACXX-8-8", "AC1C40ACXX-8-8", "AC1C40ACXX-6-4", "AC1C14ACXX-7-22", "AC1C40ACXX-7-18", "AC1C40ACXX-8-6", "AC1C14ACXX-7-13", "AC1C40ACXX-7-22", "AC1C14ACXX-6-4", "AC1C14ACXX-8-6", "AC1C14ACXX-7-18"]):
-        #     ax.annotate(i,
-        #                 xy=(df.loc[sample, x], df.loc[sample, y]),
-        #                 horizontalalignment='center',
-        #                 color='#b22222',
-        #                 fontsize=12,
-        #                 fontweight='bold')
+        (xmin, xmax) = (df[x].min(), df[x].max())
+        (ymin, ymax) = (df[y].min(), df[y].max())
+        xmargin = (xmax - xmin) * 0.05
+        ymargin = (ymax - ymin) * 0.05
+
+        ax.set_xlim(xmin - xmargin, xmax + xmargin)
+        ax.set_ylim(ymin - ymargin, ymax + ymargin)
 
         ax.set_title(title,
                      fontsize=16,
@@ -452,13 +528,21 @@ class main():
                       fontsize=14,
                       fontweight='bold')
 
+        for extension in self.extensions:
+            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
+            print("\t\tSaving plot: {}".format(os.path.basename(outpath)))
+            fig.savefig(outpath)
+        plt.close()
+
     def print_arguments(self):
         print("Arguments:")
+        print("  > eQTL path: {}".format(self.eqtl_path))
         print("  > Genotype path: {}".format(self.geno_path))
+        print("  > Alleles path: {}".format(self.alleles_path))
         print("  > Expression path: {}".format(self.expr_path))
-        print("  > Covariates path: {}".format(self.cov_path))
-        print("  > Alpha: {}".format(self.alpha))
-        print("  > Interest path: {}".format(self.interest_path))
+        print("  > Covariate path: {}".format(self.cova_path))
+        print("  > Sample-to-dataset file: {}".format(self.std_path))
+        print("  > Interest: {}".format(self.interest))
         print("  > Nrows: {}".format(self.nrows))
         print("  > Extension: {}".format(self.extensions))
         print("  > Output directory: {}".format(self.outdir))

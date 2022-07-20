@@ -99,6 +99,15 @@ Syntax:
     -e png pdf
     
 ./create_correlation_heatmap.py \
+    -rd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
+    -rn PICs \
+    -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_BloodStats.txt.gz \
+    -cn BloodStats \
+    -m Pearson \
+    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICs_vs_BloodStats \
+    -e png pdf
+    
+./create_correlation_heatmap.py \
     -rd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
     -rn PCs \
     -cd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
@@ -123,6 +132,7 @@ Syntax:
     -rn PICs \
     -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CellFractionPercentages_forPlotting.txt.gz \
     -cn CellFraction% \
+    -m Pearson \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC_vs_CellFractionPercentages
 
 
@@ -135,7 +145,6 @@ Syntax:
     -cn brain \
     -m Pearson \
     -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_zscore_comparison
-    
 """
 
 
