@@ -3,7 +3,7 @@
 """
 File:         pic_replication.py
 Created:      2022/04/14
-Last Changed: 2022/07/18
+Last Changed: 2022/07/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -51,6 +51,7 @@ Syntax:
     -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
     -ri /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA_CortexEURPICLoadingsAsCov \
     -ra /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -gi /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
     -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_Replication \
     -e png pdf
@@ -60,6 +61,7 @@ Syntax:
     -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
     -ri /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA_noFNPD_CortexEURPICLoadingsAsCov \
     -ra /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_CortexEURPrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -gi /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
     -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_Replication_noFNPD \
     -e png pdf
@@ -88,6 +90,7 @@ class main():
         self.discovery_alleles = getattr(arguments, 'discovery_alleles')
         self.replication_indir = getattr(arguments, 'replication_indir')
         self.replication_alleles = getattr(arguments, 'replication_alleles')
+        self.gene_info_path = getattr(arguments, 'gene_info')
         self.palette_path = getattr(arguments, 'palette')
         self.out_filename = getattr(arguments, 'outfile')
         self.extensions = getattr(arguments, 'extension')
@@ -140,6 +143,11 @@ class main():
                             required=True,
                             help="The path to the discovery genotype"
                                  " alleles matrix.")
+        parser.add_argument("-gi",
+                            "--gene_info",
+                            type=str,
+                            required=True,
+                            help="The path to the gene info matrix.")
         parser.add_argument("-p",
                             "--palette",
                             type=str,
@@ -166,6 +174,11 @@ class main():
     def start(self):
         self.print_arguments()
 
+        print("Loading gene translate data")
+        gene_trans_df = self.load_file(self.gene_info_path, header=0, index_col=None)
+        gene_trans_dict = dict(zip(gene_trans_df.iloc[:, 0], gene_trans_df.iloc[:, 1]))
+        del gene_trans_df
+
         print("Loading discovery data")
         discovery_geno_stats_df = self.load_file(os.path.join(self.discovery_indir, "genotype_stats.txt.gz"), header=0, index_col=0)
         discovery_alleles_df = self.load_file(self.discovery_alleles, header=0, index_col=0)
@@ -174,14 +187,24 @@ class main():
             print("Error, genotype stats and alleles df to not match")
             exit()
 
-        discovery_df = pd.concat([discovery_geno_stats_df[["N", "MAF"]], discovery_alleles_df[["Alleles"]]], axis=1)
+        discovery_df = pd.concat([discovery_geno_stats_df[["N", "HW pval", "MA", "MAF"]], discovery_alleles_df[["Alleles"]]], axis=1)
         del discovery_geno_stats_df, discovery_alleles_df
+
+        ma_list = []
+        for _, row in discovery_df.iterrows():
+            if row["MA"] == 0:
+                ma_list.append(row["Alleles"].split("/")[0])
+            elif row["MA"] == 2:
+                ma_list.append(row["Alleles"].split("/")[1])
+            else:
+                ma_list.append(np.nan)
+        discovery_df["MA"] = ma_list
 
         discovery_df["AlleleAssessed"] = discovery_df["Alleles"].str.split("/", n=1, expand=True)[1]
         discovery_df.index.name = "SNP"
         discovery_df.reset_index(drop=False, inplace=True)
         discovery_df.drop_duplicates(inplace=True)
-        discovery_df.columns = ["SNP", "EUR N", "EUR MAF", "Alleles", "AlleleAssessed"]
+        discovery_df.columns = ["SNP", "EUR N", "EUR HW pval", "EUR Minor allele", "EUR MAF", "Alleles", "AlleleAssessed"]
         print(discovery_df)
 
         print("Loading replication data")
@@ -192,39 +215,51 @@ class main():
             print("Error, genotype stats and alleles df to not match")
             exit()
 
-        replication_df = pd.concat([replication_geno_stats_df[["N", "MAF"]], repilication_alleles_df[["Alleles"]]], axis=1)
+        replication_df = pd.concat([replication_geno_stats_df[["N", "HW pval", "MA", "MAF"]], repilication_alleles_df[["Alleles"]]], axis=1)
         del replication_geno_stats_df, repilication_alleles_df
+
+        ma_list = []
+        for _, row in replication_df.iterrows():
+            if row["MA"] == 0:
+                ma_list.append(row["Alleles"].split("/")[0])
+            elif row["MA"] == 2:
+                ma_list.append(row["Alleles"].split("/")[1])
+            else:
+                ma_list.append(np.nan)
+        replication_df["MA"] = ma_list
 
         replication_df["AlleleAssessed"] = replication_df["Alleles"].str.split("/", n=1, expand=True)[1]
         replication_df.drop(["Alleles"], axis=1, inplace=True)
         replication_df.index.name = "SNP"
         replication_df.reset_index(drop=False, inplace=True)
         replication_df.drop_duplicates(inplace=True)
-        replication_df.columns = ["SNP", "AFR N", "AFR MAF", "AFR AlleleAssessed"]
+        replication_df.columns = ["SNP", "AFR N", "AFR HW pval", "AFR Minor allele", "AFR MAF", "AFR AlleleAssessed"]
         print(replication_df)
 
         print("Merging data")
         df = discovery_df.merge(replication_df, on="SNP", how="left")
         flip_dict = dict(zip(df["SNP"], (df["AlleleAssessed"] == df["AFR AlleleAssessed"]).map({True: 1, False: -1})))
-        df = df.loc[:, ["SNP", "Alleles", "AlleleAssessed", "EUR N", "EUR MAF", "AFR N", "AFR MAF"]]
         print(df)
         del discovery_df, replication_df
 
         print("Loading interaction results.")
         ieqtl_data_list = []
+        pics_overlap = []
         for i in range(1, 100):
-            discovery_path = os.path.join(self.discovery_indir, "PIC{}.txt.gz".format(i))
-            replication_path = os.path.join(self.replication_indir, "PIC{}.txt.gz".format(i))
+            pic = "PIC{}".format(i)
+            discovery_path = os.path.join(self.discovery_indir, "{}.txt.gz".format(pic))
+            replication_path = os.path.join(self.replication_indir, "{}.txt.gz".format(pic))
 
             if not os.path.exists(discovery_path) or not os.path.exists(replication_path):
                 continue
-            print("\tPIC{}".format(i))
+            print("\t{}".format(pic))
+            pics_overlap.append(pic)
 
             discovery_ieqtl_df = self.load_file(discovery_path, header=0, index_col=None)
             discovery_ieqtl_df.index = discovery_ieqtl_df["SNP"] + "_" + discovery_ieqtl_df["gene"]
             discovery_ieqtl_df["tvalue-interaction"] = discovery_ieqtl_df["beta-interaction"] / discovery_ieqtl_df["std-interaction"]
             discovery_ieqtl_df = discovery_ieqtl_df[["beta-interaction", "std-interaction", "tvalue-interaction", "p-value", "FDR"]]
-            discovery_ieqtl_df.columns = ["EUR PIC{} beta".format(i), "EUR PIC{} std".format(i), "EUR PIC{} tvalue".format(i), "EUR PIC{} pvalue".format(i), "EUR PIC{} FDR".format(i)]
+            discovery_ieqtl_df.columns = ["EUR {} beta".format(pic), "EUR {} std".format(pic), "EUR {} tvalue".format(pic), "EUR {} pvalue".format(pic), "EUR {} FDR".format(pic)]
 
             replication_ieqtl_df = self.load_file(replication_path, header=0, index_col=None)
             replication_ieqtl_df.index = replication_ieqtl_df["SNP"] + "_" + replication_ieqtl_df["gene"]
@@ -232,30 +267,34 @@ class main():
             replication_ieqtl_df["flip"] = replication_ieqtl_df["SNP"].map(flip_dict)
             replication_ieqtl_df["tvalue-interaction"] = replication_ieqtl_df["tvalue-interaction"] * replication_ieqtl_df["flip"]
             replication_ieqtl_df = replication_ieqtl_df[["beta-interaction", "std-interaction", "tvalue-interaction", "p-value"]]
-            replication_ieqtl_df.columns = ["AFR PIC{} beta".format(i), "AFR PIC{} std".format(i), "AFR PIC{} tvalue".format(i), "AFR PIC{} pvalue".format(i)]
+            replication_ieqtl_df.columns = ["AFR {} beta".format(pic), "AFR {} std".format(pic), "AFR {} tvalue".format(pic), "AFR {} pvalue".format(pic)]
 
             ieqtl_df = discovery_ieqtl_df.merge(replication_ieqtl_df, left_index=True, right_index=True, how="left")
 
             ieqtl_df["AFR PIC{} FDR".format(i)] = np.nan
-            discovery_mask = (ieqtl_df["EUR PIC{} FDR".format(i)] <= 0.05).to_numpy()
+            discovery_mask = (ieqtl_df["EUR {} FDR".format(pic)] <= 0.05).to_numpy()
             print("\t  Discovery N-ieqtls: {:,}".format(np.sum(discovery_mask)))
-            replication_mask = (~ieqtl_df["AFR PIC{} pvalue".format(i)].isna()).to_numpy()
+            replication_mask = (~ieqtl_df["AFR {} pvalue".format(pic)].isna()).to_numpy()
             mask = np.logical_and(discovery_mask, replication_mask)
             n_overlap = np.sum(mask)
             if n_overlap > 1:
-                ieqtl_df.loc[mask, "AFR PIC{} FDR".format(i)] = multitest.multipletests(ieqtl_df.loc[mask, "AFR PIC{} pvalue".format(i)], method='fdr_bh')[1]
-            n_replicating = ieqtl_df.loc[ieqtl_df["AFR PIC{} FDR".format(i)] <= 0.05, :].shape[0]
+                ieqtl_df.loc[mask, "AFR {} FDR".format(pic)] = multitest.multipletests(ieqtl_df.loc[mask, "AFR {} pvalue".format(pic)], method='fdr_bh')[1]
+            n_replicating = ieqtl_df.loc[ieqtl_df["AFR {} FDR".format(pic)] <= 0.05, :].shape[0]
             print("\t  Replication N-ieqtls: {:,} / {:,} [{:.2f}%]".format(n_replicating, n_overlap, (100 / n_overlap) * n_replicating))
 
             ieqtl_data_list.append(ieqtl_df)
 
         ieqtl_df = pd.concat(ieqtl_data_list, axis=1)
         ieqtl_df["SNP"] = ["_".join(x.split("_")[:-1]) for x in ieqtl_df.index]
+        ieqtl_df["Gene"] = [x.split("_")[-1] for x in ieqtl_df.index]
         print(ieqtl_df)
 
         print("Merging data.")
         df = df.merge(ieqtl_df, on="SNP", how="right")
         print(df)
+
+        print("Adding gene symbols.")
+        df["Gene symbol"] = df["Gene"].map(gene_trans_dict)
 
         print("Saving output")
         self.save_file(df=df,
@@ -281,12 +320,34 @@ class main():
                                              cols=chunck,
                                              plot_appendix="_{}_to_{}".format(chunck[0], chunck[-1]) if len(chunck) > 1 else "_{}".format(chunck[0]))
             replication_stats_df_list.append(replication_stats_df)
-
         replication_stats_df = pd.concat(replication_stats_df_list, axis=0)
-        print(replication_stats_df)
-        self.save_file(df=replication_stats_df,
-                       outpath=os.path.join(self.outdir, "replication_stats.txt.gz"))
+        replication_stats_df = pd.pivot_table(replication_stats_df.loc[replication_stats_df["label"] == "discovery significant", :],
+                                              values='value',
+                                              index='col',
+                                              columns='variable')
+        replication_stats_df = replication_stats_df[["N", "pearsonr", "concordance", "Rb", "pi1"]]
+        replication_stats_df.columns = ["N", "Pearson r", "Concordance", "Rb", "pi1"]
 
+        print("Filtering columns")
+        columns_of_interest = ['Gene', 'Gene symbol', 'SNP', 'Alleles', 'AlleleAssessed']
+        for prefix in ["EUR", "AFR"]:
+            columns_of_interest.append("{} N".format(prefix))
+            columns_of_interest.append("{} HW pval".format(prefix))
+            columns_of_interest.append("{} Minor allele".format(prefix))
+            columns_of_interest.append("{} MAF".format(prefix))
+            for pic in pics_overlap:
+                columns_of_interest.append("{} {} tvalue".format(prefix, pic))
+                columns_of_interest.append("{} {} pvalue".format(prefix, pic))
+                columns_of_interest.append("{} {} FDR".format(prefix, pic))
+        save_df = df.loc[:, columns_of_interest].copy()
+        print(save_df)
+
+        with pd.ExcelWriter(os.path.join(self.outdir, "{}_pic_replication.xlsx".format(self.out_filename))) as writer:
+            replication_stats_df.to_excel(writer, sheet_name="Summary", na_rep="NA", index=False)
+            print("Saving sheet 'Summary' with shape {}".format(replication_stats_df.shape))
+
+            save_df.to_excel(writer, sheet_name="Data", na_rep="NA", index=False)
+            print("Saving sheet 'Data' with shape {}".format(df.shape))
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,

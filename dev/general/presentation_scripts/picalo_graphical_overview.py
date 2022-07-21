@@ -3,7 +3,7 @@
 """
 File:         picalo_graphical_overview.py
 Created:      2022/02/02
-Last Changed:
+Last Changed: 2022/07/20
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -55,14 +55,14 @@ __description__ = "{} is a program developed and maintained by {}. " \
 class main():
     def __init__(self):
         self.n_points = 500
-        self.color_map = {0.0: "#ABDCA2",
-                          1.0: "#89A3D1",
-                          2.0: "#F08C72"}
-        self.palette = {"ieQTL1": "#0072B2",
-                        "ieQTL2": "#D55E00",
+        self.color_map = {0.0: "#E69F00",
+                          1.0: "#0072B2",
+                          2.0: "#D55E00"}
+        self.palette = {"ieQTL1": "#E69F00",
+                        "ieQTL2": "#0072B2",
                         "sum": "#009E73"}
-        self.example_name = "Jan"
-        self.example_index = 2
+        self.example_name = "Jane Doe"
+        self.example_index = 168
 
         # Base model parameters.
         self.context_sd = 1
@@ -509,7 +509,7 @@ class main():
                       fontweight='bold')
 
         plt.show()
-        # fig.savefig(os.path.join(self.outdir, "{}.pdf".format(filename)))
+        fig.savefig(os.path.join(self.outdir, "{}.pdf".format(filename)))
 
 
 if __name__ == "__main__":
