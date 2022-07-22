@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         plot_ieqtl_first_vs_last_iter.py
-Created:      2021/05/24
-Last Changed: 2022/07/20
+File:         visualise_PICALO_double_interaction_eqtl.py
+Created:      2022/07/22
+Last Changed:
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -23,6 +23,7 @@ root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
 
 # Standard imports.
 from __future__ import print_function
+from pathlib import Path
 import argparse
 import os
 
@@ -40,7 +41,7 @@ from statsmodels.regression.linear_model import OLS
 # Local application imports.
 
 # Metadata
-__program__ = "Visualisae PICALO optimization"
+__program__ = "Visualise PICALO Double Interaction eQTL"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -54,12 +55,12 @@ __description__ = "{} is a program developed and maintained by {}. " \
                                         __license__)
 
 """
-Syntax: 
-./plot_ieqtl_first_vs_last_iter.py -h
+Syntax:
+./visualise_PICALO_double_interaction_eqtl.py -h
 
 ### BIOS ###
 
-./plot_ieqtl_first_vs_last_iter.py \
+./visualise_PICALO_double_interaction_eqtl.py \
     -pp /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
     -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
     -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
@@ -67,39 +68,11 @@ Syntax:
     -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first40ExpressionPCs.txt.gz \
     -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
-    -i rs2155218+ENSG00000236304+PIC2 \
-    -n 250 \
-    -e png pdf \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+    -i ENSG00000226278_rs12386672_Comp4+PIC8 ENSG00000188056_rs10214649_Comp2+PIC4 ENSG00000003137_rs62147573_Comp1+PIC1 ENSG00000167207_rs1981760_Comp12+PIC6 ENSG00000135845_rs2285176_Comp6+PIC5 ENSG00000226278_rs12386672_Comp3+PIC2 ENSG00000251381_rs11022589_Comp1+PIC1 ENSG00000259235_rs964611_Comp1+PIC1 ENSG00000135953_rs2732824_Comp3+PIC2 ENSG00000198952_rs12128955_Comp3+PIC2 \
+    -n 1200 \
+    -e png
     
-./plot_ieqtl_first_vs_last_iter.py \
-    -pp /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
-    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first40ExpressionPCs.txt.gz \
-    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
-    -i rs1981760+ENSG00000167207+PIC2 \
-    -n 100 \
-    -e png pdf \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
-
 ### MetaBrain ###
-
-./plot_ieqtl_first_vs_last_iter.py \
-    -pp /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/ \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
-    -tc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first80ExpressionPCs.txt.gz \
-    -tci /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
-    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
-    -i 12:31073901:rs7953706:T_A+ENSG00000013573.17+PIC1 \
-    -n 10 \
-    -e png pdf \
-    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
-    
 """
 
 
@@ -120,22 +93,22 @@ class main():
         self.interest = getattr(arguments, 'interest')
         self.nrows = getattr(arguments, 'nrows')
         self.extensions = getattr(arguments, 'extensions')
-        self.outfile = getattr(arguments, 'outfile')
 
         # Set variables.
-        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
+        self.outdir = os.path.join(str(Path(__file__).parent.parent), 'visualise_PICALO_double_interaction_eqtl')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
-
-        # Set the right pdf font for exporting.
-        matplotlib.rcParams['pdf.fonttype'] = 42
-        matplotlib.rcParams['ps.fonttype'] = 42
 
         self.palette = {
             2.: "#E69F00",
             1.: "#0072B2",
             0.: "#D55E00"
         }
+
+
+        # Set the right pdf font for exporting.
+        matplotlib.rcParams['pdf.fonttype'] = 42
+        matplotlib.rcParams['ps.fonttype'] = 42
 
     @staticmethod
     def create_argument_parser():
@@ -233,11 +206,6 @@ class main():
                             default=["png"],
                             help="The figure file extension. "
                                  "Default: 'png'.")
-        parser.add_argument("-o",
-                            "--outfile",
-                            type=str,
-                            required=True,
-                            help="The name of the output file")
 
         return parser.parse_args()
 
@@ -254,7 +222,7 @@ class main():
 
         expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=self.nrows)
         std_df = self.load_file(self.std_path, header=0, index_col=None)
-        std_df.index = std_df.iloc[:, 0]
+        std_map = dict(zip(std_df.iloc[:, 0], std_df.iloc[:, 1]))
 
         dataset_df = self.construct_dataset_df(std_df=std_df)
         datasets = dataset_df.columns.tolist()
@@ -301,27 +269,26 @@ class main():
         plot_ids = {}
         max_pic = 0
         for interest in self.interest:
-            snp, gene, pic = interest.split("+")
-            pic_index = int(pic.replace("PIC", ""))
+            gene, snp, cov = interest.split("_")
+            cov1, cov2 = cov.split("+")
+            pic_index = int(cov2.replace("PIC", ""))
             if pic_index > max_pic:
                 max_pic = pic_index
-            eqlt_id = "{}+{}".format(snp, gene)
-            if pic in plot_ids:
-                plot_ids[pic].append(eqlt_id)
+            eqlt_id = "{}_{}".format(gene, snp)
+            if cov2 in plot_ids:
+                plot_ids[cov2].append(eqlt_id)
             else:
-                plot_ids[pic] = [eqlt_id]
-        print(plot_ids)
-
+                plot_ids[cov2] = [eqlt_id]
         ########################################################################
 
-        eqtls_loaded = ["{}+{}".format(snp, gene) for snp, gene in zip(snps, genes)]
+        eqtls_loaded = ["{}_{}".format(gene, snp) for gene, snp in zip(genes, snps)]
         pic_corr_m = np.copy(corr_m)
         pic_corr_inter_m = np.copy(corr_inter_m)
         for pic_index in range(1, max_pic + 1):
             pic = "PIC{}".format(pic_index)
             if pic_index > 1:
                 # Loading previous run PIC.
-                with open(os.path.join(self.picalo_path, pic, "component.npy"), 'rb') as f:
+                with open(os.path.join(self.picalo_path, "PIC{}".format(pic_index - 1), "component.npy"), 'rb') as f:
                     pic_a = np.load(f)
                 f.close()
 
@@ -338,85 +305,135 @@ class main():
             if pic not in plot_ids:
                 print("Skipping PIC{}".format(pic_index))
                 continue
+            print("Plotting PIC{}".format(pic_index))
             pic_plot_ids = plot_ids[pic]
 
             for row_index, eqtl_id in enumerate(eqtls_loaded):
                 if eqtl_id not in pic_plot_ids:
                     continue
-                snp, gene = eqtl_id.split("+")
-                print("Plotting {} - {} - {}".format(snp, gene, pic))
+                probe_name, snp_name = eqtl_id.split("_")
+
+                cov1 = None
+                cov2 = None
+                for interest in self.interest:
+                    if interest.startswith(eqtl_id) and interest.endswith(pic):
+                        cov = interest.replace(eqtl_id + "_", "")
+                        cov1, cov2 = cov.split("+")
+
+                if cov1 is None or cov2 is None:
+                    continue
+
+                print("\tWorking on: {}\t{}\t{}-{} [{}]".format(snp_name,
+                                                                probe_name,
+                                                                cov1,
+                                                                cov2,
+                                                                row_index + 1))
 
                 # Combine data.
-                df = pd.DataFrame({"genotype": geno_m[row_index, :],
-                                  "expression": expr_m[row_index, :]},
-                                  index=samples).merge(std_df, left_index=True, right_index=True)
-                df["group"] = df["genotype"].round(0)
+                data = pd.DataFrame({"intercept": 1,
+                                     "genotype": np.copy(geno_m[row_index, :]),
+                                     "expression": np.copy(expr_m[row_index, :]),
+                                     "dataset": [std_map[sample] for sample in samples]},
+                                    index=samples)
+                data["group"] = data["genotype"].round(0)
 
                 # Check the call rate.
-                for dataset in df["dataset"].unique():
-                    sample_mask = (df["dataset"] == dataset).to_numpy(dtype=bool)
-                    n_not_na = (df.loc[sample_mask, "genotype"] != self.genotype_na).astype(int).sum()
+                for dataset in data["dataset"].unique():
+                    sample_mask = (data["dataset"] == dataset).to_numpy(dtype=bool)
+                    n_not_na = (data.loc[sample_mask, "genotype"] != self.genotype_na).astype(int).sum()
                     call_rate = n_not_na / np.sum(sample_mask)
                     if (call_rate < self.call_rate) or (n_not_na < self.min_dataset_size):
-                        df.loc[sample_mask, "genotype"] = np.nan
+                        data.loc[sample_mask, "genotype"] = np.nan
 
                 # Add iterations.
                 iter_df = self.load_file(os.path.join(self.picalo_path, pic, "iteration.txt.gz"), header=0, index_col=0)
                 iter_df = iter_df.iloc[[0, -1], :].T
-                iter_df.columns = ["before", "after"]
-                df = df.merge(iter_df, left_index=True, right_index=True)
+                iter_df.columns = ["covariate1", "covariate2"]
+                data = data.merge(iter_df, left_index=True, right_index=True)
 
-                # Remove NaN.
-                mask = (~df["genotype"].isna()).to_numpy(bool)
-                df = df.loc[mask, :]
-                print(df)
+                # Remove missing values.
+                mask = (~data["genotype"].isna()).to_numpy(bool)
+                data = data.loc[mask, :]
 
                 # Correct the expression.
-                X = np.ones((df.shape[0], 1))
+                X = np.ones((data.shape[0], 1))
                 if pic_corr_m is not None:
-                    X_m = np.copy(pic_corr_m[mask, :])
-                    X = np.hstack((X, X_m))
-                # if pic_corr_inter_m is not None:
-                #     X_inter_m = np.copy(pic_corr_inter_m[mask, :])
-                #     X = np.hstack((X, X_inter_m * geno_m[row_index, :][mask, np.newaxis]))
-                df["expression"] = OLS(df["expression"], X).fit().resid
+                    X = np.hstack((X, np.copy(pic_corr_m[mask, :])))
+                if pic_corr_inter_m is not None:
+                    X = np.hstack((X, np.copy(pic_corr_inter_m[mask, :]) * geno_m[row_index, :][mask, np.newaxis]))
+                data["expression"] = OLS(data["expression"], X).fit().resid
+
+                # a = data[["intercept", "genotype", "covariate1"]].to_numpy()
+                # b = data["expression"].to_numpy()
+                # data["expression1"] = b - np.dot(a, np.linalg.inv(a.T.dot(a)).dot(a.T).dot(b))
+                # print(data["expression1"])
+
+                data["expression1"] = OLS(data["expression"], data[["intercept", "genotype", "covariate1"]]).fit().resid
+                data["expression2"] = OLS(data["expression"], data[["intercept", "genotype", "covariate2"]]).fit().resid
 
                 # Force normalise.
-                for dataset in df["dataset"].unique():
-                    sample_mask = (df["dataset"] == dataset).to_numpy(dtype=bool)
-                    df.loc[sample_mask, "expression"] = ndtri((df.loc[sample_mask, "expression"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
-                    df.loc[sample_mask, "before"] = ndtri((df.loc[sample_mask, "before"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
-                    df.loc[sample_mask, "after"] = ndtri((df.loc[sample_mask, "after"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
+                for dataset in data["dataset"].unique():
+                    sample_mask = (data["dataset"] == dataset).to_numpy(dtype=bool)
+                    data.loc[sample_mask, "expression1"] = ndtri((data.loc[sample_mask, "expression1"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
+                    data.loc[sample_mask, "covariate1"] = ndtri((data.loc[sample_mask, "covariate1"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
+
+                    data.loc[sample_mask, "expression2"] = ndtri((data.loc[sample_mask, "expression2"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
+                    data.loc[sample_mask, "covariate2"] = ndtri((data.loc[sample_mask, "covariate2"].rank(ascending=True) - 0.5) / np.sum(sample_mask))
 
                 # Get the allele data.
                 alleles = alleles_df.iloc[row_index, :]
-                zero_allele = alleles["Alleles"].split("/")[0]
-                two_allele = alleles["Alleles"].split("/")[1]
-                allele_map = {0.0: "{}/{}".format(zero_allele, zero_allele),
-                              1.0: "{}/{}".format(zero_allele, two_allele),
-                              2.0: "{}/{}".format(two_allele, two_allele)}
+                major_allele = alleles["Alleles"].split("/")[0]
+                minor_allele = alleles["Alleles"].split("/")[1]
+
+                # Add the interaction terms.
+                data["interaction1"] = data["genotype"] * data["covariate1"]
+                data["interaction2"] = data["genotype"] * data["covariate2"]
+
+                # Calculate the annotations.
+                counts = data["group"].value_counts()
+                for x in [0.0, 1.0, 2.0]:
+                    if x not in counts:
+                        counts.loc[x] = 0
+                zero_geno_count = (counts[0.0] * 2) + counts[1.0]
+                two_geno_count = (counts[2.0] * 2) + counts[1.0]
+                minor_allele_frequency = min(zero_geno_count, two_geno_count) / (zero_geno_count + two_geno_count)
+                eqtl_pvalue1, interaction_pvalue1 = self.calculate_annot(data=data, suffix="1")
+                eqtl_pvalue2, interaction_pvalue2 = self.calculate_annot(data=data, suffix="2")
 
                 # Fill the interaction plot annotation.
-                snp_name = snp
-                if not snp_name.startswith("rs"):
-                    snp_name = snp.split(":")[2]
-                annot = [
-                    "{} - {}".format(snp_name, two_allele),
-                    "N: {}".format(df.shape[0])]
+                annot1 = ["eQTL p-value: {}".format(eqtl_pvalue1),
+                          "interaction p-value: {}".format(interaction_pvalue1)
+                          ]
+                annot2 = ["eQTL p-value: {}".format(eqtl_pvalue2),
+                          "interaction p-value: {}".format(interaction_pvalue2)
+                          ]
 
-                self.inter_plot(
-                    df=df,
-                    x1="before",
-                    x2="after",
-                    y="expression",
-                    group_real="genotype",
-                    group_round="group",
-                    palette=self.palette,
-                    allele_map=allele_map,
-                    annot=annot,
-                    ylabel="{} expression".format(gene),
-                    filename="{}_{}_{}_{}_ieqtl_before_and_after".format(self.outfile, gene, snp, pic)
-                )
+                allele_map = {0.0: "{}/{}".format(major_allele, major_allele),
+                              1.0: "{}/{}".format(major_allele, minor_allele),
+                              2.0: "{}/{}".format(minor_allele, minor_allele)}
+
+                # Plot the double interaction eQTL.
+                self.double_inter_plot(df=data,
+                                       x1="covariate1",
+                                       x2="covariate2",
+                                       y1="expression1",
+                                       y2="expression2",
+                                       group="group",
+                                       palette=self.palette,
+                                       allele_map=allele_map,
+                                       xlabel1=cov1,
+                                       xlabel2=cov2,
+                                       title="{} [{}] - {}\n MAF={:.2f}  n={:,}".format(snp_name, minor_allele, probe_name, minor_allele_frequency, data.shape[0]),
+                                       annot1=annot1,
+                                       annot2=annot2,
+                                       ylabel="{} expression".format(probe_name),
+                                       filename="{}_{}_{}_{}_{}".format(
+                                           row_index,
+                                           probe_name,
+                                           snp_name,
+                                           cov1,
+                                           cov2)
+                                       )
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -516,49 +533,64 @@ class main():
 
         return corr_m, corr_inter_m, corr_m_columns + corr_inter_m_columns
 
-    def inter_plot(self, df, x1="x1", x2="x2", y="y", group_real="group_real",
-                   group_round="group_round", palette=None, allele_map=None,
-                   annot=None, ylabel="", title="", filename="ieqtl_plot"):
-        if len(set(df[group_round].unique()).symmetric_difference({0, 1, 2})) > 0:
+    @staticmethod
+    def calculate_annot(data, suffix=""):
+        eqtl_pvalue = OLS(data["expression{}".format(suffix)], data[["intercept", "genotype"]]).fit().pvalues[1]
+        eqtl_pvalue_str = "{:.2e}".format(eqtl_pvalue)
+        if eqtl_pvalue == 0:
+            eqtl_pvalue_str = "<{:.1e}".format(1e-308)
+        eqtl_pearsonr, _ = stats.pearsonr(data["expression{}".format(suffix)], data["genotype"])
+
+        interaction_pvalue = OLS(data["expression{}".format(suffix)], data[["intercept", "genotype", "covariate{}".format(suffix), "interaction{}".format(suffix)]]).fit().pvalues[3]
+        interaction_pvalue_str = "{:.2e}".format(interaction_pvalue)
+        if interaction_pvalue == 0:
+            interaction_pvalue_str = "<{:.1e}".format(1e-308)
+
+        return eqtl_pvalue_str, interaction_pvalue_str
+
+    def double_inter_plot(self, df, x1="x1", x2="x2", y1="y1", y2="y2",
+                          group="group", palette=None, allele_map=None,
+                          xlabel1="", xlabel2="", annot1=None, annot2=None,
+                          ylabel="", title="", filename="ieqtl_plot"):
+        if len(set(df[group].unique()).symmetric_difference({0, 1, 2})) > 0:
             return
 
-        sns.set_style("ticks")
-        fig, axes = plt.subplots(nrows=2,
+        fig, axes = plt.subplots(nrows=1,
                                  ncols=2,
-                                 figsize=(18, 10),
-                                 sharex="none",
-                                 sharey="none",
-                                 gridspec_kw={"height_ratios": [0.1, 0.9]})
+                                 sharex='none',
+                                 sharey='all',
+                                 figsize=(24, 12))
+        sns.set(color_codes=True)
+        sns.set_style("ticks")
+        sns.despine(fig=fig, ax=axes[0])
+        sns.despine(fig=fig, ax=axes[1])
 
-        self.single_inter_plot(fig=fig,
-                               plot_ax=axes[1, 0],
-                               annot_ax=axes[0, 0],
-                               df=df,
-                               x=x1,
-                               y=y,
-                               group_real=group_real,
-                               group_round=group_round,
-                               palette=palette,
-                               allele_map=allele_map,
-                               annot=annot,
-                               ylabel=ylabel,
-                               )
-        self.single_inter_plot(fig=fig,
-                               plot_ax=axes[1, 1],
-                               annot_ax=axes[0, 1],
-                               df=df,
-                               x=x2,
-                               y=y,
-                               group_real=group_real,
-                               group_round=group_round,
-                               palette=palette,
-                               allele_map=allele_map,
-                               annot=annot,
-                               ylabel=ylabel,
-                               )
+        self.inter_plot(ax=axes[0],
+                        df=df,
+                        x=x1,
+                        y=y1,
+                        group=group,
+                        palette=palette,
+                        allele_map=allele_map,
+                        annot=annot1,
+                        xlabel=xlabel1,
+                        ylabel=ylabel
+                        )
 
-        plt.suptitle(title,
-                     fontsize=30,
+        self.inter_plot(ax=axes[1],
+                        df=df,
+                        x=x2,
+                        y=y2,
+                        group=group,
+                        palette=palette,
+                        allele_map=allele_map,
+                        annot=annot2,
+                        xlabel=xlabel2,
+                        ylabel=ylabel
+                        )
+
+        fig.suptitle(title,
+                     fontsize=25,
                      fontweight='bold')
 
         for extension in self.extensions:
@@ -568,32 +600,11 @@ class main():
         plt.close()
 
     @staticmethod
-    def single_inter_plot(fig, plot_ax, annot_ax, df, x="x", y="y",
-                          group_real="group_real", group_round="group_round",
-                          palette=None, allele_map=None, annot=None, xlabel="",
-                          ylabel=""):
-        if xlabel is None:
-            xlabel = x
-        if ylabel is None:
-            ylabel = y
-
-        sns.despine(fig=fig, ax=plot_ax)
-        annot_ax.set_axis_off()
-
-        plot_annot = annot.copy()
-        tmp = df[[x, y, group_real]].copy()
-        tmp["intercept"] = 1
-        tmp["inter"] = tmp[x] * tmp[group_real]
-        ols_fit = OLS(tmp[[y]], tmp[["intercept", group_real, x, "inter"]]).fit()
-        rsquared = ols_fit.rsquared
-        inter_pvalue = ols_fit.pvalues[3]
-        new_annot = ["R\u00b2: {:.2f}".format(rsquared),
-                     "interaction p-value: {:.2e}".format(inter_pvalue)]
-        plot_annot.extend(new_annot)
-        del tmp, ols_fit, new_annot
-
+    def inter_plot(ax, df, x="x", y="y", group="group", palette=None,
+                   allele_map=None, annot=None, xlabel="", ylabel="",
+                   title=""):
         for i, group_id in enumerate([0, 1, 2]):
-            subset = df.loc[df[group_round] == group_id, :].copy()
+            subset = df.loc[df[group] == group_id, :].copy()
             allele = group_id
             if allele_map is not None:
                 allele = allele_map[group_id]
@@ -605,7 +616,9 @@ class main():
                 coef_str = "{:.2f}".format(coef)
 
                 subset["intercept"] = 1
-                betas = np.linalg.inv(subset[["intercept", x]].T.dot(subset[["intercept", x]])).dot(subset[["intercept", x]].T).dot(subset[y])
+                betas = np.linalg.inv(subset[["intercept", x]].T.dot(
+                    subset[["intercept", x]])).dot(
+                    subset[["intercept", x]].T).dot(subset[y])
                 subset["y_hat"] = np.dot(subset[["intercept", x]], betas)
                 subset.sort_values(x, inplace=True)
 
@@ -618,44 +631,44 @@ class main():
                                          'alpha': 0.75},
                             line_kws={"color": palette[group_id],
                                       "alpha": 0.75},
-                            ax=plot_ax
+                            ax=ax
                             )
 
-            plot_ax.annotate(
+            ax.annotate(
                 '{}\n{}'.format(allele, coef_str),
                 xy=r_annot_pos,
                 color=palette[group_id],
                 alpha=0.75,
-                fontsize=16,
+                fontsize=22,
                 fontweight='bold')
 
-        if plot_annot is not None:
-            for i, annot_label in enumerate(plot_annot):
-                annot_ax.annotate(annot_label,
-                                  xy=(0.03, 0.9 - (i * 0.3)),
-                                  xycoords=annot_ax.transAxes,
-                                  color="#000000",
-                                  alpha=0.75,
-                                  fontsize=12,
-                                  fontweight='bold')
+        if annot is not None:
+            for i, annot_label in enumerate(annot):
+                ax.annotate(annot_label,
+                            xy=(0.03, 0.94 - (i * 0.04)),
+                            xycoords=ax.transAxes,
+                            color="#000000",
+                            alpha=0.75,
+                            fontsize=20,
+                            fontweight='bold')
 
         (xmin, xmax) = (df[x].min(), df[x].max())
         (ymin, ymax) = (df[y].min(), df[y].max())
         xmargin = (xmax - xmin) * 0.05
         ymargin = (ymax - ymin) * 0.05
 
-        plot_ax.set_xlim(xmin - xmargin, xmax + xmargin)
-        plot_ax.set_ylim(ymin - ymargin, ymax + ymargin)
+        ax.set_xlim(xmin - xmargin, xmax + xmargin)
+        ax.set_ylim(ymin - ymargin, ymax + ymargin)
 
-        plot_ax.set_title("",
-                          fontsize=16,
-                          fontweight='bold')
-        plot_ax.set_ylabel(ylabel,
-                           fontsize=14,
-                           fontweight='bold')
-        plot_ax.set_xlabel(xlabel,
-                           fontsize=14,
-                           fontweight='bold')
+        ax.set_title(title,
+                     fontsize=22,
+                     fontweight='bold')
+        ax.set_ylabel(ylabel,
+                      fontsize=20,
+                      fontweight='bold')
+        ax.set_xlabel(xlabel,
+                      fontsize=20,
+                      fontweight='bold')
 
     def print_arguments(self):
         print("Arguments:")
@@ -672,7 +685,6 @@ class main():
         print("  > Interest: {}".format(self.interest))
         print("  > Nrows: {}".format(self.nrows))
         print("  > Extension: {}".format(self.extensions))
-        print("  > Outfile: {}".format(self.outfile))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

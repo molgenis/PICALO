@@ -62,6 +62,7 @@ Syntax:
 
 ./plot_optimization_stats.py \
     -i /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -gi /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
     -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
 
 ### MetaBrain ###
@@ -78,6 +79,7 @@ class main():
         arguments = self.create_argument_parser()
         self.indir = getattr(arguments, 'indir')
         components = getattr(arguments, 'components')
+        self.gene_info_path = getattr(arguments, 'gene_info')
         out_filename = getattr(arguments, 'outfile')
         self.extensions = getattr(arguments, 'extensions')
 
@@ -127,6 +129,11 @@ class main():
                             type=str,
                             required=False,
                             help="The components to plot.")
+        parser.add_argument("-gi",
+                            "--gene_info",
+                            type=str,
+                            required=True,
+                            help="The path to the gene info matrix.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
@@ -145,10 +152,17 @@ class main():
     def start(self):
         self.print_arguments()
 
+        print("Loading gene info data")
+        gene_trans_df = self.load_file(self.gene_info_path, header=0, index_col=None)
+        gene_trans_df.iloc[:, 0] = gene_trans_df.iloc[:, 0].str.split(".", n=1, expand=True)[0]
+        gene_trans_dict = dict(zip(gene_trans_df.iloc[:, 0], gene_trans_df.iloc[:, 1]))
+        del gene_trans_df
+
+        df_list = []
         print("Parsing components")
         for comp_index, component in enumerate(self.components):
-            if comp_index > 9:
-                break
+            # if comp_index > 3:
+            #     break
 
             print("  Processing {}".format(component))
             iterations_files = glob.glob(os.path.join(self.indir, component, "results_iteration*.txt.gz"))
@@ -177,9 +191,13 @@ class main():
 
             print("\tMerging file")
             df = first_df.merge(last_df, left_index=True, right_index=True)
+            df["component"] = component
+            df["index"] = [i for i in range(df.shape[0])]
 
             print("\tSaving file")
             self.save_file(df=df, outpath=os.path.join(self.data_outdir, "{}.txt.gz".format(component)))
+            df_list.append(df)
+            continue
 
             print("\tFilter significant")
             group_map = {}
@@ -254,6 +272,17 @@ class main():
                 fig.savefig(os.path.join(self.plot_outdir, "{}.{}".format(component, extension)))
             plt.close()
 
+        print("Combining data")
+        df = pd.concat(df_list, axis=0)
+
+        print("Adding info")
+        df.insert(2, "symbol", df["gene"].str.split(".", n=1, expand=True)[0])
+        df["symbol"] = df["gene"].map(gene_trans_dict)
+        df["FDR delta"] = df["FDR before"] - df["FDR after"]
+
+        print("Saving combined file")
+        self.save_file(df=df, outpath=os.path.join(self.data_outdir, "combined_stats.txt.gz".format(component)), index=False)
+
     @staticmethod
     def load_file(inpath, header=0, index_col=0, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
@@ -325,6 +354,7 @@ class main():
         print("Arguments:")
         print("  > Input directory: {}".format(self.indir))
         print("  > Components: {}".format(", ".join(self.components)))
+        print("  > Gene info path: {}".format(self.gene_info_path))
         print("  > Data outpath {}".format(self.data_outdir))
         print("  > Plot outpath {}".format(self.plot_outdir))
         print("  > Extensions: {}".format(self.extensions))
