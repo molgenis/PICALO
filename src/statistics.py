@@ -1,7 +1,7 @@
 """
 File:         statistics.py
 Created:      2021/04/14
-Last Changed: 2021/12/09
+Last Changed: 2022/07/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -32,6 +32,7 @@ from statsmodels.regression.linear_model import OLS
 
 def remove_covariates(y_m, X_m=None, X_inter_m=None, inter_m=None, log=None):
     if X_m is None and X_inter_m is None:
+        log.warning("No covariates to be removed, skipping step.")
         return y_m
     if X_inter_m is not None and inter_m is None:
         log.error("Error in remove_covariates")

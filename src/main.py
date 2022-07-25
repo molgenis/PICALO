@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2022/04/08
+Last Changed: 2022/07/25
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -290,8 +290,8 @@ class Main:
         n_components_performed = 0
         pic_a = None
         stop = False
-        pic_corr_m = np.copy(corr_m)
-        pic_corr_inter_m = np.copy(corr_inter_m)
+        pic_corr_m = np.copy(corr_m) if corr_m is not None else None
+        pic_corr_inter_m = np.copy(corr_inter_m) if corr_inter_m is not None else None
         components_df = None
         for comp_count in range(self.n_components):
             if stop:

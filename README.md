@@ -160,6 +160,10 @@ Finally, the number of interacting eQTLs is determined without removing PICs. Th
 
 The files are split between **general** and dataset specific scripts (**BIOS** / **MetaBrain**).
 
+## How to cite
+
+Please cite: *Unbiased identification of technical and environmental factors that mediate eQTLs using principal interaction component analysis* by M. Vochteloo et al., bioRxiv, 2022.
+
 ## Author  
 
 Martijn Vochteloo (m.vochteloo@umcg.nl) *(1)*
@@ -169,4 +173,3 @@ Martijn Vochteloo (m.vochteloo@umcg.nl) *(1)*
 ## License  
 
 This project is licensed under the GNU GPL v3 license - see the [LICENSE](LICENSE) file for details
-
