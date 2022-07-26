@@ -30,12 +30,11 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
+from scipy import stats
 import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from scipy import stats
 from statsmodels.regression.linear_model import OLS
 
 # Local application imports.
@@ -88,18 +87,8 @@ Syntax:
     -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
     -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
     -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
-    -i ENSG00000237541.4_6:32623671:rs9271605:G_A_PIC13 \
-    -n 100 \
-    -e png pdf
-    
-./visualise_interaction_eqtl.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
-    -i ENSG00000237541.4_6:32623671:rs9271605:G_A_Comp14 \
-    -n 100 \
+    -i ENSG00000140873.16_16:77359175:rs891134:C_G_PIC2 ENSG00000153714.6_9:12760648:rs7025842:G_A_PIC2 ENSG00000112599.9_6:42198814:rs6907587:C_T_PIC2 \
+    -n 400 \
     -e png pdf
     
 ./visualise_interaction_eqtl.py \
@@ -131,15 +120,14 @@ class main():
 
         # Set variables.
         self.outdir = os.path.join(str(Path(__file__).parent.parent), 'visualise_interaction_eqtl')
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
 
         self.palette = {
             2.: "#E69F00",
             1.: "#0072B2",
             0.: "#D55E00"
         }
-
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
 
         # Set the right pdf font for exporting.
         matplotlib.rcParams['pdf.fonttype'] = 42
@@ -256,131 +244,124 @@ class main():
             snp_name = row["SNPName"]
             probe_name = row["ProbeName"]
             hgnc_name = row["HGNCName"]
-            id = probe_name + "_" + snp_name
+            eqtl_id = probe_name + "_" + snp_name
 
-            interest_id = None
+            eqtl_covs = []
             for interest in self.interest:
-                if interest.startswith(id):
-                    interest_id = interest
+                if interest.startswith(eqtl_id):
+                    eqtl_covs.append(interest.replace(eqtl_id + "_", ""))
 
-            if interest_id is None:
-                continue
+            for cov in eqtl_covs:
+                print("\tWorking on: {}\t{} [{}]\t{} [{}/{} "
+                      "{:.2f}%]".format(snp_name, probe_name, hgnc_name,
+                                        cov,
+                                        row_index + 1,
+                                        eqtl_df.shape[0],
+                                        (100 / eqtl_df.shape[0]) * (row_index + 1)))
 
-            print("\tWorking on: {}\t{}\t{} [{}/{} "
-                  "{:.2f}%]".format(snp_name, probe_name, hgnc_name,
-                                    row_index + 1,
-                                    eqtl_df.shape[0],
-                                    (100 / eqtl_df.shape[0]) * (row_index + 1)))
+                # Get the genotype / expression data.
+                genotype = geno_df.iloc[[row_index], :].copy().T
+                if genotype.columns != [snp_name]:
+                    print("\t\tGenotype file not in identical order as eQTL file.")
+                    exit()
+                expression = expr_df.iloc[[row_index], :].copy().T
+                if expression.columns != [probe_name]:
+                    print("\t\tExpression file not in identical order as eQTL file.")
+                    exit()
+                data = genotype.merge(expression, left_index=True, right_index=True)
+                data.columns = ["genotype", "expression"]
+                data.insert(0, "intercept", 1)
+                data["group"] = data["genotype"].round(0)
 
-            # Get the genotype / expression data.
-            genotype = geno_df.iloc[[row_index], :].copy().T
-            if genotype.columns != [snp_name]:
-                print("\t\tGenotype file not in identical order as eQTL file.")
-                exit()
-            expression = expr_df.iloc[[row_index], :].copy().T
-            if expression.columns != [probe_name]:
-                print("\t\tExpression file not in identical order as eQTL file.")
-                exit()
-            data = genotype.merge(expression, left_index=True, right_index=True)
-            data.columns = ["genotype", "expression"]
-            data.insert(0, "intercept", 1)
-            data["group"] = data["genotype"].round(0)
-            print(data["group"].value_counts())
+                # Remove missing values.
+                data = data.loc[data['genotype'] != -1, :]
 
-            # Remove missing values.
-            data = data.loc[data['genotype'] != -1, :]
+                # Get the allele data.
+                alleles = alleles_df.iloc[row_index, :]
+                if alleles.name != snp_name:
+                    print("\t\tAlleles file not in identical order as eQTL file.")
+                    exit()
+                # A/T = 0.0/2.0
+                # by default we assume T = 2.0 to be minor
+                major_allele = alleles["Alleles"].split("/")[0]
+                minor_allele = alleles["Alleles"].split("/")[1]
 
-            # Get the allele data.
-            alleles = alleles_df.iloc[row_index, :]
-            if alleles.name != snp_name:
-                print("\t\tAlleles file not in identical order as eQTL file.")
-                exit()
-            # A/T = 0.0/2.0
-            # by default we assume T = 2.0 to be minor
-            major_allele = alleles["Alleles"].split("/")[0]
-            minor_allele = alleles["Alleles"].split("/")[1]
+                # Add the covariate of interest.
+                covariate_df = cova_df.loc[[cov], :].T
+                covariate_df.columns = ["covariate"]
+                data = data.merge(covariate_df, left_index=True, right_index=True)
+                data["interaction"] = data["genotype"] * data["covariate"]
 
-            # Check if we need to flip the genotypes.
-            counts = data["group"].value_counts()
-            for x in [0.0, 1.0, 2.0]:
-                if x not in counts:
-                    counts.loc[x] = 0
-            zero_geno_count = (counts[0.0] * 2) + counts[1.0]
-            two_geno_count = (counts[2.0] * 2) + counts[1.0]
-            if two_geno_count > zero_geno_count:
-                # Turns out that 0.0 was the minor.
-                minor_allele = alleles["Alleles"].split("/")[0]
-                major_allele = alleles["Alleles"].split("/")[1]
-                data["genotype"] = 2.0 - data["genotype"]
-                data["group"] = 2.0 - data["group"]
+                # Calculate the annotations.
+                counts = data["group"].value_counts()
+                for x in [0.0, 1.0, 2.0]:
+                    if x not in counts:
+                        counts.loc[x] = 0
+                zero_geno_count = (counts[0.0] * 2) + counts[1.0]
+                two_geno_count = (counts[2.0] * 2) + counts[1.0]
+                minor_allele_frequency = min(zero_geno_count, two_geno_count) / (zero_geno_count + two_geno_count)
 
-            allele_map = {0.0: "{}/{}".format(major_allele, major_allele),
-                          1.0: "{}/{}".format(major_allele, minor_allele),
-                          2.0: "{}/{}".format(minor_allele, minor_allele)}
+                eqtl_pvalue = OLS(data["expression"], data[["intercept", "genotype"]]).fit().pvalues[1]
+                eqtl_pvalue_str = "{:.2e}".format(eqtl_pvalue)
+                if eqtl_pvalue == 0:
+                    eqtl_pvalue_str = "<{:.1e}".format(1e-308)
+                eqtl_pearsonr, _ = stats.pearsonr(data["expression"], data["genotype"])
 
-            # Add the covariate of interest.
-            covariate = interest_id.replace(probe_name + "_", "").replace(snp_name + "_", "").replace("_", " ")
-            covariate_df = cova_df.loc[[covariate], :].T
-            covariate_df.columns = ["covariate"]
-            data = data.merge(covariate_df, left_index=True, right_index=True)
-            data["interaction"] = data["genotype"] * data["covariate"]
+                interaction_pvalue = OLS(data["expression"], data[["intercept", "genotype", "covariate", "interaction"]]).fit().pvalues[3]
+                interaction_pvalue_str = "{:.2e}".format(interaction_pvalue)
+                if interaction_pvalue == 0:
+                    interaction_pvalue_str = "<{:.1e}".format(1e-308)
 
-            # Remove missing values.
-            data = data.loc[data['covariate'] != -1, :]
+                print_probe_name = probe_name
+                if "." in print_probe_name:
+                    print_probe_name = print_probe_name.split(".")[0]
 
-            # Determine annotation stats.
-            eqtl_pvalue = OLS(data["expression"], data[["intercept", "genotype"]]).fit().pvalues[1]
-            eqtl_pvalue_str = "{:.2e}".format(eqtl_pvalue)
-            if eqtl_pvalue == 0:
-                eqtl_pvalue_str = "<{:.1e}".format(1e-308)
-            eqtl_pearsonr, _ = stats.pearsonr(data["expression"], data["genotype"])
-            minor_allele_frequency = min(zero_geno_count, two_geno_count) / (zero_geno_count + two_geno_count)
+                print_snp_name = snp_name
+                if ":" in print_snp_name:
+                    print_snp_name = print_snp_name.split(":")[2]
 
-            # Fill the eQTL plot annotation.
-            annot1 = ["N: {:,}".format(data.shape[0]),
-                      "r: {:.2f}".format(eqtl_pearsonr),
-                      "p-value: {}".format(eqtl_pvalue_str),
-                      "MAF: {:.2f}".format(minor_allele_frequency)]
+                # Fill the interaction plot annotation.
+                annot1 = ["N: {:,}".format(data.shape[0]),
+                          "r: {:.2f}".format(eqtl_pearsonr),
+                          "p-value: {}".format(eqtl_pvalue_str),
+                          "MAF: {:.2f}".format(minor_allele_frequency)]
+                annot2 = ["{} - {}".format(print_snp_name, minor_allele),
+                          "N: {:,}".format(data.shape[0]),
+                          "interaction p-value: {}".format(
+                              interaction_pvalue_str),
+                          "eQTL p-value: {:.2e}".format(eqtl_pvalue),
+                          "MAF: {:.2f}".format(minor_allele_frequency)]
 
-            # Plot the main eQTL effect.
-            self.eqtl_plot(df=data,
-                           x="group",
-                           y="expression",
-                           palette=self.palette,
-                           allele_map=allele_map,
-                           xlabel=snp_name,
-                           ylabel="{} expression".format(hgnc_name),
-                           annot=annot1,
-                           title="eQTL",
-                           filename="{}_{}_{}_{}".format(row_index, probe_name, hgnc_name, snp_name)
-                           )
+                allele_map = {0.0: "{}/{}".format(major_allele, major_allele),
+                              1.0: "{}/{}".format(major_allele, minor_allele),
+                              2.0: "{}/{}".format(minor_allele, minor_allele)}
 
-            # Determine annotation stats.
-            interaction_pvalue = OLS(data["expression"], data[["intercept", "genotype", "covariate", "interaction"]]).fit().pvalues[3]
-            interaction_pvalue_str = "{:.2e}".format(interaction_pvalue)
-            if interaction_pvalue == 0:
-                interaction_pvalue_str = "<{:.1e}".format(1e-308)
+                # Plot the main eQTL effect.
+                self.eqtl_plot(df=data,
+                               x="group",
+                               y="expression",
+                               palette=self.palette,
+                               allele_map=allele_map,
+                               xlabel=print_snp_name,
+                               ylabel="{} expression".format(hgnc_name),
+                               annot=annot1,
+                               title="eQTL",
+                               filename="{}_{}_{}_{}".format(row_index, print_probe_name, hgnc_name, print_snp_name)
+                               )
 
-            # Fill the interaction plot annotation.
-            annot2 = ["{} - {}".format(snp_name, minor_allele),
-                      "N: {:,}".format(data.shape[0]),
-                      "interaction p-value: {}".format(interaction_pvalue_str),
-                      "eQTL p-value: {:.2e}".format(eqtl_pvalue),
-                      "MAF: {:.2f}".format(minor_allele_frequency)]
-
-            # Plot the interaction eQTL.
-            self.inter_plot(df=data,
-                            x="covariate",
-                            y="expression",
-                            group="group",
-                            palette=self.palette,
-                            allele_map=allele_map,
-                            xlabel="{}".format(covariate),
-                            ylabel="{} expression".format(hgnc_name),
-                            annot=annot2,
-                            title="ieQTL",
-                            filename="{}_{}_{}_{}_{}".format(row_index, probe_name, hgnc_name, snp_name, covariate)
-                            )
+                # Plot the interaction eQTL.
+                self.inter_plot(df=data,
+                                x="covariate",
+                                y="expression",
+                                group="group",
+                                palette=self.palette,
+                                allele_map=allele_map,
+                                xlabel="{}".format(cov),
+                                ylabel="{} expression".format(hgnc_name),
+                                annot=annot2,
+                                title="ieQTL",
+                                filename="{}_{}_{}_{}_{}".format(row_index, print_probe_name, hgnc_name, print_snp_name, cov)
+                                )
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -405,7 +386,9 @@ class main():
                     data=df,
                     scatter=False,
                     ci=None,
-                    line_kws={"color": "#000000"},
+                    line_kws={"color": "#000000",
+                              "linewidth": 5,
+                              "alpha": 1},
                     ax=ax)
         sns.violinplot(x=x,
                        y=y,
@@ -430,7 +413,7 @@ class main():
                             xycoords=ax.transAxes,
                             color="#000000",
                             alpha=0.75,
-                            fontsize=12,
+                            fontsize=20,
                             fontweight='bold')
 
         if allele_map is not None:
@@ -438,13 +421,13 @@ class main():
             ax.set_xticklabels([allele_map[0.0], allele_map[1.0], allele_map[2.0]])
 
         ax.set_title(title,
-                     fontsize=16,
+                     fontsize=22,
                      fontweight='bold')
         ax.set_ylabel(ylabel,
-                      fontsize=14,
+                      fontsize=20,
                       fontweight='bold')
         ax.set_xlabel(xlabel,
-                      fontsize=14,
+                      fontsize=20,
                       fontweight='bold')
 
         for extension in self.extensions:
@@ -477,27 +460,31 @@ class main():
                 coef_str = "{:.2f}".format(coef)
 
                 subset["intercept"] = 1
-                betas = np.linalg.inv(subset[["intercept", x]].T.dot(subset[["intercept", x]])).dot(subset[["intercept", x]].T).dot(subset[y])
+                betas = np.linalg.inv(subset[["intercept", x]].T.dot(
+                    subset[["intercept", x]])).dot(
+                    subset[["intercept", x]].T).dot(subset[y])
                 subset["y_hat"] = np.dot(subset[["intercept", x]], betas)
                 subset.sort_values(x, inplace=True)
 
-                r_annot_pos = (subset.iloc[-1, :][x] + (subset[x].max() * 0.05), subset.iloc[-1, :]["y_hat"])
+                r_annot_pos = (subset.iloc[-1, :][x] + (subset[x].max() * 0.05),
+                               subset.iloc[-1, :]["y_hat"])
 
                 sns.regplot(x=x, y=y, data=subset, ci=None,
                             scatter_kws={'facecolors': palette[group_id],
                                          'linewidth': 0,
-                                         'alpha': 0.75},
-                            line_kws={"color": palette[group_id], "alpha": 0.75},
+                                         'alpha': 0.60},
+                            line_kws={"color": palette[group_id],
+                                      "linewidth": 5,
+                                      "alpha": 1},
                             ax=ax
                             )
 
-            print(allele, coef_str)
             ax.annotate(
                 '{}\n{}'.format(allele, coef_str),
                 xy=r_annot_pos,
                 color=palette[group_id],
                 alpha=0.75,
-                fontsize=16,
+                fontsize=22,
                 fontweight='bold')
 
         if annot is not None:
@@ -507,7 +494,7 @@ class main():
                             xycoords=ax.transAxes,
                             color="#000000",
                             alpha=0.75,
-                            fontsize=12,
+                            fontsize=20,
                             fontweight='bold')
 
         (xmin, xmax) = (df[x].min(), df[x].max())
@@ -519,13 +506,13 @@ class main():
         ax.set_ylim(ymin - ymargin, ymax + ymargin)
 
         ax.set_title(title,
-                     fontsize=16,
+                     fontsize=22,
                      fontweight='bold')
         ax.set_ylabel(ylabel,
-                      fontsize=14,
+                      fontsize=20,
                       fontweight='bold')
         ax.set_xlabel(xlabel,
-                      fontsize=14,
+                      fontsize=20,
                       fontweight='bold')
 
         for extension in self.extensions:

@@ -134,7 +134,6 @@ class main():
             0.: "#D55E00"
         }
 
-
         # Set the right pdf font for exporting.
         matplotlib.rcParams['pdf.fonttype'] = 42
         matplotlib.rcParams['ps.fonttype'] = 42
@@ -340,6 +339,14 @@ class main():
 
                 context_genotype_r2, _ = stats.pearsonr(data["genotype"], data["covariate2"])
 
+                print_probe_name = probe_name
+                if "." in print_probe_name:
+                    print_probe_name = print_probe_name.split(".")[0]
+
+                print_snp_name = snp_name
+                if ":" in print_snp_name:
+                    print_snp_name = print_snp_name.split(":")[2]
+
                 # Fill the interaction plot annotation.
                 annot1 = ["eQTL p-value: {}".format(eqtl_pvalue_str),
                           "eQTL r: {:.2f}".format(eqtl_pearsonr),
@@ -355,14 +362,6 @@ class main():
                 allele_map = {0.0: "{}/{}".format(major_allele, major_allele),
                               1.0: "{}/{}".format(major_allele, minor_allele),
                               2.0: "{}/{}".format(minor_allele, minor_allele)}
-
-                print_probe_name = probe_name
-                if "." in print_probe_name:
-                    print_probe_name = print_probe_name.split(".")[0]
-
-                print_snp_name = snp_name
-                if ":" in print_snp_name:
-                    print_snp_name = print_snp_name.split(":")[2]
 
                 # Plot the double interaction eQTL.
                 self.double_inter_plot(df=data,
