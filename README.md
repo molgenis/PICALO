@@ -162,7 +162,7 @@ The files are split between **general** and dataset specific scripts (**BIOS** /
 
 ## How to cite
 
-Please cite: *Unbiased identification of technical and environmental factors that mediate eQTLs using principal interaction component analysis* by M. Vochteloo et al., bioRxiv, 2022.
+Please cite: *Unbiased identification of unknown cellular and environmental factors that mediate eQTLs using principal interaction component analysis* by Vochteloo et al., bioRxiv, 2022.
 
 ## Author  
 
