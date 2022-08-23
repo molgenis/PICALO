@@ -9,17 +9,17 @@ PICALO is an expectation maximization (EM) based algorithm. Using an initial gue
 ### PICALO applied to a single ieQTL
 Per sample the context value is adjusted to maximize the log-likelihood of the whole model (i.e. minimize the residuals) while maintaining the model parameters. The underlying assumption is that while the per sample context value might be noisy, the whole model captures the true interaction. Considering the case in which only one ieQTL is optimized, this results in all samples moving towards their genotype's regression line:
 
-![Single ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart1.gif)
+![Single ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart1.mp4)
 
 ### A collection of ieQTLs are optimized simultaneously
 In practice, however, PICALO applies this optimization over all ieQTLs simultaneously. The optimal value is identified by modelling the log-likelihood function for different context values (x-axis) as a second-degree polynomial. By summing the polynomials, a new context value is identified per sample that maximizes the log-likelihood (i.e. minimized the residuals) over all ieQTLs. Repeat this for all samples and this will yield a new vector that maximally interacts with the ieQTLs. 
 
-![Double ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart2.gif)
+![Double ieQTL optimization example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart2.mp4)
 
 ### Process is repeated to identify Principal Interaction Components (PICs)
 This process is then repeated using the optimized vector as input and reoptimized over an updated set of ieQTLs. Generally, with every iteration the number of ieQTLs increases. Shown below is that after a limited number of iterations an optimum can be reached. Once converged, the resulting vector is referred to as Principal Interaction Components (PICs).
 
-![EM looping example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart3.gif)
+![EM looping example](https://github.com/molgenis/PICALO/blob/main/dev/general/presentation_scripts/videos/GraphicalAbstractPart3.mp4)
 
 Finally, multiple PICs are identified by removing the previous PICs and repeating the process.
 
