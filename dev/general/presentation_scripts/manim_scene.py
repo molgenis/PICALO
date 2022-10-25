@@ -53,7 +53,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 class GraphicalAbstractPart1(Scene):
     def construct(self):
-        scale_wait = 0.9
+        scale_wait = 1
 
         example_index = 168
         example_name = "Jane Doe"
@@ -357,7 +357,7 @@ class GraphicalAbstractPart1(Scene):
 
 class GraphicalAbstractPart2(Scene):
     def construct(self):
-        scale_wait = 0.6
+        scale_wait = 1
 
         example_index = 168
         example_name = "Jane Doe"

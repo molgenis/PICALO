@@ -53,7 +53,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 class GraphicalAbstractPart3(Scene):
     def construct(self):
-        scale_wait = 0.8
+        scale_wait = 1
 
         # Defining palette.
         colors = {
