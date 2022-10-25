@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-File:         bryois_pic_replication.py
-Created:      2022/10/18
+File:         bryois_ct_eqtl_replication.py
+Created:      2022/10/25
 Last Changed:
 Author:       M.Vochteloo
 
@@ -41,19 +41,38 @@ from adjustText import adjust_text
 # Local application imports.
 
 """
-Syntax:
-./bryois_pic_replication.py \
-    -di /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov \
+Syntax:    
+./bryois_ct_eqtl_replication.py \
+    -di /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-10-21-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_CFAsCov \
     -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
     -gi /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
     -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
-    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_Replication \
-    -e png pdf
+    -t No_PIC_correction \
+    -o 2022-10-21-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_CFAsCov \
+    -e png
+
+./bryois_ct_eqtl_replication.py \
+    -di /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-10-21-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_TechPICsCorrected_CFAsCov \
+    -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -gi /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -t PIC1_and_PIC4_corrected \
+    -o 2022-10-21-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_TechPICsCorrected_CFAsCov \
+    -e png
+
+./bryois_ct_eqtl_replication.py \
+    -di /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2022-10-25-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC1Corrected_CFAsCov \
+    -da /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -gi /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -t PIC1_corrected \
+    -o 2022-10-25-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PIC1Corrected_CFAsCov \
+    -e png
     
 """
 
 # Metadata
-__program__ = "Bryois PIC Replication"
+__program__ = "Decon-eQTL Bryois Replication Plot"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -75,6 +94,7 @@ class main():
         self.discovery_alleles = getattr(arguments, 'discovery_alleles')
         self.gene_info_path = getattr(arguments, 'gene_info')
         self.palette_path = getattr(arguments, 'palette')
+        self.title = getattr(arguments, 'title').replace("_", " ")
         self.out_filename = getattr(arguments, 'outfile')
         self.extensions = getattr(arguments, 'extension')
 
@@ -82,19 +102,27 @@ class main():
         self.bryois_n = 196
 
         # Set variables.
-        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'bryois_pic_replication')
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'bryois_ct_eqtl_replication')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
+        self.matched_cell_types = [
+            ("Astrocyte", "Astrocytes"),
+            ("EndothelialCell", "EndothelialCells"),
+            ("Excitatory", "ExcitatoryNeurons"),
+            ("Inhibitory", "InhibitoryNeurons"),
+            ("Microglia", "Microglia"),
+            ("Oligodendrocyte", "Oligodendrocytes")
+        ]
+
         self.palette = {
-            "Astrocytes": "#D55E00",
-            "EndothelialCells": "#CC79A7",
-            "ExcitatoryNeurons": "#56B4E9",
-            "InhibitoryNeurons": "#0072B2",
+            "Astrocyte": "#D55E00",
+            "EndothelialCell": "#CC79A7",
+            "Excitatory": "#56B4E9",
+            "Inhibitory": "#0072B2",
             "Microglia": "#E69F00",
-            "Oligodendrocytes": "#009E73",
-            "OPCsCOPs": "#1b8569",
-            "Pericytes": "#808080"
+            "Oligodendrocyte": "#009E73",
+            "OtherNeuron": "#2690ce"
         }
 
         self.shared_xlim = None
@@ -136,6 +164,12 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
+        parser.add_argument("-t",
+                            "--title",
+                            type=str,
+                            required=False,
+                            default="ieQTL replication in Bryois et al. 2021",
+                            help="The title for the plot. Replace '_' with ' '.")
         parser.add_argument("-o",
                             "--outfile",
                             type=str,
@@ -151,6 +185,7 @@ class main():
                                  "Default: 'png'.")
 
         return parser.parse_args()
+
 
     def start(self):
         self.print_arguments()
@@ -192,80 +227,61 @@ class main():
         replication_df = self.load_file(self.bryois_path, header=0, index_col=0)
         replication_snp_info_df = replication_df[["SNP", "effect_allele"]].copy()
         replication_snp_info_df.columns = ["SNP", "Bryois AlleleAssessed"]
+        replication_snp_info_df["Bryois N"] = self.bryois_n
         replication_df.drop(["SNP", "effect_allele"], axis=1, inplace=True)
-
-        replication_cell_types = [col.replace(" p-value", "") for col in replication_df.columns if " p-value" in col]
-        replication_cell_types.sort()
-        max_repl_ct_length = max([len(str(ct)) for ct in replication_cell_types])
-
         replication_df.columns = ["Bryois {}".format(col) for col in replication_df.columns]
-
-        replication_df["Bryois N"] = self.bryois_n
 
         print("Merging data")
         df = discovery_snp_info_df.merge(replication_snp_info_df, on="SNP")
         flip_dict = dict(zip(df["SNP"], (df["AlleleAssessed"] == df["Bryois AlleleAssessed"]).map({True: 1, False: -1})))
         del discovery_snp_info_df, replication_snp_info_df
+        print(df)
 
         print("Loading interaction results.")
-        replication_stats_df_list = []
-        for i in range(1, 6):
-            pic = "PIC{}".format(i)
-            discovery_path = os.path.join(self.discovery_indir, "{}.txt.gz".format(pic))
+        ieqtl_df_list = []
+        for (discovery_ct, replication_ct) in self.matched_cell_types:
+            # Discovery data.
+            ieqtl_df = self.load_file(os.path.join(self.discovery_indir, "{}.txt.gz".format(discovery_ct)), header=0, index_col=None)
+            ieqtl_df["SNP"] = [x.split(":")[2] for x in ieqtl_df["SNP"]]
+            ieqtl_df["gene"] = [x.split(".")[0] for x in ieqtl_df["gene"]]
+            ieqtl_df.index = ieqtl_df["gene"] + "_" + ieqtl_df["SNP"]
+            ieqtl_df["flip"] = ieqtl_df["SNP"].map(flip_dict)
+            ieqtl_df = ieqtl_df.loc[:, ["flip", "beta-interaction", "p-value", "FDR"]]
+            ieqtl_df.columns = ["flip", "MetaBrain {} interaction beta".format(discovery_ct), "MetaBrain {} p-value".format(discovery_ct), "MetaBrain {} FDR".format(discovery_ct)]
 
-            if not os.path.exists(discovery_path):
-                continue
-            print("\t{}".format(pic))
+            # Replication data.
+            ieqtl_df = ieqtl_df.merge(replication_df[["Bryois {} beta".format(replication_ct), "Bryois {} p-value".format(replication_ct)]].copy(), left_index=True, right_index=True, how="left")
+            ieqtl_df["Bryois {} beta".format(replication_ct)] = ieqtl_df["Bryois {} beta".format(replication_ct)] * ieqtl_df["flip"]
+            ieqtl_df.drop(["flip"], axis=1, inplace=True)
 
-            discovery_ieqtl_df = self.load_file(discovery_path, header=0, index_col=None)
-            discovery_ieqtl_df["SNP"] = discovery_ieqtl_df["SNP"].str.split(":", expand=True)[2]
-            discovery_ieqtl_df["gene"] = discovery_ieqtl_df["gene"].str.split(".", expand=True)[0]
-            discovery_ieqtl_df["flip"] = discovery_ieqtl_df["SNP"].map(flip_dict)
-            discovery_ieqtl_df.index = discovery_ieqtl_df["gene"] + "_" + discovery_ieqtl_df["SNP"]
-            discovery_ieqtl_df = discovery_ieqtl_df[["beta-interaction", "p-value", "FDR", "flip"]]
-            discovery_ieqtl_df.columns = ["MetaBrain {} interaction beta".format(pic), "MetaBrain {} p-value".format(pic), "MetaBrain {} FDR".format(pic), "flip"]
+            ieqtl_df["Bryois {} FDR".format(replication_ct)] = np.nan
+            discovery_mask = (ieqtl_df["MetaBrain {} FDR".format(discovery_ct)] <= 0.05).to_numpy()
+            replication_mask = (~ieqtl_df["Bryois {} p-value".format(replication_ct)].isna()).to_numpy()
+            mask = np.logical_and(discovery_mask, replication_mask)
+            n_overlap = np.sum(mask)
+            if n_overlap > 1:
+                ieqtl_df.loc[mask, "Bryois {} FDR".format(discovery_ct)] = multitest.multipletests(ieqtl_df.loc[mask, "Bryois {} p-value".format(replication_ct)], method='fdr_bh')[1]
+            n_replicating = ieqtl_df.loc[ieqtl_df["Bryois {} FDR".format(replication_ct)] <= 0.05, :].shape[0]
+            print("\t  {} replication N-ieqtls: {:,} / {:,} [{:.2f}%]".format(replication_ct, n_replicating, n_overlap, (100 / n_overlap) * n_replicating))
 
-            ieqtl_df = discovery_ieqtl_df.merge(replication_df, left_index=True, right_index=True, how="inner")
-            if ieqtl_df.shape[0] == 0:
-                continue
+            ieqtl_df_list.append(ieqtl_df)
 
-            discovery_mask = (ieqtl_df["MetaBrain {} FDR".format(pic)] <= 0.05).to_numpy()
-            print("\t  Discovery N-ieqtls: {:,}".format(np.sum(discovery_mask)))
-            for repl_ct in replication_cell_types:
-                ieqtl_df["Bryois {} beta".format(repl_ct)] = ieqtl_df["Bryois {} beta".format(repl_ct)] * ieqtl_df["flip"]
+        ieqtl_df = pd.concat(ieqtl_df_list, axis=1)
+        ieqtl_df["SNP"] = [x.split("_")[1] for x in ieqtl_df.index]
+        ieqtl_df["Gene"] = [x.split("_")[0] for x in ieqtl_df.index]
+        del ieqtl_df_list
+        print(ieqtl_df)
 
-                ieqtl_df["Bryois {} FDR".format(repl_ct)] = np.nan
-                replication_mask = (~ieqtl_df["Bryois {} p-value".format(repl_ct)].isna()).to_numpy()
-                mask = np.logical_and(discovery_mask, replication_mask)
-                n_overlap = np.sum(mask)
-                if n_overlap > 1:
-                    ieqtl_df.loc[mask, "Bryois {} FDR".format(repl_ct)] = multitest.multipletests(ieqtl_df.loc[mask, "Bryois {} p-value".format(repl_ct)], method='fdr_bh')[1]
-                n_replicating = ieqtl_df.loc[ieqtl_df["Bryois {} FDR".format(repl_ct)] <= 0.05, :].shape[0]
-                print("\t  {}{} replication N-ieqtls: {:,} / {:,} [{:.2f}%]".format(repl_ct, (max_repl_ct_length - len(str(repl_ct))) * " ", n_replicating, n_overlap, (100 / n_overlap) * n_replicating))
+        print("Merging data.")
+        df = df.merge(ieqtl_df, on="SNP", how="right")
 
-            ieqtl_df["SNP"] = [x.split("_")[-1] for x in ieqtl_df.index]
-            ieqtl_df["Gene"] = ["_".join(x.split("_")[:-1]) for x in ieqtl_df.index]
+        print("Adding gene symbols.")
+        df["Gene symbol"] = df["Gene"].map(gene_trans_dict)
 
-            print("Merging data.")
-            ieqtl_df = df.merge(ieqtl_df, on="SNP", how="right")
-
-            print("Adding gene symbols.")
-            ieqtl_df["Gene symbol"] = ieqtl_df["Gene"].map(gene_trans_dict)
-
-            print("Visualizing")
-            replication_stats_df = self.plot(df=ieqtl_df,
-                                             cell_types=replication_cell_types,
-                                             pic=pic)
-            replication_stats_df_list.append(replication_stats_df)
-
-        replication_stats_df = pd.concat(replication_stats_df_list, axis=0)
-        replication_stats_df = pd.pivot_table(replication_stats_df.loc[replication_stats_df["label"] == "discovery significant", :],
-                                              values='value',
-                                              index='col',
-                                              columns='variable')
-        replication_stats_df = replication_stats_df[["N", "pearsonr", "concordance", "Rb", "pi1"]]
-        replication_stats_df.columns = ["N", "Pearson r", "Concordance", "Rb", "pi1"]
-        self.save_file(df=replication_stats_df, outpath=os.path.join(self.outdir, "replication_stats.txt.gz"))
+        print("Visualizing")
+        replication_stats_df = self.plot(df=df,
+                                         matched_cell_types=self.matched_cell_types)
+        self.save_file(df=replication_stats_df, outpath=os.path.join(self.outdir, "{}_replication_stats.txt.gz".format(self.out_filename)))
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -297,9 +313,9 @@ class main():
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
 
-    def plot(self, df, cell_types, pic):
+    def plot(self, df, matched_cell_types):
         nrows = 3
-        ncols = len(cell_types)
+        ncols = len(matched_cell_types)
 
         self.shared_ylim = {i: (0, 1) for i in range(nrows)}
         self.shared_xlim = {i: (0, 1) for i in range(ncols)}
@@ -313,20 +329,20 @@ class main():
                                  sharex='col',
                                  sharey='row')
 
-        for col_index, ct in enumerate(cell_types):
-            print("\tWorking on '{}'".format(ct))
+        for col_index, (discovery_ct, replication_ct) in enumerate(matched_cell_types):
+            print("\tWorking on '{}'".format(discovery_ct))
 
             # Select the required columns.
             plot_df = df.loc[:, ["Gene symbol",
                                  "MetaBrain N",
                                  "MetaBrain MAF",
-                                 "MetaBrain {} interaction beta".format(pic),
-                                 "MetaBrain {} p-value".format(pic),
-                                 "MetaBrain {} FDR".format(pic),
+                                 "MetaBrain {} interaction beta".format(discovery_ct),
+                                 "MetaBrain {} p-value".format(discovery_ct),
+                                 "MetaBrain {} FDR".format(discovery_ct),
                                  "Bryois N",
-                                 "Bryois {} beta".format(ct),
-                                 "Bryois {} p-value".format(ct),
-                                 "Bryois {} FDR".format(ct),
+                                 "Bryois {} beta".format(replication_ct),
+                                 "Bryois {} p-value".format(replication_ct),
+                                 "Bryois {} FDR".format(replication_ct),
                                  ]].copy()
             plot_df.columns = ["Gene symbol",
                                "MetaBrain N",
@@ -382,8 +398,8 @@ class main():
                 y="Bryois eQTL beta",
                 xlabel="",
                 ylabel="Bryois log eQTL beta",
-                title=ct,
-                color=self.palette[ct],
+                title=discovery_ct,
+                color=self.palette[discovery_ct],
                 include_ylabel=include_ylabel
             )
             self.update_limits(xlim, ylim, 0, col_index)
@@ -398,7 +414,7 @@ class main():
                 xlabel="",
                 ylabel="Bryois log eQTL beta",
                 title="",
-                color=self.palette[ct],
+                color=self.palette[discovery_ct],
                 include_ylabel=include_ylabel,
                 pi1_column="Bryois pvalue",
                 rb_columns=[("MetaBrain zscore-to-beta", "MetaBrain zscore-to-se"), ("Bryois zscore-to-beta", "Bryois zscore-to-se")]
@@ -416,7 +432,7 @@ class main():
                 xlabel="MetaBrain log interaction beta",
                 ylabel="Bryois log eQTL beta",
                 title="",
-                color=self.palette[ct],
+                color=self.palette[discovery_ct],
                 include_ylabel=include_ylabel
             )
             self.update_limits(xlim, ylim, 2, col_index)
@@ -425,7 +441,7 @@ class main():
             for stats, label in zip([stats1, stats2, stats3], ["all", "discovery significant", "both significant"]):
                 stats_m = stats.melt()
                 stats_m["label"] = label
-                stats_m["cell type"] = ct
+                stats_m["cell type"] = discovery_ct
                 replication_stats.append(stats_m)
 
         for (m, n), ax in np.ndenumerate(axes):
@@ -439,13 +455,13 @@ class main():
             ax.set_ylim(ymin - ymargin, ymax + ymargin)
 
         # Add the main title.
-        fig.suptitle("{} ieQTL replication in Bryois et al. 2021".format(pic),
+        fig.suptitle(self.title,
                      fontsize=40,
                      color="#000000",
                      weight='bold')
 
         for extension in self.extensions:
-            fig.savefig(os.path.join(self.outdir, "bryois_{}_replication_plot.{}".format(pic, extension)))
+            fig.savefig(os.path.join(self.outdir, "{}_bryois_ct_eqtl_replication_plot.{}".format(self.out_filename, extension)))
         plt.close()
 
         # Construct the replication stats data frame.
@@ -668,7 +684,6 @@ class main():
         print("  > Output directory: {}".format(self.outdir))
         print("  > Extensions: {}".format(self.extensions))
         print("")
-
 
 if __name__ == '__main__':
     m = main()
