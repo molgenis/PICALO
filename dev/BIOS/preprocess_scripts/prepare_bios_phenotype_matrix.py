@@ -53,7 +53,7 @@ Syntax:
 
 class main():
     def __init__(self):
-        self.pheno_path = "/groups/umcg-bios/tmp01/projects/decon_optimizer/data/BIOS_RNA_pheno.txt"
+        self.pheno_path = "/groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_RNA_pheno.txt.gz"
 
         # Set variables.
         self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'prepare_bios_phenotype_matrix')
