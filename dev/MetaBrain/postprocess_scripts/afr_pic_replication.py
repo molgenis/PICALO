@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-File:         pic_replication.py
+File:         afr_pic_replication.py
 Created:      2022/04/14
 Last Changed: 2022/07/21
 Author:       M.Vochteloo
