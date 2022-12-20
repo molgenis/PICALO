@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2022/07/25
+Last Changed: 2022/12/15
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -412,6 +412,7 @@ class Main:
             self.log.info("Map interactions with PICs without correcting "
                           "previous PICs.")
             self.log.info("\t  Correcting expression matrix")
+
             # Prepare output directory.
             pic_ieqtl_outdir = os.path.join(self.outdir, "PIC_interactions")
             if not os.path.exists(pic_ieqtl_outdir):
@@ -441,7 +442,7 @@ class Main:
                 fn_pic_a = fn.process(data=pic_a)
 
                 # Find the significant ieQTLs.
-                n_hits, _, results_df = get_ieqtls(
+                n_hits, _, _, results_df = get_ieqtls(
                     eqtl_m=eqtl_m,
                     geno_m=geno_m,
                     expr_m=pic_expr_m,

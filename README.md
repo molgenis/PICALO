@@ -142,7 +142,7 @@ PICALO generates a set of general and PIC specific output files. Click on the he
  * **PICN/covariate_selection.txt.gz**: containing the number of interacting eQTLs per initial guess (referred to as covariate).
  * **PICN/info.txt.gz**: containing optimization statistics per iteration like the number of interacting eQTLs, the correlation with the previous iteration etc.
  * **PICN/iteration.txt.gz**: containing the component loadings per iteration.
- * **PICN/n_ieqtls_per_sample.txt.gz**: containing the number of eQTLs used for optimization per sample per iteration.
+ * **PICN/n_hits_per_sample.txt.gz**: containing the number of eQTLs used for optimization per sample per iteration.
  * **PICN/results_iterationN.txt.gz**: containing the interaction eQTL summary statistics per iteration.
 </details>
 
