@@ -3,7 +3,7 @@
 """
 File:         prepare_picalo_files.py
 Created:      2021/12/06
-Last Changed:
+Last Changed: 2023/01/31
 Author:       M.Vochteloo
 
 Copyright (C) 2020 M.Vochteloo
@@ -95,12 +95,12 @@ class main():
                             "--genotype",
                             type=str,
                             required=True,
-                            help="The path to the genotype directory")
+                            help="The path to the genotype matrix.")
         parser.add_argument("-ex",
                             "--expression",
                             type=str,
                             required=True,
-                            help="The path to the deconvolution matrix")
+                            help="The path to the expression matrix.")
         parser.add_argument("-ra",
                             "--rna_alignment",
                             type=str,
@@ -119,18 +119,18 @@ class main():
                             type=str,
                             required=False,
                             default=None,
-                            help="The path to the mds matrix.")
+                            help="The path to the genotype mds matrix.")
         parser.add_argument("-pcpc",
                             "--post_corr_pcs",
                             type=str,
-                            required=True,
+                            required=False,
+                            default=None,
                             help="The path to the post covariate"
                                  "correction expression PCs matrix")
         parser.add_argument("-gte",
                             "--genotype_to_expression",
                             type=str,
-                            required=False,
-                            default=None,
+                            required=True,
                             help="The path to the genotype-to-expression"
                                  " link matrix.")
         parser.add_argument("-od",
@@ -227,13 +227,14 @@ class main():
         del eqtl_df, present_eqtl_df, geno_df, allele_df, expr_df
 
         print("Preparing PCS after tech. cov. correction")
-        pcpc_df = self.load_file(self.post_corr_pcs_path, header=0, index_col=0)
-        print(pcpc_df)
+        if self.post_corr_pcs_path is not None:
+            pcpc_df = self.load_file(self.post_corr_pcs_path, header=0, index_col=0)
+            print(pcpc_df)
 
-        for n_pcs in range(5, 105, 5):
-            if n_pcs <= pcpc_df.shape[0]:
-                self.save_file(df=pcpc_df.iloc[:n_pcs, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first{}ExpressionPCs.txt.gz".format(n_pcs)))
-        del pcpc_df
+            for n_pcs in range(5, 105, 5):
+                if n_pcs <= pcpc_df.shape[0]:
+                    self.save_file(df=pcpc_df.iloc[:n_pcs, :].loc[:, rnaseq_ids], outpath=os.path.join(self.outdir, "first{}ExpressionPCs.txt.gz".format(n_pcs)))
+            del pcpc_df
 
         print("Preparing technical covariates")
         ram_df = None
