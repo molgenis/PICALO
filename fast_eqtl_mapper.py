@@ -6,20 +6,10 @@ Created:      2023/05/19
 Last Changed:
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -31,18 +21,19 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
+from scipy.special import ndtri
 
 # Local application imports.
 from src.logger import Logger
 from src.utilities import load_dataframe, save_dataframe
-from src.statistics import inverse, fit, predict, calc_rss, fit_and_predict, calc_std, calc_p_value
+from src.statistics import inverse, fit, predict, calc_rss, fit_and_predict, calc_std, calc_p_value, calc_residuals, calc_pearsonr_vector
 
 # Metadata
 __program__ = "Fast eQTL Mapper"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -54,45 +45,50 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./fast_eqtl_mapper.py -h
-    
+   
 ./fast_eqtl_mapper.py \
     -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLNoCovariates/simulation1/expression_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first1ExpressionPCs.txt.gz \
+    -force_normalise_covariates \
     -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLNoCovariates \
+    -of 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised \
+    -verbose
+
+./fast_eqtl_mapper.py \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/PICs.txt.gz \
+    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
+    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised-Simulation1 \
     -verbose
     
 ./fast_eqtl_mapper.py \
     -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariateNoInteraction/simulation1/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariateNoInteraction/simulation1/tech_covariates_with_interaction_df.txt.gz \
-    -exclude_covariate_interactions \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/PICs.txt.gz \
     -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariateNoInteraction \
+    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised-Simulation1-FilteredeQTLs \
+    -verbose
+    
+### two covariates ###
+
+./fast_eqtl_mapper.py \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first2ExpressionPCs.txt.gz \
+    -force_normalise_covariates \
+    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
+    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised \
     -verbose
     
 ./fast_eqtl_mapper.py \
     -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariates/simulation1/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariates/simulation1/tech_covariates_with_interaction_df.txt.gz \
+    -filter_variants \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/PICs.txt.gz \
     -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariates \
-    -verbose
-    
-./fast_eqtl_mapper.py \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLTwoCovariates/simulation1/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLTwoCovariates/simulation1/tech_covariates_with_interaction_df.txt.gz \
-    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLTwoCovariates \
-    -verbose
-    
-./fast_eqtl_mapper.py \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeOneCovariate/simulation1/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeOneCovariate/simulation1/PICs.txt.gz \
-    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeOneCovariate \
+    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-Simulation1-FilteredeQTLs \
     -verbose
 """
 
@@ -103,8 +99,14 @@ class main():
         arguments = self.create_argument_parser()
         self.genotype_path = getattr(arguments, 'genotype')
         self.genotype_na = getattr(arguments, 'genotype_na')
+        self.filter_variants = getattr(arguments, 'filter_variants')
+        self.call_rate = getattr(arguments, 'call_rate')
+        self.hw_pval = getattr(arguments, 'hardy_weinberg_pvalue')
+        self.maf = getattr(arguments, 'minor_allele_frequency')
+        self.mgs = getattr(arguments, 'min_group_size')
         self.expression_path = getattr(arguments, 'expression')
         self.covariate_path = getattr(arguments, 'covariate')
+        self.force_normalise_covariates = getattr(arguments, 'force_normalise_covariates')
         self.exclude_covariate_interactions = getattr(arguments, 'exclude_covariate_interactions')
         self.eqtl_alpha = getattr(arguments, 'eqtl_alpha')
         outdir = getattr(arguments, 'outdir')
@@ -148,6 +150,37 @@ class main():
                             default=-1,
                             help="The genotype value that equals a missing "
                                  "value. Default: -1.")
+        parser.add_argument("-filter_variants",
+                            action='store_true',
+                            help="Filter the genotype variants. Default: False.")
+        parser.add_argument("-cr",
+                            "--call_rate",
+                            type=float,
+                            required=False,
+                            default=0.95,
+                            help="The minimal call rate of a SNP (per dataset)."
+                                 "Equals to (1 - missingness). "
+                                 "Default: >= 0.95.")
+        parser.add_argument("-hw",
+                            "--hardy_weinberg_pvalue",
+                            type=float,
+                            required=False,
+                            default=1e-4,
+                            help="The Hardy-Weinberg p-value threshold."
+                                 "Default: >= 1e-4.")
+        parser.add_argument("-maf",
+                            "--minor_allele_frequency",
+                            type=float,
+                            required=False,
+                            default=0.01,
+                            help="The MAF threshold. Default: >0.01.")
+        parser.add_argument("-mgs",
+                            "--min_group_size",
+                            type=int,
+                            required=False,
+                            default=2,
+                            help="The minimal number of samples per genotype "
+                                 "group. Default: >= 2.")
         parser.add_argument("-ex",
                             "--expression",
                             type=str,
@@ -161,6 +194,10 @@ class main():
                             help="The path to the covariate matrix (i.e. the"
                                  "matrix used as starting vector for the "
                                  "interaction term).")
+        parser.add_argument("-force_normalise_covariates",
+                            action='store_true',
+                            help="Force normalise the covariates. "
+                                 "Default: False.")
         parser.add_argument("-exclude_covariate_interactions",
                             action='store_true',
                             help="Include covariate + covariate * genotype "
@@ -213,15 +250,65 @@ class main():
 
         cov_df = None
         if self.covariate_path is not None:
+            self.log.info("\tLoading covariate matrix.")
             cov_df = load_dataframe(self.covariate_path, header=0, index_col=0,
                                     log=self.log)
+
+            if (cov_df.shape[0] != geno_df.shape[1]) and (cov_df.shape[1] == geno_df.shape[1]):
+                cov_df = cov_df.T
+
+            print(cov_df)
+
+            if self.force_normalise_covariates:
+                self.log.info("\t  Force normalise covariate matrix.")
+                cov_df = ndtri((cov_df.rank(axis=0, ascending=True) - 0.5) / cov_df.shape[0])
+
+            print(geno_df)
+
             if cov_df.isna().values.sum() > 0:
                 self.log.error("\t  Covariate file contains NaN values")
                 exit()
             if geno_df.columns.tolist() != cov_df.index.tolist():
-                    self.log.error("\tThe genotype file header does not match "
+                    self.log.error("\t  The genotype file header does not match "
                                    "the covariate file header.")
                     exit()
+        self.log.info("")
+
+        if self.filter_variants:
+            self.log.info("Filtering variants.")
+            geno_df, call_rate_df = self.calculate_call_rate(geno_df=geno_df)
+
+            self.log.info("Calculating genotype stats for inclusing criteria")
+            cr_keep_mask = ~(geno_df == self.genotype_na).all(axis=1).to_numpy(dtype=bool)
+            geno_stats_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["N", "NaN", "0", "1", "2", "min GS", "HW pval", "allele1", "allele2", "MA", "MAF"])
+            geno_stats_df["N"] = 0
+            geno_stats_df["NaN"] = geno_df.shape[1]
+            geno_stats_df.loc[cr_keep_mask, :] = self.calculate_genotype_stats(df=geno_df.loc[cr_keep_mask, :])
+            save_dataframe(df=geno_stats_df,
+                           outpath=os.path.join(self.outdir, "GenotypeStats.txt.gz"),
+                           header=True,
+                           index=True,
+                           log=self.log)
+
+            # Checking which eQTLs pass the requirements
+            n_keep_mask = (geno_stats_df.loc[:, "N"] >= 6).to_numpy(dtype=bool)
+            mgs_keep_mask = (geno_stats_df.loc[:, "min GS"] >= self.mgs).to_numpy(dtype=bool)
+            hwpval_keep_mask = (geno_stats_df.loc[:, "HW pval"] >= self.hw_pval).to_numpy(dtype=bool)
+            maf_keep_mask = (geno_stats_df.loc[:, "MAF"] > self.maf).to_numpy(dtype=bool)
+            combined_keep_mask = cr_keep_mask & n_keep_mask & mgs_keep_mask & hwpval_keep_mask & maf_keep_mask
+            geno_n_skipped = np.size(combined_keep_mask) - np.sum(combined_keep_mask)
+            if geno_n_skipped > 0:
+                self.log.warning("\t  {:,} eQTL(s) failed the call rate threshold".format(np.size(cr_keep_mask) - np.sum(cr_keep_mask)))
+                self.log.warning("\t  {:,} eQTL(s) failed the sample size threshold".format(np.size(n_keep_mask) - np.sum(n_keep_mask)))
+                self.log.warning("\t  {:,} eQTL(s) failed the min. genotype group size threshold".format(np.size(mgs_keep_mask) - np.sum(mgs_keep_mask)))
+                self.log.warning("\t  {:,} eQTL(s) failed the Hardy-Weinberg p-value threshold".format(np.size(hwpval_keep_mask) - np.sum(hwpval_keep_mask)))
+                self.log.warning("\t  {:,} eQTL(s) failed the MAF threshold".format(np.size(maf_keep_mask) - np.sum(maf_keep_mask)))
+                self.log.warning("\t  ----------------------------------------")
+                self.log.warning("\t  {:,} eQTL(s) are discarded in total".format(geno_n_skipped))
+
+            geno_df = geno_df.loc[combined_keep_mask, :]
+            expr_df = expr_df.loc[combined_keep_mask, :]
+
         self.log.info("")
 
         ########################################################################
@@ -250,7 +337,7 @@ class main():
 
         self.log.info("Mapping eQTLs")
         n_tests = geno_m.shape[0]
-        ieqtl_results = np.empty((n_tests, (n_terms * 3) + 1), dtype=np.float64)
+        ieqtl_results = np.empty((n_tests, (n_terms * 3) + 4), dtype=np.float64)
         last_print_time = None
         for eqtl_index in range(n_tests):
             now_time = int(time.time())
@@ -284,8 +371,16 @@ class main():
             # Fit the model.
             inv_m = inverse(X)
             betas = fit(X=X, y=y, inv_m=inv_m)
-            rss_alt = calc_rss(y=y, y_hat=predict(X=X, betas=betas))
+            y_hat = predict(X=X, betas=betas)
+            rss_alt = calc_rss(y=y, y_hat=y_hat)
             std = calc_std(rss=rss_alt, n=n, df=n_terms, inv_m=inv_m)
+
+            # Calculate residuals.
+            res = calc_residuals(y=y, y_hat=y_hat)
+
+            # Calculate R2.
+            pearsonr = calc_pearsonr_vector(x=y, y=y_hat)
+            r_squared = pearsonr * pearsonr
 
             # Calculate the p-values.
             ieqtl_p_values = np.empty(n_terms, np.float32)
@@ -297,7 +392,7 @@ class main():
                 ieqtl_p_values[col_index] = calc_p_value(rss1=rss_null, rss2=rss_alt, df1=n_terms - 1, df2=n_terms, n=n)
 
             # Save results.
-            ieqtl_results[eqtl_index, :] = np.hstack((np.array([n]), betas, std, ieqtl_p_values))
+            ieqtl_results[eqtl_index, :] = np.hstack((np.array([n]), betas, np.mean(res), std, np.std(res), ieqtl_p_values, np.array([r_squared])))
         self.log.info("")
 
         # Convert to pandas data frame.
@@ -309,8 +404,11 @@ class main():
 
         df = pd.DataFrame(ieqtl_results, columns=["N"] +
                                                  ["beta-{}".format(col) for col in columns] +
+                                                 ["beta-noise"] +
                                                  ["std-{}".format(col) for col in columns] +
-                                                 ["pvalue-{}".format(col) for col in columns])
+                                                 ["std-noise"] +
+                                                 ["pvalue-{}".format(col) for col in columns] +
+                                                 ["r-squared"])
         df.insert(0, "gene", expr_df.index.tolist())
         df.insert(0, "SNP", geno_df.index.tolist())
 
@@ -333,12 +431,144 @@ class main():
         self.log.info("Finished")
         self.log.info("")
 
+    def calculate_call_rate(self, geno_df):
+        call_rate_df = ((geno_df != self.genotype_na).astype(int).sum(axis=1) / geno_df.shape[1]).to_frame()
+        call_rate_df.columns = ["CR"]
+
+        geno_df.loc[call_rate_df["CR"] < self.call_rate, :] = self.genotype_na
+
+        return geno_df, call_rate_df
+
+
+    def calculate_genotype_stats(self, df):
+        rounded_m = df.to_numpy(dtype=np.float64)
+        rounded_m = np.rint(rounded_m)
+
+        # Calculate the total samples that are not NaN.
+        nan = np.sum(rounded_m == self.genotype_na, axis=1)
+        n = rounded_m.shape[1] - nan
+
+        # Count the genotypes.
+        zero_a = np.sum(rounded_m == 0, axis=1)
+        one_a = np.sum(rounded_m == 1, axis=1)
+        two_a = np.sum(rounded_m == 2, axis=1)
+
+        # Calculate the smallest genotype group size.
+        sgz = np.minimum.reduce([zero_a, one_a, two_a])
+
+        # Calculate the Hardy-Weinberg p-value.
+        hwe_pvalues_a = self.calc_hwe_pvalue(obs_hets=one_a, obs_hom1=zero_a, obs_hom2=two_a)
+
+        # Count the alleles.
+        allele1_a = (zero_a * 2) + one_a
+        allele2_a = (two_a * 2) + one_a
+
+        # Calculate the MAF.
+        maf = np.minimum(allele1_a, allele2_a) / (allele1_a + allele2_a)
+
+        # Determine which allele is the minor allele.
+        allele_m = np.column_stack((allele1_a, allele2_a))
+        ma = np.argmin(allele_m, axis=1) * 2
+
+        # Construct output data frame.
+        output_df = pd.DataFrame({"N": n,
+                                  "NaN": nan,
+                                  "0": zero_a,
+                                  "1": one_a,
+                                  "2": two_a,
+                                  "min GS": sgz,
+                                  "HW pval": hwe_pvalues_a,
+                                  "allele1": allele1_a,
+                                  "allele2": allele2_a,
+                                  "MA": ma,
+                                  "MAF": maf
+                                  }, index=df.index)
+        del rounded_m, allele_m
+
+        return output_df
+
+
+    @staticmethod
+    def calc_hwe_pvalue(obs_hets, obs_hom1, obs_hom2):
+        """
+        exact SNP test of Hardy-Weinberg Equilibrium as described in Wigginton,
+        JE, Cutler, DJ, and Abecasis, GR (2005) A Note on Exact Tests of
+        Hardy-Weinberg Equilibrium. AJHG 76: 887-893
+
+        Adapted by M.Vochteloo to work on matrices.
+        """
+        if not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype) or not 'int' in str(obs_hets.dtype):
+            obs_hets = np.rint(obs_hets)
+            obs_hom1 = np.rint(obs_hom1)
+            obs_hom2 = np.rint(obs_hom2)
+
+        # Force homc to be the max and homr to be the min observed genotype.
+        obs_homc = np.maximum(obs_hom1, obs_hom2)
+        obs_homr = np.minimum(obs_hom1, obs_hom2)
+
+        # Calculate some other stats we need.
+        rare_copies = 2 * obs_homr + obs_hets
+        l_genotypes = obs_hets + obs_homc + obs_homr
+        n = np.size(obs_hets)
+
+        # Get the distribution midpoint.
+        mid = np.rint(rare_copies * (2 * l_genotypes - rare_copies) / (2 * l_genotypes)).astype(np.int)
+        mid[mid % 2 != rare_copies % 2] += 1
+
+        # Calculate the start points for the evaluation.
+        curr_homr = (rare_copies - mid) / 2
+        curr_homc = l_genotypes - mid - curr_homr
+
+        # Calculate the left side.
+        left_steps = np.floor(mid / 2).astype(int)
+        max_left_steps = np.max(left_steps)
+        left_het_probs = np.zeros((n, max_left_steps + 1), dtype=np.float64)
+        left_het_probs[:, 0] = 1
+        for i in np.arange(0, max_left_steps, 1, dtype=np.float64):
+            prob = left_het_probs[:, int(i)] * (mid - (i * 2)) * ((mid - (i * 2)) - 1.0) / (4.0 * (curr_homr + i + 1.0) * (curr_homc + i + 1.0))
+            prob[mid - (i * 2) <= 0] = 0
+            left_het_probs[:, int(i) + 1] = prob
+
+        # Calculate the right side.
+        right_steps = np.floor((rare_copies - mid) / 2).astype(int)
+        max_right_steps = np.max(right_steps)
+        right_het_probs = np.zeros((n, max_right_steps + 1), dtype=np.float64)
+        right_het_probs[:, 0] = 1
+        for i in np.arange(0, max_right_steps, 1, dtype=np.float64):
+            prob = right_het_probs[:, int(i)] * 4.0 * (curr_homr - i) * (curr_homc - i) / (((i * 2) + mid + 2.0) * ((i * 2) + mid + 1.0))
+            prob[(i * 2) + mid >= rare_copies] = 0
+            right_het_probs[:, int(i) + 1] = prob
+
+        # Combine the sides.
+        het_probs = np.hstack((np.flip(left_het_probs, axis=1), right_het_probs[:, 1:]))
+
+        # Normalize.
+        sum = np.sum(het_probs, axis=1)
+        het_probs = het_probs / sum[:, np.newaxis]
+
+        # Replace values higher then probability of obs_hets with 0.
+        threshold_col_a = (max_left_steps - left_steps) + np.floor(obs_hets / 2).astype(int)
+        threshold = np.array([het_probs[i, threshold_col] for i, threshold_col in enumerate(threshold_col_a)])
+        het_probs[het_probs > threshold[:, np.newaxis]] = 0
+
+        # Calculate the p-values.
+        p_hwe = np.sum(het_probs, axis=1)
+        p_hwe[p_hwe > 1] = 1
+
+        return p_hwe
+
     def print_arguments(self):
         self.log.info("Arguments:")
         self.log.info("  > Genotype input path: {}".format(self.genotype_path))
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
+        self.log.info("  > Filter variants: {}".format(self.filter_variants))
+        self.log.info("  > SNP call rate: >{}".format(self.call_rate))
+        self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
+        self.log.info("  > MAF: >{}".format(self.maf))
+        self.log.info("  > Minimal group size: >={}".format(self.mgs))
         self.log.info("  > Expression input path: {}".format(self.expression_path))
         self.log.info("  > Covariate input path: {}".format(self.covariate_path))
+        self.log.info("  > Force normalise covariate: {}".format(self.force_normalise_covariates))
         self.log.info("  > Exclude covariate interaction: {}".format(self.exclude_covariate_interactions))
         self.log.info("  > eQTL alpha: <={}".format(self.eqtl_alpha))
         self.log.info("  > Output directory: {}".format(self.outdir))

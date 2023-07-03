@@ -3,23 +3,13 @@
 """
 File:         calculate_explained_variance.py
 Created:      2022/01/18
-Last Changed: 2022/02/10
+Last Changed: 2022/07/25
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -37,14 +27,13 @@ from src.cmd_line_arguments import CommandLineArguments
 from src.logger import Logger
 from src.objects.data import Data
 from src.utilities import save_dataframe
-from src.statistics import remove_covariates
 
 # Metadata
 __program__ = "Calculate Explained Variance"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -63,12 +52,11 @@ Syntax:
     -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
     -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
     -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
-    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first40ExpressionPCs.txt.gz \
-    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_and_first31ExpressionPCs_df.txt.gz \
     -co /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
     -maf 0.05 \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov \
+    -o 2022-07-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-Patrick \
     -verbose
     
 ./calculate_explained_variance.py \
@@ -80,7 +68,7 @@ Syntax:
     -co /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first31ExpressionPCs.txt.gz \
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
     -maf 0.05 \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov \
+    -o 2022-07-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov \
     -verbose
     
 ### MetaBrain ###
@@ -94,7 +82,7 @@ Syntax:
     -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
     -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
     -maf 0.05 \
-    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov \
+    -o 2022-07-25-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov \
     -verbose
     
 ./calculate_explained_variance.py \
@@ -106,7 +94,7 @@ Syntax:
     -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first21ExpressionPCs.txt.gz \
     -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
     -maf 0.05 \
-    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov \
+    -o 2022-07-25-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov \
     -verbose
 
 """
@@ -204,7 +192,6 @@ class main():
 
         # Construct dataset df.
         dataset_df = self.construct_dataset_df(std_df=std_df)
-        datasets = dataset_df.columns.tolist()
 
         self.log.info("\tCalculating genotype call rate per dataset")
         geno_df, call_rate_df = self.calculate_call_rate(geno_df=geno_df,
@@ -288,11 +275,11 @@ class main():
             exit()
 
         # Transpose if need be.
-        if covs_df.shape[0] == geno_df.shape[1]:
+        if covs_df.shape[0] != geno_df.shape[0]:
             self.log.warning("\t  Transposing covariate matrix")
             covs_df = covs_df.T
 
-        covariates = covs_df.index.tolist()
+        covariates = covs_df.columns.tolist()
         self.log.info("\t  Covariates: {}".format(", ".join(covariates)))
 
         # Validate that the input data (still) matches.
@@ -306,66 +293,40 @@ class main():
 
         ########################################################################
 
-        self.log.info("Transform to numpy matrices for speed")
-        eqtl_m = eqtl_signif_df[["SNPName", "ProbeName"]].to_numpy(object)
-        geno_m = geno_df.to_numpy(np.float64)
-        expr_m = expr_df.to_numpy(np.float64)
-        dataset_m = dataset_df.to_numpy(np.uint8)
-        covs_m = covs_df.to_numpy(np.float64)
-        self.log.info("")
-        del eqtl_df, geno_df, expr_df, dataset_df, covs_df
-
-        # Fill the missing values with NaN.
-        expr_m[geno_m == self.genotype_na] = np.nan
-        geno_m[geno_m == self.genotype_na] = np.nan
-
-        ########################################################################
-
         self.log.info("Loading technical covariates")
-        tcov_df = self.data.get_tcov_df()
-        get_tcov_inter_df = self.data.get_tcov_inter_df()
-
-        tcov_m, tcov_labels = self.load_tech_cov(df=tcov_df, name="tech. cov. without interaction", std_df=std_df)
-        tcov_inter_m, tcov_inter_labels = self.load_tech_cov(df=get_tcov_inter_df, name="tech. cov. with interaction", std_df=std_df)
-
-        corr_m, corr_inter_m, correction_m_labels = \
-            self.construct_correct_matrices(dataset_m=dataset_m,
-                                            dataset_labels=datasets,
-                                            tcov_m=tcov_m,
-                                            tcov_labels=tcov_labels,
-                                            tcov_inter_m=tcov_inter_m,
-                                            tcov_inter_labels=tcov_inter_labels)
-
-        self.log.info("\tCorrection matrix includes the following columns "
-                      "[N={}]: {}".format(len(correction_m_labels),
-                                          ", ".join(correction_m_labels)))
-        self.log.info("")
-        del tcov_m, tcov_labels, tcov_inter_m, tcov_inter_labels, correction_m_labels
+        tcov_df = self.load_tech_cov(df=self.data.get_tcov_df(),
+                                     name="tech. cov. without interaction",
+                                     std_df=std_df)
+        tcov_inter_df = self.load_tech_cov(df=self.data.get_tcov_inter_df(),
+                                           name="tech. cov. with interaction",
+                                           std_df=std_df)
 
         ########################################################################
 
-        self.log.info("Correcting expression matrix")
-        # Correct the gene expression matrix.
-        corrected_expr_m = remove_covariates(y_m=expr_m,
-                                             X_m=corr_m,
-                                             X_inter_m=corr_inter_m,
-                                             inter_m=geno_m,
-                                             log=self.log)
-        del expr_m, corr_m, corr_inter_m
+        self.log.info("Merging matrices.")
+        default_matrix = pd.concat([x for x in [pd.DataFrame({"intercept": 1}, index=samples),
+                                                dataset_df,
+                                                tcov_df,
+                                                tcov_inter_df,
+                                                 covs_df] if x is not None],
+                                   axis=1)
+
+        interaction_matrix = None
+        interaction_matrix_dfs = [x for x in [dataset_df, tcov_inter_df, covs_df] if x is not None]
+        if len(interaction_matrix_dfs) > 0:
+            interaction_matrix = pd.concat(
+                [x for x in [dataset_df,
+                             tcov_inter_df,
+                             covs_df] if x is not None],
+                axis=1)
 
         ########################################################################
 
         self.log.info("Calculating squared-residuals")
-        n_eqtls = geno_m.shape[0]
-        n_samples = geno_m.shape[1]
-        n_covariates = covs_m.shape[0]
-
-        # Construct the base matrix.
-        X = np.empty((n_samples, 2 + (n_covariates * 2)), np.float32)
-        X[:, 0] = 1
-        X[:, 2:(n_covariates + 2)] = covs_m.T
-
-        results_m = np.empty((n_eqtls, (X.shape[1] * 2) + 2), dtype=np.float64)
+        n_eqtls = geno_df.shape[0]
+        summary_results = []
+        # params_results = []
+        # bse_results = []
         last_print_time = None
         for eqtl_index in range(n_eqtls):
             now_time = int(time.time())
@@ -373,37 +334,70 @@ class main():
                 last_print_time = now_time
                 self.log.info("\t{:,}/{:,} eQTLs analysed [{:.2f}%]".format(eqtl_index, n_eqtls - 1, (100 / (n_eqtls - 1)) * eqtl_index))
 
-            # Fill in the genotype.
-            X[:, 1] = geno_m[eqtl_index, :]
+            # Copy the matrix.
+            X = default_matrix.copy()
 
-            # Fill in the interaction terms.
-            X[:, (n_covariates + 2):] = X[:, 2:(n_covariates + 2)] * X[:, [1]]
+            # Add the genotype and expression term.
+            X["genotype"] = geno_df.iloc[eqtl_index, :]
 
-            # Filter missing values.
-            mask = ~np.isnan(X[:, 1])
-            n = np.sum(mask)
+            # Drop the Nan values.
+            X = X.loc[X["genotype"] != -1, :]
 
-            # Calculate the R^2 using OLS.
-            ols = OLS(corrected_expr_m[eqtl_index, mask], X[mask, :])
-            results = ols.fit()
+            # Add the covariates with interaction term.
+            if interaction_matrix is not None:
+                inter_X = interaction_matrix.multiply(X["genotype"], axis=0)
+                inter_X.columns = ["{}xGenotype".format(col) for col in inter_X.columns]
+                X = pd.merge(X, inter_X, left_index=True, right_index=True)
+
+            y = expr_df.iloc[eqtl_index, :].loc[X.index]
+
+            # Calculate the R^2 for the full model.
+            # base_model = OLS(y, X).fit()
+            # base_rsquared = base_model.rsquared
+            pc_interaction_columns = [col for col in X.columns if col.startswith("Comp") and col.endswith("xGenotype")]
+            pic_interaction_columns = [col for col in X.columns if col.startswith("PIC") and col.endswith("xGenotype")]
+            no_inter_model = OLS(y, X.loc[:, [col for col in X.columns if col not in pc_interaction_columns and col not in pic_interaction_columns]]).fit()
+
+            # params = base_model.params.to_frame()
+            # params.columns = [eqtl_index]
+            # params.index = ["{} coef".format(value) for value in params.index]
+            #
+            # bse = base_model.bse.to_frame()
+            # bse.columns = [eqtl_index]
+            # bse.index = ["{} std error".format(value) for value in bse.index]
+
+            # Calculate the R^2 for the alternative models.
+            # genotype_model = OLS(y, X.loc[:, [col for col in X.columns if col != "genotype"]]).fit().rsquared
+            # context_model = OLS(y, X.loc[:, [col for col in X.columns if col not in covariates]]).fit().rsquared
+            # context_interaction_model = OLS(y, X.loc[:, [col for col in X.columns if col not in ["{}xGenotype".format(cov) for cov in covariates]]]).fit().rsquared
+            with_pc_inter_model = OLS(y, X.loc[:, [col for col in X.columns if col not in pic_interaction_columns]]).fit()
+            with_pic_inter_model = OLS(y, X.loc[:, [col for col in X.columns if col not in pc_interaction_columns]]).fit()
 
             # Save results.
-            results_m[eqtl_index, :] = np.hstack((np.array([n, results.rsquared]), results.params, results.bse))
+            # summary_results.append([X.shape[0], base_rsquared, base_rsquared - genotype_model, base_rsquared - context_model, base_rsquared - context_interaction_model])
+            # params_results.append(params)
+            # bse_results.append(bse)
+            summary_results.append([X.shape[0], no_inter_model.rsquared, with_pc_inter_model.rsquared, with_pic_inter_model.rsquared])
 
         ########################################################################
 
         self.log.info("Saving results")
-        # Convert to pandas data frame.
-        df = pd.DataFrame(results_m, columns=["n", "r-squared"] +
-                                             ["intercept coef", "genotype coef"] +
-                                             ["{} coef".format(cov) for cov in covariates] +
-                                             ["{}xSNP coef".format(cov) for cov in covariates] +
-                                             ["intercept std err", "genotype std err"] +
-                                             ["{} std err".format(cov) for cov in covariates] +
-                                             ["{}xSNP std err".format(cov) for cov in covariates]
-                          )
-        df.insert(0, "gene", eqtl_m[:, 1])
-        df.insert(0, "snp", eqtl_m[:, 0])
+        # Merging data.
+        annot_df = eqtl_signif_df[["SNPName", "ProbeName"]].copy()
+        annot_df.reset_index(drop=True, inplace=True)
+        df = pd.DataFrame(summary_results, columns=["n", "noInter r-squared", "PCInter r-squared", "PICInter r-squared"])
+        print(annot_df)
+        print(df)
+        df = pd.concat([annot_df, df], axis=1)
+
+        # df = pd.DataFrame(summary_results, columns=["n", "full r-squared", "genotype r-squared", "context r-squared", "context interaction r-squared"])
+        # params_results = pd.concat(params_results, axis=1)
+        # bse_results = pd.concat(bse_results, axis=1)
+        # print(annot_df)
+        # print(df)
+        # print(params_results.T)
+        # print(bse_results.T)
+        # df = pd.concat([annot_df, df, params_results.T, bse_results.T], axis=1)
 
         # Save results.
         save_dataframe(df=df,
@@ -431,8 +425,8 @@ class main():
                                "the sample-to-dataset link file")
                 exit()
 
-        if covs_df is not None and covs_df.columns.tolist() != samples:
-                self.log.error("\tThe covariates file header does not match "
+        if covs_df is not None and covs_df.index.tolist() != samples:
+                self.log.error("\tThe covariates file index does not match "
                                "the sample-to-dataset link file")
                 exit()
 
@@ -601,7 +595,7 @@ class main():
 
     def load_tech_cov(self, df, name, std_df):
         if df is None:
-            return None, []
+            return None
 
         n_samples = std_df.shape[0]
 
@@ -629,54 +623,9 @@ class main():
                 n_zero_variance))
             df = df.loc[:, variance_mask]
 
-        # Convert to numpy.
-        m = df.to_numpy(np.float64)
-        columns = df.columns.tolist()
-        del df
+        self.log.info("\t  Technical covariates [{}]: {}".format(df.shape[1], ", ".join(df.columns)))
 
-        covariates = columns
-        self.log.info("\t  Technical covariates [{}]: {}".format(len(covariates), ", ".join(covariates)))
-
-        return m, covariates
-
-    @staticmethod
-    def construct_correct_matrices(dataset_m, dataset_labels, tcov_m, tcov_labels,
-                                   tcov_inter_m, tcov_inter_labels):
-        # Create the correction matrices.
-        corr_m = None
-        corr_m_columns = ["Intercept"]
-        corr_inter_m = None
-        corr_inter_m_columns = []
-        if dataset_m.shape[1] > 1:
-            # Note that for the interaction term we need to include all
-            # datasets.
-            corr_m = np.copy(dataset_m[:, 1:])
-            corr_m_columns.extend(dataset_labels[1:])
-
-            corr_inter_m = np.copy(dataset_m)
-            corr_inter_m_columns.extend(["{} x Genotype".format(label) for label in dataset_labels])
-
-        if tcov_m is not None:
-            corr_m_columns.extend(tcov_labels)
-            if corr_m is not None:
-                corr_m = np.hstack((corr_m, tcov_m))
-            else:
-                corr_m = tcov_m
-
-        if tcov_inter_m is not None:
-            corr_m_columns.extend(tcov_inter_labels)
-            if corr_m is not None:
-                corr_m = np.hstack((corr_m, tcov_inter_m))
-            else:
-                corr_m = tcov_inter_m
-
-            corr_inter_m_columns.extend(["{} x Genotype".format(label) for label in tcov_inter_labels])
-            if corr_inter_m is not None:
-                corr_inter_m = np.hstack((corr_inter_m, tcov_inter_m))
-            else:
-                corr_inter_m = tcov_inter_m
-
-        return corr_m, corr_inter_m, corr_m_columns + corr_inter_m_columns
+        return df
 
     def print_arguments(self):
         self.log.info("Arguments:")

@@ -6,19 +6,10 @@ Created:      2022/04/14
 Last Changed: 2022/07/21
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -72,7 +63,7 @@ __program__ = "AFR PIC Replication"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -106,6 +97,10 @@ class main():
             with open(self.palette_path) as f:
                 self.palette = json.load(f)
             f.close()
+
+        # Set the right pdf font for exporting.
+        matplotlib.rcParams['pdf.fonttype'] = 42
+        matplotlib.rcParams['ps.fonttype'] = 42
 
     @staticmethod
     def create_argument_parser():

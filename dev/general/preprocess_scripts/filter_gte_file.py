@@ -6,19 +6,10 @@ Created:      2021/10/28
 Last Changed: 2021/11/10
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -36,7 +27,7 @@ __program__ = "Filter GTE file"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -93,6 +84,11 @@ Syntax:
     -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
     -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_Mixups_and_MDSOutlierSamples.txt.gz \
     -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier
+    
+./filter_gte_file.py \
+    -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
+    -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_Mixups_and_BonferroniHWEMDSOutlierSamples.txt.gz \
+    -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoBonferroniHWEMDSOutlier
 """
 
 

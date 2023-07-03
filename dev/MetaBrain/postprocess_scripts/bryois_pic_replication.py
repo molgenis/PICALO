@@ -6,19 +6,10 @@ Created:      2022/10/18
 Last Changed:
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -57,7 +48,7 @@ __program__ = "Bryois PIC Replication"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -97,8 +88,23 @@ class main():
             "Pericytes": "#808080"
         }
 
+        self.cell_type_abbreviations = {
+            "Astrocytes": "AST",
+            "EndothelialCells": "END",
+            "ExcitatoryNeurons": "EX",
+            "InhibitoryNeurons": "IN",
+            "Microglia": "MIC",
+            "Oligodendrocytes": "OLI",
+            "OPCsCOPs": "OPC",
+            "Pericytes": "PER"
+        }
+
         self.shared_xlim = None
         self.shared_ylim = None
+
+        # Set the right pdf font for exporting.
+        matplotlib.rcParams['pdf.fonttype'] = 42
+        matplotlib.rcParams['ps.fonttype'] = 42
 
     @staticmethod
     def create_argument_parser():
@@ -208,7 +214,9 @@ class main():
         del discovery_snp_info_df, replication_snp_info_df
 
         print("Loading interaction results.")
-        replication_stats_df_list = []
+        # replication_stats_df_list = []
+        ieqtl_dfs = {}
+        pics = []
         for i in range(1, 6):
             pic = "PIC{}".format(i)
             discovery_path = os.path.join(self.discovery_indir, "{}.txt.gz".format(pic))
@@ -252,20 +260,31 @@ class main():
             print("Adding gene symbols.")
             ieqtl_df["Gene symbol"] = ieqtl_df["Gene"].map(gene_trans_dict)
 
-            print("Visualizing")
+            print("Visualizing.")
             replication_stats_df = self.plot(df=ieqtl_df,
                                              cell_types=replication_cell_types,
                                              pic=pic)
-            replication_stats_df_list.append(replication_stats_df)
+            # replication_stats_df["PIC"] = pic
+            # replication_stats_df_list.append(replication_stats_df)
 
-        replication_stats_df = pd.concat(replication_stats_df_list, axis=0)
-        replication_stats_df = pd.pivot_table(replication_stats_df.loc[replication_stats_df["label"] == "discovery significant", :],
-                                              values='value',
-                                              index='col',
-                                              columns='variable')
-        replication_stats_df = replication_stats_df[["N", "pearsonr", "concordance", "Rb", "pi1"]]
-        replication_stats_df.columns = ["N", "Pearson r", "Concordance", "Rb", "pi1"]
-        self.save_file(df=replication_stats_df, outpath=os.path.join(self.outdir, "replication_stats.txt.gz"))
+            # Saving for next.
+            ieqtl_dfs[pic] = ieqtl_df
+            pics.append(pic)
+
+        # replication_stats_df = pd.concat(replication_stats_df_list, axis=0)
+        # print(replication_stats_df)
+        # replication_stats_df = pd.pivot_table(replication_stats_df.loc[replication_stats_df["label"] == "discovery significant", :],
+        #                                       values='value',
+        #                                       index='col',
+        #                                       columns='variable')
+        # replication_stats_df = replication_stats_df[["N", "pearsonr", "concordance", "Rb", "pi1"]]
+        # replication_stats_df.columns = ["N", "Pearson r", "Concordance", "Rb", "pi1"]
+        # self.save_file(df=replication_stats_df, outpath=os.path.join(self.outdir, "replication_stats.txt.gz"))
+
+        print("Visualizing.")
+        self.combined_plot(dfs=ieqtl_dfs,
+                           pics=pics,
+                           cell_types=replication_cell_types)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -383,7 +402,8 @@ class main():
                 xlabel="",
                 ylabel="Bryois log eQTL beta",
                 title=ct,
-                color=self.palette[ct],
+                title_color=self.palette[ct],
+                accent_color=self.palette[ct],
                 include_ylabel=include_ylabel
             )
             self.update_limits(xlim, ylim, 0, col_index)
@@ -398,7 +418,8 @@ class main():
                 xlabel="",
                 ylabel="Bryois log eQTL beta",
                 title="",
-                color=self.palette[ct],
+                title_color=self.palette[ct],
+                accent_color=self.palette[ct],
                 include_ylabel=include_ylabel,
                 pi1_column="Bryois pvalue",
                 rb_columns=[("MetaBrain zscore-to-beta", "MetaBrain zscore-to-se"), ("Bryois zscore-to-beta", "Bryois zscore-to-se")]
@@ -412,11 +433,12 @@ class main():
                 ax=axes[2, col_index],
                 x="MetaBrain interaction beta",
                 y="Bryois eQTL beta",
-                label="Gene symbol",
+                # label="Gene symbol",
                 xlabel="MetaBrain log interaction beta",
                 ylabel="Bryois log eQTL beta",
                 title="",
-                color=self.palette[ct],
+                title_color=self.palette[ct],
+                accent_color=self.palette[ct],
                 include_ylabel=include_ylabel
             )
             self.update_limits(xlim, ylim, 2, col_index)
@@ -439,7 +461,7 @@ class main():
             ax.set_ylim(ymin - ymargin, ymax + ymargin)
 
         # Add the main title.
-        fig.suptitle("{} ieQTL replication in Bryois et al. 2021".format(pic),
+        fig.suptitle("{} ieQTL replication in single-nucleus eQTLs\nBryois et al. 2021".format(pic),
                      fontsize=40,
                      color="#000000",
                      weight='bold')
@@ -453,6 +475,133 @@ class main():
         replication_stats_df.dropna(inplace=True)
 
         return replication_stats_df
+
+
+    def combined_plot(self, dfs, pics, cell_types):
+        nrows = len(cell_types)
+        ncols = len(pics)
+
+        self.shared_ylim = {i: (0, 1) for i in range(nrows)}
+        self.shared_xlim = {i: (0, 1) for i in range(ncols)}
+
+        sns.set(rc={'figure.figsize': (ncols * 8, nrows * 6)})
+        sns.set_style("ticks")
+        fig, axes = plt.subplots(nrows=nrows,
+                                 ncols=ncols,
+                                 sharex='col',
+                                 sharey='row')
+
+        for col_index, pic in enumerate(pics):
+            for row_index, ct in enumerate(cell_types):
+                print("\tWorking on '{}-{}'".format(pic, ct))
+                df = dfs[pic]
+
+                # Select the required columns.
+                plot_df = df.loc[:, ["Gene symbol",
+                                     "MetaBrain N",
+                                     "MetaBrain MAF",
+                                     "MetaBrain {} interaction beta".format(pic),
+                                     "MetaBrain {} p-value".format(pic),
+                                     "MetaBrain {} FDR".format(pic),
+                                     "Bryois N",
+                                     "Bryois {} beta".format(ct),
+                                     "Bryois {} p-value".format(ct),
+                                     "Bryois {} FDR".format(ct),
+                                     ]].copy()
+                plot_df.columns = ["Gene symbol",
+                                   "MetaBrain N",
+                                   "MetaBrain MAF",
+                                   "MetaBrain interaction beta",
+                                   "MetaBrain pvalue",
+                                   "MetaBrain FDR",
+                                   "Bryois N",
+                                   "Bryois eQTL beta",
+                                   "Bryois pvalue",
+                                   "Bryois FDR"
+                                   ]
+                plot_df = plot_df.loc[~plot_df["Bryois pvalue"].isna(), :]
+                plot_df.sort_values(by="MetaBrain pvalue", inplace=True)
+
+                # Calculate the discovery standard error.
+                for prefix, beta_col in zip(["MetaBrain", "Bryois"], ["interaction beta", "eQTL beta"]):
+                    self.pvalue_to_zscore(df=plot_df,
+                                          beta_col="{} {}".format(prefix, beta_col),
+                                          p_col="{} pvalue".format(prefix),
+                                          prefix="{} ".format(prefix))
+                    self.zscore_to_beta(df=plot_df,
+                                        z_col="{} z-score".format(prefix),
+                                        maf_col="MetaBrain MAF",
+                                        n_col="{} N".format(prefix),
+                                        prefix="{} zscore-to-".format(prefix))
+
+                # Convert the interaction beta to log scale.
+                plot_df["MetaBrain interaction beta"] = self.log_modulus_beta(plot_df["MetaBrain interaction beta"])
+                plot_df["Bryois eQTL beta"] = self.log_modulus_beta(plot_df["Bryois eQTL beta"])
+                print(plot_df)
+
+                plot_df["facecolors"] = [self.palette[ct] if fdr_value <= 0.05 else "#808080" for fdr_value in plot_df["Bryois FDR"]]
+
+                include_ylabel = False
+                if col_index == 0:
+                    include_ylabel = True
+
+                title = ""
+                if row_index == 0:
+                    title = pic
+
+                xlabel = ""
+                if row_index == (len(cell_types) - 1):
+                    xlabel = "MetaBrain log interaction beta"
+
+                if col_index == 0:
+                    axes[row_index, col_index].annotate(
+                        self.cell_type_abbreviations[ct],
+                        xy=(-0.5, 0.9),
+                        xycoords=axes[row_index, col_index].transAxes,
+                        color=self.palette[ct],
+                        fontsize=40
+                    )
+                xlim, ylim, _ = self.scatterplot(
+                    df=plot_df.loc[plot_df["MetaBrain FDR"] <= 0.05, :],
+                    fig=fig,
+                    ax=axes[row_index, col_index],
+                    x="MetaBrain interaction beta",
+                    y="Bryois eQTL beta",
+                    facecolors="facecolors",
+                    label="Gene symbol",
+                    max_labels=10,
+                    xlabel=xlabel,
+                    ylabel="Bryois log eQTL beta",
+                    title=title,
+                    accent_color=self.palette[ct],
+                    include_ylabel=include_ylabel,
+                    pi1_column="Bryois pvalue",
+                    rb_columns=[
+                        ("MetaBrain zscore-to-beta", "MetaBrain zscore-to-se"),
+                        ("Bryois zscore-to-beta", "Bryois zscore-to-se")]
+                )
+                self.update_limits(xlim, ylim, row_index, col_index)
+                print("")
+
+        for (m, n), ax in np.ndenumerate(axes):
+            (xmin, xmax) = self.shared_xlim[n]
+            (ymin, ymax) = self.shared_ylim[m]
+
+            xmargin = (xmax - xmin) * 0.05
+            ymargin = (ymax - ymin) * 0.05
+
+            ax.set_xlim(xmin - xmargin - 1, xmax + xmargin)
+            ax.set_ylim(ymin - ymargin, ymax + ymargin)
+
+        # Add the main title.
+        fig.suptitle("PIC ieQTL replication in single-nucleus eQTLs\nBryois et al. 2021",
+                     fontsize=40,
+                     color="#000000",
+                     weight='bold')
+
+        for extension in self.extensions:
+            fig.savefig(os.path.join(self.outdir, "bryois_PIC_replication_plot.{}".format(extension)))
+        plt.close()
 
     @staticmethod
     def pvalue_to_zscore(df, beta_col, p_col, prefix=""):
@@ -483,8 +632,8 @@ class main():
 
     def scatterplot(self, df, fig, ax, x="x", y="y", facecolors=None,
                     label=None, max_labels=15, xlabel="", ylabel="", title="",
-                    color="#000000", ci=95, include_ylabel=True,
-                    pi1_column=None, rb_columns=None):
+                    title_color="#000000", accent_color="#000000", ci=95,
+                    include_ylabel=True, pi1_column=None, rb_columns=None):
         sns.despine(fig=fig, ax=ax)
 
         if not include_ylabel:
@@ -514,7 +663,7 @@ class main():
                 if pi1_column is not None:
                     pi1 = self.calculate_p1(p=df[pi1_column])
 
-                if rb_columns is not None:
+                if rb_columns is not None and n > 2:
                     rb_est = self.calculate_rb(
                         b1=df[rb_columns[0][0]],
                         se1=df[rb_columns[0][1]],
@@ -526,7 +675,7 @@ class main():
             sns.regplot(x=x, y=y, data=df, ci=ci,
                         scatter_kws={'facecolors': facecolors,
                                      'edgecolors': "#808080"},
-                        line_kws={"color": color},
+                        line_kws={"color": accent_color},
                         ax=ax
                         )
 
@@ -538,7 +687,7 @@ class main():
                     texts.append(ax.text(point[x],
                                          point[y],
                                          str(point[label]),
-                                         color=color))
+                                         color=accent_color))
 
                 adjust_text(texts,
                             ax=ax,
@@ -559,7 +708,7 @@ class main():
                 'N = {:,}'.format(n),
                 xy=(0.03, 0.9),
                 xycoords=ax.transAxes,
-                color=color,
+                color=accent_color,
                 fontsize=14,
                 fontweight='bold'
             )
@@ -570,7 +719,7 @@ class main():
                 'r = {:.2f}'.format(coef),
                 xy=(0.03, y_pos),
                 xycoords=ax.transAxes,
-                color=color,
+                color=accent_color,
                 fontsize=14,
                 fontweight='bold'
             )
@@ -581,7 +730,7 @@ class main():
                 'concordance = {:.0f}%'.format(concordance),
                 xy=(0.03, y_pos),
                 xycoords=ax.transAxes,
-                color=color,
+                color=accent_color,
                 fontsize=14,
                 fontweight='bold'
             )
@@ -592,7 +741,7 @@ class main():
                 '\u03C01 = {:.2f}'.format(pi1),
                 xy=(0.03, y_pos),
                 xycoords=ax.transAxes,
-                color=color,
+                color=accent_color,
                 fontsize=14,
                 fontweight='bold'
             )
@@ -603,14 +752,14 @@ class main():
                 'Rb = {:.2f}'.format(rb),
                 xy=(0.03, y_pos),
                 xycoords=ax.transAxes,
-                color=color,
+                color=accent_color,
                 fontsize=14,
                 fontweight='bold'
             )
 
         ax.set_title(title,
                      fontsize=22,
-                     color=color,
+                     color=title_color,
                      weight='bold')
         ax.set_ylabel(ylabel,
                       fontsize=14,

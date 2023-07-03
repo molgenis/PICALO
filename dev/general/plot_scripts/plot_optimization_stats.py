@@ -6,19 +6,10 @@ Created:      2022/07/21
 Last Changed:
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -45,7 +36,7 @@ __program__ = "Plot Optimization Stats"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -67,8 +58,10 @@ Syntax:
 
 ### MetaBrain ###
 
-./count_n_ieqtls.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
+./plot_optimization_stats.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -gi /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/gencode.v32.primary_assembly.annotation-genelengths.txt.gz \
+    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
 
 """
 
@@ -277,8 +270,8 @@ class main():
 
         print("Adding info")
         df.insert(2, "symbol", df["gene"].str.split(".", n=1, expand=True)[0])
-        df["symbol"] = df["gene"].map(gene_trans_dict)
-        df["FDR delta"] = df["FDR before"] - df["FDR after"]
+        df["symbol"] = df["symbol"].map(gene_trans_dict)
+        df["p-value delta"] = df["p-value before"] - df["p-value after"]
 
         print("Saving combined file")
         self.save_file(df=df, outpath=os.path.join(self.data_outdir, "combined_stats.txt.gz".format(component)), index=False)

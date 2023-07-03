@@ -6,24 +6,17 @@ Created:      2021/05/18
 Last Changed:
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
 from __future__ import print_function
 import argparse
+import glob
+import re
 import os
 
 # Third party imports.
@@ -44,7 +37,7 @@ __program__ = "Plot PICALO with Multiple Start Positions"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -66,7 +59,7 @@ Syntax:
     -f 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
     -rx PIC2-Comp13 \
     -ry PIC3-Comp13 \
-    -e png pdf
+    -e png
 
 """
 
@@ -80,7 +73,7 @@ class main():
         self.rx = getattr(arguments, 'regplot_x')
         self.ry = getattr(arguments, 'regplot_y')
         self.extensions = getattr(arguments, 'extension')
-        self.n_pics = 5
+        self.n_pics = 3
         self.n_comps = 25
 
         # Set variables.
@@ -141,60 +134,89 @@ class main():
     def start(self):
         self.print_arguments()
 
-        # print("Loading data")
-        # data = []
-        # indices = []
-        # for pic_index in range(1, self.n_pics + 1):
-        #     for comp_index in range(1, self.n_comps + 1):
-        #         index = "PIC{}-Comp{}".format(pic_index, comp_index)
-        #         fpath = os.path.join(self.indir, "{}-{}AsCov".format(self.filename, index), "PIC1", "iteration.txt.gz")
-        #         if not os.path.exists(fpath):
-        #             continue
-        #
-        #         df = self.load_file(fpath, header=0, index_col=0)
-        #         if df.shape[0] == 1:
-        #             df.iloc[0, :] = np.nan
-        #         data.append(df.iloc[-1, :].copy())
-        #         indices.append(index)
-        #
-        #         del df
-        #
-        # df = pd.concat(data, axis=1).T
-        # df.index = indices
-        # print(df)
-        #
-        # print("Correlating.")
-        # corr_m, pvalue_m = self.corrcoef(m=df.to_numpy())
-        #
-        # print("Perform BH correction")
-        # fdr_df = pd.DataFrame({"pvalue": pvalue_m.flatten()})
-        # mask = ~fdr_df["pvalue"].isnull()
-        # fdr_df["FDR"] = np.nan
-        # fdr_df.loc[mask, "FDR"] = multitest.multipletests(fdr_df.loc[mask, "pvalue"], method='fdr_bh')[1]
-        # fdr_m = fdr_df["FDR"].to_numpy().reshape(pvalue_m.shape)
-        # del fdr_df, mask
-        #
-        # print("Saving output.")
-        # self.save_file(df=df,
-        #                outpath=os.path.join(self.file_outdir, "{}_data.txt.gz".format(self.filename)))
-        # for m, suffix in ([corr_m, "correlation_coefficient"],
-        #                   [pvalue_m, "correlation_pvalue"],
-        #                   [fdr_m, "correlation_FDR"]):
-        #     tmp_df = pd.DataFrame(m, index=indices, columns=indices)
-        #     self.save_file(df=tmp_df,
-        #                    outpath=os.path.join(self.file_outdir,
-        #                                         "{}_{}.txt.gz".format(self.filename, suffix)))
-        #     del tmp_df
+        print("Loading data")
+        iteration_data = []
+        indices = []
+        first_ieqtls = {}
+        last_ieqtls = {}
+        for pic_index in range(1, self.n_pics + 1):
+            for comp_index in range(1, self.n_comps + 1):
+                index = "PIC{}-Comp{}".format(pic_index, comp_index)
+                iteration_fpath = os.path.join(self.indir, "{}-{}AsCov".format(self.filename, index), "PIC1", "iteration.txt.gz")
+                if not os.path.exists(iteration_fpath):
+                    continue
+
+                iteration_df = self.load_file(iteration_fpath, header=0, index_col=0)
+                if iteration_df.shape[0] == 1:
+                    iteration_df.iloc[0, :] = np.nan
+                iteration_data.append(iteration_df.iloc[-1, :].copy())
+                indices.append(index)
+
+                result_files = glob.glob(os.path.join(self.indir, "{}-{}AsCov".format(self.filename, index), "PIC1", "results_iteration*.txt.gz"))
+                result_files.sort(key=self.natural_keys)
+
+                first_result_df = self.load_file(result_files[0], header=0, index_col=None)
+                first_result_df.index = first_result_df["SNP"] + "_" + first_result_df["gene"]
+                first_ieqtls[index] = set(first_result_df.loc[first_result_df["FDR"] <= 0.05, :].index)
+
+                last_result_df = self.load_file(result_files[-1], header=0, index_col=None)
+                last_result_df.index = last_result_df["SNP"] + "_" + last_result_df["gene"]
+                last_ieqtls[index] = set(last_result_df.loc[last_result_df["FDR"] <= 0.05, :].index)
+
+                del iteration_df, first_result_df, last_result_df
+
+        iteration_df = pd.concat(iteration_data, axis=1).T
+        iteration_df.index = indices
+        print(iteration_df)
+
+        print("Correlating.")
+        corr_m, pvalue_m = self.corrcoef(m=iteration_df.to_numpy())
+
+        print("Overlap.")
+        first_overlap_df, first_annot_df = self.overlap(ieqtls=first_ieqtls, indices=indices)
+        last_overlap_df, last_annot_df = self.overlap(ieqtls=last_ieqtls, indices=indices)
+
+        print("Perform BH correction")
+        fdr_df = pd.DataFrame({"pvalue": pvalue_m.flatten()})
+        mask = ~fdr_df["pvalue"].isnull()
+        fdr_df["FDR"] = np.nan
+        fdr_df.loc[mask, "FDR"] = multitest.multipletests(fdr_df.loc[mask, "pvalue"], method='fdr_bh')[1]
+        fdr_m = fdr_df["FDR"].to_numpy().reshape(pvalue_m.shape)
+        del fdr_df, mask
+
+        corr_df = pd.DataFrame(corr_m, index=indices, columns=indices)
+        pvalue_df = pd.DataFrame(pvalue_m, index=indices, columns=indices)
+        fdr_df = pd.DataFrame(fdr_m, index=indices, columns=indices)
+
+        print("Saving output.")
+        for tmp_df, suffix in ([iteration_df, "iteration_data"],
+                               [corr_df, "correlation_coefficient"],
+                               [pvalue_df, "correlation_pvalue"],
+                               [fdr_df, "correlation_FDR"],
+                               [first_overlap_df, "first_overlap"],
+                               [first_annot_df, "first_min_size"],
+                               [last_overlap_df, "last_overlap"],
+                               [last_annot_df, "last_min_size"],
+                               ):
+            self.save_file(df=tmp_df,
+                           outpath=os.path.join(self.file_outdir,
+                                                "{}_{}.txt.gz".format(self.filename, suffix)))
         # exit()
 
-        # corr_df = pd.DataFrame(m, index=indices, columns=indices)
-        # fdr_df = pd.DataFrame(fdr_m, index=indices, columns=indices)
-        df = self.load_file(os.path.join(self.file_outdir, "{}_data.txt.gz".format(self.filename)), header=0, index_col=0)
-        corr_df = self.load_file(os.path.join(self.file_outdir, "{}_correlation_coefficient.txt.gz".format(self.filename)), header=0, index_col=0)
-        fdr_df = self.load_file(os.path.join(self.file_outdir, "{}_correlation_FDR.txt.gz".format(self.filename)), header=0, index_col=0)
-        print(df)
+        # iteration_df = self.load_file(os.path.join(self.file_outdir, "{}_data.txt.gz".format(self.filename)), header=0, index_col=0)
+        # corr_df = self.load_file(os.path.join(self.file_outdir, "{}_correlation_coefficient.txt.gz".format(self.filename)), header=0, index_col=0)
+        # fdr_df = self.load_file(os.path.join(self.file_outdir, "{}_correlation_FDR.txt.gz".format(self.filename)), header=0, index_col=0)
+        # first_overlap_df = self.load_file(os.path.join(self.file_outdir, "{}_first_overlap.txt.gz".format(self.filename)), header=0, index_col=0)
+        # first_annot_df = self.load_file(os.path.join(self.file_outdir, "{}_first_min_size.txt.gz".format(self.filename)), header=0, index_col=0)
+        # last_overlap_df = self.load_file(os.path.join(self.file_outdir, "{}_first_min_size.txt.gz".format(self.filename)), header=0, index_col=0)
+        # last_annot_df = self.load_file(os.path.join(self.file_outdir, "{}_last_min_size.txt.gz".format(self.filename)), header=0, index_col=0)
+        print(iteration_df)
         print(corr_df)
         print(fdr_df)
+        print(first_overlap_df)
+        print(first_annot_df)
+        print(last_overlap_df)
+        print(last_annot_df)
 
         corr_df = corr_df * corr_df
 
@@ -204,9 +226,16 @@ class main():
 
         print("Plotting heatmap")
         self.plot_heatmap(heatmap_df=color_corr_df,
-                          reg_df=df.loc[[self.rx, self.ry], :].T,
+                          reg_df=iteration_df.loc[[self.rx, self.ry], :].T,
                           reg_x=self.rx,
-                          reg_y=self.ry)
+                          reg_y=self.ry,
+                          data_type="correlation")
+        self.plot_heatmap(heatmap_df=first_overlap_df,
+                          annot_df=first_annot_df,
+                          data_type="first_overlap")
+        self.plot_heatmap(heatmap_df=last_overlap_df,
+                          annot_df=last_annot_df,
+                          data_type="last_overlap")
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -217,6 +246,10 @@ class main():
               "with shape: {}".format(os.path.basename(inpath),
                                       df.shape))
         return df
+
+    @staticmethod
+    def natural_keys(text):
+        return [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', text)]
 
     @staticmethod
     def corrcoef(m):
@@ -238,6 +271,23 @@ class main():
         return r, p
 
     @staticmethod
+    def overlap(ieqtls, indices):
+        overlap = pd.DataFrame(np.nan, index=indices, columns=indices)
+        annot = pd.DataFrame("", index=indices, columns=indices)
+        for index1 in indices:
+            for index2 in indices:
+                n_overlap = len(ieqtls[index1].intersection(ieqtls[index2]))
+                min_size = min(len(ieqtls[index1]), len(ieqtls[index2]))
+
+                fraction = np.nan
+                if n_overlap > 0 and min_size > 0:
+                    fraction = n_overlap / min_size
+                overlap.loc[index1, index2] = fraction
+                annot.loc[index1, index2] = "{:,.2f}\n{:,}/{:,}".format(fraction, n_overlap, min_size)
+
+        return overlap, annot
+
+    @staticmethod
     def save_file(df, outpath, header=True, index=True, sep="\t"):
         compression = 'infer'
         if outpath.endswith('.gz'):
@@ -249,7 +299,13 @@ class main():
               "with shape: {}".format(os.path.basename(outpath),
                                       df.shape))
 
-    def plot_heatmap(self, heatmap_df, reg_df, reg_x="x", reg_y="y"):
+    def plot_heatmap(self, heatmap_df, annot_df=None, reg_df=None,
+                     reg_x="x", reg_y="y", data_type=""):
+        fontsize = 16
+        if annot_df is None:
+            fontsize = 22
+            annot_df = heatmap_df.round(2)
+
         sns.set_style("ticks")
         fig, axes = plt.subplots(nrows=self.n_pics,
                                  ncols=self.n_pics,
@@ -265,7 +321,7 @@ class main():
             for col_index, col_pic_index in enumerate(range(1, self.n_pics + 1)):
                 print(row_index, col_index)
                 ax = axes[row_index, col_index]
-                if (row_index == 0) and (col_index == (self.n_pics - 1)):
+                if (row_index == 0) and (col_index == (self.n_pics - 1)) and reg_df is not None:
                     sns.despine(fig=fig, ax=ax)
                     sns.regplot(x=reg_x,
                                 y=reg_y,
@@ -310,9 +366,7 @@ class main():
                 subset_df = heatmap_df.iloc[row_start_index:row_end_index, col_start_index:col_end_index]
                 subset_df.index = [index.split("-")[1] for index in subset_df.index]
                 subset_df.columns = [index.split("-")[1] for index in subset_df.columns]
-                annot_df = subset_df.copy()
-                annot_df = annot_df.round(2)
-                annot_df.fillna("", inplace=True)
+                subset_annot_df = annot_df.iloc[row_start_index:row_end_index, col_start_index:col_end_index]
 
                 mask = None
                 if row_index == col_index:
@@ -326,13 +380,13 @@ class main():
                                  vmax=1,
                                  center=0,
                                  square=True,
-                                 annot=annot_df,
+                                 annot=subset_annot_df,
                                  xticklabels=row_index == (self.n_pics - 1),
                                  yticklabels=col_index == 0,
                                  mask=mask,
                                  fmt='',
                                  cbar=False,
-                                 annot_kws={"size": 14, "color": "#000000"},
+                                 annot_kws={"size": fontsize, "color": "#000000"},
                                  ax=ax)
 
                 if row_index == (self.n_pics - 1):
@@ -345,7 +399,9 @@ class main():
                 hm.set_yticklabels(hm.get_ymajorticklabels(), fontsize=30, rotation=0)
 
         for extension in self.extensions:
-            fig.savefig(os.path.join(self.plot_outdir, "{}_picalo_multiple_start_pos_correlation_heatmap.{}".format(self.filename, extension)))
+            filename = "{}_picalo_multiple_start_pos_{}_heatmap.{}".format(self.filename, data_type, extension)
+            fig.savefig(os.path.join(self.plot_outdir, filename))
+            print("Saved '{}'.".format(filename))
         plt.close()
 
     def print_arguments(self):

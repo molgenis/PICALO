@@ -6,20 +6,10 @@ Created:      2023/06/07
 Last Changed: 2023/06/19
 Author:       M.Vochteloo, loosely based on work by Zhou et al. Genome Biology (2022).
 
-Copyright (C) 2020 M.Vochteloo
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -35,13 +25,14 @@ from sklearn.decomposition import PCA
 
 # Local application imports.
 from src.logger import Logger
+from src.statistics import inverse, fit, predict, calc_pearsonr_vector
 
 # Metadata
 __program__ = "Simulate Expression"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -54,68 +45,26 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./simulate_expression.py -h
 
-# Real eQTL beta.
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -use_real_genotype_beta \
-    -resample_covariates \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
-    
-# Real eQTL beta. No interactions.
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -use_real_genotype_beta \
-    -kc 0 \
-    -hc 0 \
-    -exclude_covariate_interactions \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLNoCovariates
 
-# Real eQTL beta. One covariate.
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -use_real_genotype_beta \
-    -kc 1 \
-    -hc 0 \
-    -exclude_covariate_interactions \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariateNoInteraction    
+### 2023-06-27 ###
 
-# Real eQTL beta. One interactions.
 ./simulate_expression.py \
     -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
     -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -use_real_genotype_beta \
-    -kc 1 \
-    -hc 0 \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLOneCovariates
-    
-# Real eQTL beta. One interactions.
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -use_real_genotype_beta \
-    -kc 2 \
-    -hc 0 \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-MaineQTLTwoCovariates
-    
-# Real intercept and eQTL beta. One interaction.
-./simulate_expression.py \
-    -ae /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/calc_avg_gene_expression/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.AverageExpression.txt.gz \
-    -use_real_intercept_beta \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -use_real_genotype_beta \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -use_real_distributions \
     -kc 0 \
     -hc 1 \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeOneCovariate
+    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised
+    
+./simulate_expression.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2022-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -use_real_distributions \
+    -kc 0 \
+    -hc 2 \
+    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised
 """
 
 
@@ -124,12 +73,10 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.eqtl = getattr(arguments, 'eqtl')
-        self.avg_expression = getattr(arguments, 'avg_expression')
-        self.use_real_intercept_beta = getattr(arguments, 'use_real_intercept_beta')
         self.genotype = getattr(arguments, 'genotype')
         self.genotype_na = getattr(arguments, 'genotype_na')
-        self.alleles = getattr(arguments, 'alleles')
-        self.use_real_genotype_beta = getattr(arguments, 'use_real_genotype_beta')
+        self.distributions = getattr(arguments, 'distributions')
+        self.use_real_distributions = getattr(arguments, 'use_real_distributions')
         self.n_individuals = getattr(arguments, 'individuals')
         self.resample_individuals = getattr(arguments, 'resample_individuals')
         self.n_experiments = getattr(arguments, 'experiments')
@@ -141,15 +88,6 @@ class main():
         self.resample_covariates = getattr(arguments, 'resample_covariates')
         outdir = getattr(arguments, 'outdir')
         outfolder = getattr(arguments, 'outfolder')
-
-        if self.use_real_intercept_beta and self.avg_expression is None:
-            self.log.error("\tError, -ae / --avg_expression required for using"
-                           "real intercept beta's.")
-            exit()
-        if self.use_real_genotype_beta and self.alleles is None:
-            self.log.error("\tError, -al / --alleles required for using"
-                           "real eQTL beta's.")
-            exit()
 
         # Set variables.
         self.n_covariates = self.n_known_covariates + self.n_hidden_covariates
@@ -186,18 +124,8 @@ class main():
         parser.add_argument("-eq",
                             "--eqtl",
                             type=str,
-                            required=False,
-                            default=None,
+                            required=True,
                             help="The path to the eqtl matrix.")
-        parser.add_argument("-ae",
-                            "--avg_expression",
-                            type=str,
-                            required=False,
-                            default=None,
-                            help="The path to the average expression matrix.")
-        parser.add_argument("-use_real_intercept_beta",
-                            action='store_true',
-                            help="Use the real intercept beta. Default: False.")
         parser.add_argument("-ge",
                             "--genotype",
                             type=str,
@@ -210,15 +138,15 @@ class main():
                             default=-1,
                             help="The genotype value that equals a missing "
                                  "value. Default: -1.")
-        parser.add_argument("-al",
-                            "--alleles",
+        parser.add_argument("-d",
+                            "--distributions",
                             type=str,
                             required=False,
                             default=None,
-                            help="The path to the alleles matrix")
-        parser.add_argument("-use_real_genotype_beta",
+                            help="The path to the distribution matrix.")
+        parser.add_argument("-use_real_distributions",
                             action='store_true',
-                            help="Use the real genotype beta. Default: False.")
+                            help="Use the real distributions. Default: False.")
         parser.add_argument("-in",
                             "--individuals",
                             type=int,
@@ -318,31 +246,26 @@ class main():
 
         ########################################################################
 
-        # Generate intercept beta.
-        intercept_beta_a = np.ones(self.n_eqtls)
-        if self.use_real_intercept_beta:
-            self.log.info("Using real intercept beta's")
-            avg_expr_df = self.load_file(inpath=self.avg_expression,
-                                         header=0,
-                                         index_col=0)
+        self.log.info("Defining distributions to sample from")
+        dist_beta_m = np.zeros((self.n_eqtls, self.n_terms), dtype=np.float64)
+        dist_std_m = np.ones((self.n_eqtls, self.n_terms), dtype=np.float64)
+        if self.use_real_distributions:
+            self.log.info("\tUsing real distributions")
+            distribution_df = self.load_file(inpath=self.distributions,
+                                             header=0,
+                                             index_col=0,
+                                             nrows=self.n_eqtls)
+            beta_df = distribution_df.loc[:, [col for col in distribution_df.columns if "beta-" in col]].copy()
+            dist_beta_m = beta_df.to_numpy()
 
-            intercept_beta_a = avg_expr_df.loc[gene_names, :].to_numpy().flatten()
+            std_df = distribution_df.loc[:, [col for col in distribution_df.columns if "std-" in col]].copy()
+            dist_std_m = std_df.to_numpy()
+            del distribution_df, beta_df, std_df
 
-        # Generating genotype beta.
-        geno_beta_a = np.random.normal(0, 1, size=(self.n_eqtls, ))
-        if self.use_real_genotype_beta:
-            self.log.info("Using real genotype beta's")
-            alleles_df = self.load_file(inpath=self.alleles, header=0, index_col=0,
-                                        nrows=self.n_eqtls)
-
-            alleles_df["AlleleAssessed"] = alleles_df["Alleles"].str.split("/", n=1, expand=True)[0]
-            eqtl_beta_flip = pd.DataFrame({"ref_aa": eqtl_df["AlleleAssessed"].tolist(),
-                                           "alt_aa": alleles_df["AlleleAssessed"].tolist()})
-            eqtl_beta_flip["flip"] = (eqtl_beta_flip["ref_aa"] == eqtl_beta_flip["alt_aa"]).map({True: 1, False: -1})
-            geno_beta_a = eqtl_df["Meta-Beta (SE)"].str.split(" ", n=1, expand=True)[0].astype(float).to_numpy()
-            geno_beta_a *= eqtl_beta_flip["flip"].to_numpy()
-            del alleles_df, eqtl_beta_flip
-        del eqtl_df
+        self.log.info("Mean:")
+        print(pd.DataFrame(dist_beta_m))
+        self.log.info("Loc:")
+        print(pd.DataFrame(dist_std_m))
 
         self.log.info("Selecting individuals")
         individuals_mask = np.ones(n_individuals, dtype=np.bool)
@@ -384,71 +307,99 @@ class main():
                 individuals_mask[np.random.choice(n_individuals,
                                                   size=n_individuals - self.n_individuals,
                                                   replace=False)] = False
-
-            self.log.info("\tConstructing model matrix")
-            # Generate the empty model matrix.
-            model_m = np.empty(shape=(self.n_eqtls, self.n_individuals, self.n_terms))
-
-            # Fill in the intercept.
-            model_m[:, :, 0] = 1
-
-            # Fill in the real genotype data.
-            model_m[:, :, 1] = geno_df.iloc[:, individuals_mask].copy().to_numpy()
             sample_names = geno_df.columns[individuals_mask].tolist()
 
-            if self.n_covariates > 0:
-                # Resample the covariate matrix if need be. Each entry is drawn
-                # from N(0,1).
-                if self.resample_covariates:
-                    self.log.info("\tResampling covariates")
-                    cov_m = np.random.normal(0, 1, size=(self.n_individuals, self.n_covariates))
+            expr_m = np.empty((self.n_eqtls, self.n_individuals), dtype=np.float64)
+            beta_m = np.empty((self.n_eqtls, self.n_terms), dtype=np.float64)
+            std_m = np.empty((self.n_eqtls, self.n_terms), dtype=np.float64)
+            r_squared_m = np.empty((self.n_eqtls, 1), dtype=np.float64)
 
-                # Fill in the simulated covariate data.
-                model_m[:, :, 2:(self.n_covariates + 2)] = np.repeat(cov_m[np.newaxis, :, :], self.n_eqtls, axis=0)
+            self.log.info("\tLoop over eQTLs")
+            for eqtl_index in range(self.n_eqtls):
+                if (eqtl_index == 0) or (eqtl_index % 250 == 0):
+                    print("\tprocessed {} eQTLs".format(eqtl_index))
 
-                if not self.exclude_covariate_interactions:
-                    # Calculate and fill the interaction data.
-                    model_m[:, :, (self.n_covariates + 2):(self.n_terms - 1)] = model_m[:, :, 2:(self.n_covariates + 2)] * model_m[:, :, [1]]
+                # Generate the empty model matrix.
+                model_m = np.empty(shape=(self.n_individuals, self.n_terms))
 
-            # Generate the noise matrix. Each entry is drawn from N(0,1).
-            noise_m = np.random.normal(0, 1, size=(self.n_eqtls, self.n_individuals))
-            # Fill in the noise matrix.
-            model_m[:, :, self.n_terms - 1] = noise_m
+                # Fill in the intercept.
+                model_m[:, 0] = 1
 
-            self.log.info("\tExample model")
-            print(pd.DataFrame(model_m[0, :, :], index=sample_names, columns=model_columns))
+                # Fill in the real genotype data.
+                model_m[:, 1] = geno_df.iloc[eqtl_index, individuals_mask].copy().to_numpy()
+
+                if self.n_covariates > 0:
+                    # Resample the covariate matrix if need be. Each entry is drawn
+                    # from N(0,1).
+                    if self.resample_covariates:
+                        self.log.info("\tResampling covariates")
+                        cov_m = np.random.normal(0, 1, size=(self.n_individuals, self.n_covariates))
+
+                    # Fill in the simulated covariate data.
+                    model_m[:, 2:(self.n_covariates + 2)] = cov_m
+
+                    if not self.exclude_covariate_interactions:
+                        # Calculate and fill the interaction data.
+                        model_m[:, (self.n_covariates + 2):(self.n_terms - 1)] = model_m[:, 2:(self.n_covariates + 2)] * model_m[:, [1]]
+
+                # Fill in the noise matrix. Each entry is drawn from N(0,1).
+                model_m[:, self.n_terms - 1] = np.random.normal(0, 1, size=(self.n_individuals))
+
+                if eqtl_index == 0:
+                    self.log.info("\tExample model")
+                    print(pd.DataFrame(model_m, index=sample_names, columns=model_columns))
 
         ########################################################################
 
-            self.log.info("\tGenerating model beta's")
-            # Generate the model beta's.
-            beta_m = np.empty(shape=(self.n_eqtls, self.n_terms))
-            # Fill in the real genotype beta's.
-            beta_m[:, 0] = intercept_beta_a
-            beta_m[:, 1] = geno_beta_a
-            for i in range(self.n_covariates):
-                beta_m[:, i + 2] = np.random.normal(0, 1, size=(self.n_eqtls, ))
-            for i in range(self.n_interaction_covariates):
-                beta_m[:, i + self.n_covariates + 2] = np.random.normal(0, 1, size=(self.n_eqtls, ))
-            beta_m[:, self.n_terms - 1] = 1
+                # Generate the model beta's.
+                weights_m = np.empty(shape=(self.n_individuals, self.n_terms))
+                for term_index in range(self.n_terms):
+                    weights_m[:, term_index] = np.random.normal(dist_beta_m[eqtl_index, term_index], dist_std_m[eqtl_index, term_index], size=(self.n_individuals,))
 
-            self.log.info("\tCalculating simulated expression")
-            # Generate the expression matrix.
-            expr_m = np.einsum('ijk,ik->ij', model_m, beta_m)
+                if eqtl_index == 0:
+                    self.log.info("\tIntended distributions")
+                    print(pd.DataFrame({"loc": dist_beta_m[eqtl_index, :], "scale": dist_std_m[eqtl_index, :]}, index=model_columns))
+                    self.log.info("\tExample weights")
+                    print(pd.DataFrame(weights_m, index=sample_names, columns=model_columns))
+                    self.log.info("\tReal distributions")
+                    print(pd.DataFrame({"loc": weights_m.mean(axis=0), "scale": weights_m.std(axis=0)}, index=model_columns))
+
+        ########################################################################
+
+                # Generate the expression matrix.
+                weighted_model_m = model_m * weights_m
+                expr_a = np.sum(weighted_model_m, axis=1)
+
+                if eqtl_index == 0:
+                    self.log.info("\tWeighted model distributions")
+                    print(pd.DataFrame({"loc": weighted_model_m.mean(axis=0), "scale": weighted_model_m.std(axis=0)}, index=model_columns))
+                    self.log.info("\tExample expression")
+                    print(pd.Series(expr_a, index=sample_names))
+
+                # Save.
+                expr_m[eqtl_index, :] = expr_a
+                beta_m[eqtl_index, :] = weights_m.mean(axis=0)
+                std_m[eqtl_index, :] = weights_m.std(axis=0)
+
+                inv_m = inverse(model_m)
+                betas = fit(X=model_m, y=expr_a, inv_m=inv_m)
+                y_hat = predict(X=model_m, betas=betas)
+                pearsonr = calc_pearsonr_vector(x=expr_a, y=y_hat)
+                r_squared = pearsonr * pearsonr
+                r_squared_m[eqtl_index, 0] = r_squared
 
         ########################################################################
 
             self.log.info("\tGenerating starting vectors")
-            zscores = (expr_m - np.mean(expr_m, axis=0)) / np.std(expr_m, axis=0)
             pca = PCA(n_components=self.n_starting_vectors)
-            pca.fit(zscores)
+            pca.fit(expr_m)
             expr_pcs_df = pd.DataFrame(pca.components_)
             expr_pcs_df.index = ["PC{}".format(i + 1) for i, _ in enumerate(expr_pcs_df.index)]
             expr_pcs_df.columns = sample_names
             print(expr_pcs_df)
 
             if self.n_hidden_covariates > 0:
-                self.log.info("\tChecking correlation with real PICs")
+                self.log.info("\tChecking correlation between hidden covariates and PCs")
                 coef_m, pvalue_m = self.corrcoef(m1=cov_m[:, self.n_known_covariates:self.n_covariates],
                                                  m2=np.transpose(pca.components_))
                 coef_df = pd.DataFrame(coef_m,
@@ -494,8 +445,12 @@ class main():
                            outpath=os.path.join(exp_outdir, "PICs.txt.gz"))
             self.save_file(df=pd.DataFrame(beta_m, index=eqtl_names, columns=model_columns),
                            outpath=os.path.join(exp_outdir, "model_betas.txt.gz"))
+            self.save_file(df=pd.DataFrame(std_m, index=eqtl_names, columns=model_columns),
+                           outpath=os.path.join(exp_outdir, "model_std.txt.gz"))
             self.save_file(df=pd.DataFrame(expr_m, index=gene_names, columns=sample_names),
                            outpath=os.path.join(exp_outdir, "expression_table.txt.gz"))
+            self.save_file(df=pd.DataFrame(r_squared_m, index=eqtl_names, columns=["rsquared"]),
+                           outpath=os.path.join(exp_outdir, "model_rsquared.txt.gz"))
             self.save_file(df=expr_pcs_df,
                            outpath=os.path.join(exp_outdir, "first{}ExpressionPCs.txt.gz".format(self.n_starting_vectors)))
             self.save_file(df=pd.DataFrame(random_start_m, index=["Random{}".format(i + 1) for i in range(self.n_starting_vectors)], columns=sample_names),
@@ -574,12 +529,10 @@ class main():
     def print_arguments(self):
         self.log.info("Arguments:")
         self.log.info("  > eQTL data: {}".format(self.eqtl))
-        self.log.info("  > Average expression data: {}".format(self.avg_expression))
-        self.log.info("  > Use real intercept beta: {}".format(self.use_real_intercept_beta))
         self.log.info("  > Genotype data: {}".format(self.genotype))
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
-        self.log.info("  > Alleles data: {}".format(self.alleles))
-        self.log.info("  > Use real genotype beta: {}".format(self.use_real_genotype_beta))
+        self.log.info("  > Distributions: {}".format(self.distributions))
+        self.log.info("  > Use real distributions: {}".format(self.use_real_distributions))
         self.log.info("  > Individuals: {}".format(self.n_individuals))
         self.log.info("  > Resample individuals: {}".format(self.resample_individuals))
         self.log.info("  > N experiments: {}".format(self.n_experiments))

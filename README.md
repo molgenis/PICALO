@@ -172,4 +172,4 @@ Martijn Vochteloo (m.vochteloo@umcg.nl) *(1)*
 
 ## License  
 
-This project is licensed under the GNU GPL v3 license - see the [LICENSE](LICENSE) file for details
+This project is licensed under the BSD 3-Clause "New" or "Revised" License - see the [LICENSE](LICENSE) file for details

@@ -3,22 +3,13 @@
 """
 File:         compare_explained_variance.py
 Created:      2022/01/18
-Last Changed:
+Last Changed: 2022/07/25
 Author:       M.Vochteloo
 
-Copyright (C) 2020 M.Vochteloo
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -42,7 +33,7 @@ __program__ = "Compare Explained Variance"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
-__license__ = "GPLv3"
+__license__ = "BSD (3-Clause)"
 __version__ = 1.0
 __description__ = "{} is a program developed and maintained by {}. " \
                   "This program is licensed under the {} license and is " \
@@ -58,21 +49,15 @@ Syntax:
 ### BIOS ###
 
 ./compare_explained_variance.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov/results.txt.gz \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-07-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-07-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov/results.txt.gz \
     -n PICs PCs \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
+    -o 2022-07-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
     -e png pdf
-    
+
 ./compare_explained_variance.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-FullModelR2/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-FullModelR2/results.txt.gz \
-    -n PICs PCs \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FullModelR2 \
-    -e png pdf
-    
-./compare_explained_variance.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-CovariatesCorrectedOLS/results.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-CovariatesCorrectedOLS/results.txt.gz \
-    -n PICs PCs \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_CovariatesCorrectedOLS \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/calculate_explained_variance/2022-07-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-Patrick/results.txt.gz \
+    -n PICs \
+    -o 2022-07-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
     -e png pdf
     
 ### MetaBrain ###
@@ -81,12 +66,6 @@ Syntax:
     -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov/results.txt.gz /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov/results.txt.gz \
     -n PICs PCs \
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -e png pdf
-    
-./compare_explained_variance.py \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-FullModelR2/results.txt.gz /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/calculate_explained_variance/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PCsAsCov-FullModelR2/results.txt.gz \
-    -n PICs PCs \
-    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FullModelR2 \
     -e png pdf
 
 """
@@ -97,7 +76,6 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.data_paths = getattr(arguments, 'data')
-        self.interaction_paths = getattr(arguments, 'interaction')
         self.names = getattr(arguments, 'names')
         self.output_filename = getattr(arguments, 'output')
         self.extensions = getattr(arguments, 'extension')
@@ -134,12 +112,6 @@ class main():
                             type=str,
                             required=False,
                             help="The paths to the input data.")
-        parser.add_argument("-i",
-                            "--interaction",
-                            nargs="*",
-                            type=str,
-                            required=False,
-                            help="The paths to the input data.")
         parser.add_argument("-n",
                             "--names",
                             nargs="*",
@@ -166,87 +138,78 @@ class main():
         self.print_arguments()
 
         print("Loading explained variance data.")
-        rsquared_df_list = []
+        rsquared_dfm_list = []
+        coef_dfm_list = []
+        std_err_dfm_list = []
         tvalue_dfm_list = []
         for name, fpath in zip(self.names, self.data_paths):
             df = self.load_file(fpath, header=0, index_col=None)
-            df.index = df["snp"] + "_" + df["gene"]
+            df["index"] = df["SNPName"] + "_" + df["ProbeName"]
 
-            rsquared_df = df.loc[:, ["r-squared"]]
-            rsquared_df.columns = [name]
-            rsquared_df_list.append(rsquared_df)
+            for col in df.columns:
+                if "coef" in col:
+                    variable = col.replace(" coef", "")
+                    df["{} t-value".format(variable)] = df["{} coef".format(variable)] / df["{} std error".format(variable)]
 
-            inter_coef_df = df.loc[:, [x for x in df.columns if x.endswith("xSNP coef")]]
-            inter_coef_df.columns = [i + 1 for i in range(inter_coef_df.shape[1])]
-            inter_stderr_df = df.loc[:, [x for x in df.columns if x.endswith("xSNP std err")]]
-            inter_stderr_df.columns = [i + 1 for i in range(inter_coef_df.shape[1])]
-
-            inter_tvalue_df = inter_coef_df / inter_stderr_df
-            inter_tvalue_df["index"] = inter_tvalue_df.index
-            inter_tvalue_dfm = inter_tvalue_df.melt(id_vars=["index"])
-            inter_tvalue_dfm["name"] = name
-            tvalue_dfm_list.append(inter_tvalue_dfm)
-
-        rsquared_df = pd.concat(rsquared_df_list, axis=1)
-        print(rsquared_df)
-        print(rsquared_df.mean(axis=0))
-        print(rsquared_df.std(axis=0))
-        print(rsquared_df.median(axis=0))
-        print(stats.mannwhitneyu(rsquared_df["PICs"], rsquared_df["PCs"]))
-        tvalue_dfm = pd.concat(tvalue_dfm_list, axis=0)
-
-        if self.interaction_paths is not None:
-            print("Filtering on significant ieQTLs.")
-            for name, fpath in zip(self.names, self.interaction_paths):
-                fdr_df = self.load_file(fpath, sep=",", header=0, index_col=0)
-                ieqtls = list(fdr_df.loc[fdr_df.sum(axis=1) == 0, :].index)
-                rsquared_df.loc[ieqtls, name] = np.nan
-                tvalue_dfm.loc[(tvalue_dfm["index"].isin(rsquared_df)) & (tvalue_dfm["name"] == name), "value"] = np.nan
-            print(rsquared_df)
-            print(tvalue_dfm)
-
-        rsquared_dfm = rsquared_df.melt()
-        rsquared_dfm.dropna(inplace=True)
-        tvalue_dfm.dropna(inplace=True)
+            for suffix, df_list in (("r-squared", rsquared_dfm_list),
+                                    ("coef", coef_dfm_list),
+                                    ("std error", std_err_dfm_list),
+                                    ("t-value", tvalue_dfm_list)):
+                value_vars = [col for col in df.columns if suffix in col]
+                dfm = df.melt(id_vars=["index"], value_vars=value_vars).copy()
+                dfm["component"] = name
+                df_list.append(dfm)
+            break
 
         print("Plot")
-        self.plot_kdeplot(df=rsquared_dfm,
-                          hue="variable",
-                          palette=self.palette,
-                          xlabel="R\u00b2",
-                          ylabel="density",
-                          title="Explained variance\nby context components",
-                          filename="{}_rsquared_kdeplot".format(self.output_filename)
-                          )
-        self.plot_rsquared_boxplot(
-            df=rsquared_dfm,
-            hue="variable",
-            palette=self.palette,
-            xlabel="",
-            ylabel="R\u00b2",
-            filename="{}_rsquared_boxplot".format(self.output_filename)
-        )
-        self.plot_tvalue_boxplot(
-            df=tvalue_dfm,
-            hue="name",
-            palette=self.palette,
-            xlabel="component",
-            ylabel="t-value",
-            filename="{}_tvalue_boxplot".format(self.output_filename)
-        )
+        for suffix, df_list in (("r-squared", rsquared_dfm_list),
+                                ("coef", coef_dfm_list),
+                                ("std error", std_err_dfm_list),
+                                ("t-value", tvalue_dfm_list)):
+            print("\t{}".format(suffix))
+            df = pd.concat(df_list, axis=0)
+            df.dropna(inplace=True)
 
-        tvalue_dfm["value"] = tvalue_dfm["value"].abs()
-        self.plot_barplot(
-            df=tvalue_dfm,
-            group_column="name",
-            groups=self.names,
-            x="variable",
-            y="value",
-            xlabel="",
-            ylabel="",
-            palette=self.palette,
-            filename="{}_tvalue_barplot".format(self.output_filename)
-        )
+            if suffix == "r-squared":
+                self.plot_kdeplot(df=df,
+                                  group="variable",
+                                  hue="component",
+                                  palette=self.palette,
+                                  xlabel="R\u00b2",
+                                  ylabel="density",
+                                  title="Explained variance\nby context components",
+                                  filename="{}_rsquared_kdeplot".format(self.output_filename)
+                                  )
+                self.plot_rsquared_boxplot(
+                    df=df,
+                    hue="component",
+                    palette=self.palette,
+                    xlabel="",
+                    ylabel="R\u00b2",
+                    filename="{}_rsquared_boxplot".format(self.output_filename)
+                )
+            else:
+                self.plot_boxplot(
+                    df=df,
+                    hue="component",
+                    palette=self.palette,
+                    xlabel="component",
+                    ylabel=suffix,
+                    filename="{}_{}_boxplot".format(self.output_filename, suffix)
+                )
+
+                df["value"] = df["value"].abs()
+                self.plot_barplot(
+                    df=df,
+                    group_column="component",
+                    groups=self.names,
+                    x="variable",
+                    y="value",
+                    xlabel="",
+                    ylabel="",
+                    palette=self.palette,
+                    filename="{}_{}_barplot".format(self.output_filename, suffix)
+                )
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -258,85 +221,132 @@ class main():
                                       df.shape))
         return df
 
-    def plot_kdeplot(self, df, x="value", hue=None, palette=None, xlabel="",
+    def plot_kdeplot(self, df, x="value", group=None, hue=None, palette=None, xlabel="",
                      ylabel="", title="", filename="plot"):
-        sns.set(rc={'figure.figsize': (12, 9)})
-        sns.set_style("ticks")
-        fig, ax = plt.subplots()
-        sns.despine(fig=fig, ax=ax)
+        if group is None:
+            group = "group"
+            df[group] = "1"
 
-        sns.kdeplot(data=df,
-                    x=x,
-                    clip=(0, 1),
-                    fill=True,
-                    hue=hue,
-                    palette=palette,
-                    ax=ax)
+        nrows = len(df[group].unique())
 
-        # Add the text.
-        if hue is None:
-            ax.annotate(
-                'avg. R\u00b2 = {:.2f}'.format(df[x].mean()),
-                xy=(0.03, 0.94),
-                xycoords=ax.transAxes,
-                color="#404040",
-                fontsize=14,
-                fontweight='bold')
-            ax.annotate(
-                'N = {:,}'.format(df.shape[0]),
-                xy=(0.03, 0.94),
-                xycoords=ax.transAxes,
-                color="#404040",
-                fontsize=14,
-                fontweight='bold')
-        else:
-            groups = df[hue].unique()
+        fig, axes = plt.subplots(nrows=nrows,
+                                 ncols=1,
+                                 sharex='none',
+                                 sharey='none',
+                                 figsize=(12, 9 * nrows))
+        sns.set(color_codes=True)
 
-            i = 0
-            for group in groups:
-                color = "#404040"
-                if group in palette:
-                    color = palette[group]
+        if nrows == 1:
+            axes = [axes]
 
+        for group_value, ax in zip(df[group].unique(), axes):
+            subset = df.loc[df[group] == group_value, :].copy()
+
+            sns.despine(fig=fig, ax=ax)
+
+            sns.kdeplot(data=subset,
+                        x=x,
+                        clip=(0, 1),
+                        fill=True,
+                        hue=hue,
+                        palette=palette,
+                        ax=ax)
+
+            # Add the text.
+            if hue is None:
                 ax.annotate(
-                    'avg. R\u00b2 = {:.2f}'.format(df.loc[df[hue] == group, "value"].mean()),
-                    xy=(0.03, 0.94 - (i * 0.04)),
+                    'avg. R\u00b2 = {:.4f}'.format(subset[x].mean()),
+                    xy=(0.03, 0.94),
                     xycoords=ax.transAxes,
-                    color=color,
+                    color="#404040",
                     fontsize=14,
                     fontweight='bold')
-                i += 1
                 ax.annotate(
-                    'N = {:,}'.format(df.loc[df[hue] == group, "value"].shape[0]),
-                    xy=(0.03, 0.94 - (i * 0.04)),
+                    'N = {:,}'.format(subset.shape[0]),
+                    xy=(0.03, 0.94),
                     xycoords=ax.transAxes,
-                    color=color,
+                    color="#404040",
                     fontsize=14,
                     fontweight='bold')
-                i += 1
+            else:
+                hue_groups = subset[hue].unique()
 
-        ax.set_title(title,
-                     fontsize=20,
+                i = 0
+                for hue_group in hue_groups:
+                    color = "#404040"
+                    if hue_group in palette:
+                        color = palette[hue_group]
+
+                    ax.annotate(
+                        'avg. R\u00b2 = {:.4f}'.format(subset.loc[subset[hue] == hue_group, "value"].mean()),
+                        xy=(0.03, 0.94 - (i * 0.04)),
+                        xycoords=ax.transAxes,
+                        color=color,
+                        fontsize=14,
+                        fontweight='bold')
+                    i += 1
+                    ax.annotate(
+                        'N = {:,}'.format(subset.loc[subset[hue] == hue_group, "value"].shape[0]),
+                        xy=(0.03, 0.94 - (i * 0.04)),
+                        xycoords=ax.transAxes,
+                        color=color,
+                        fontsize=14,
+                        fontweight='bold')
+                    i += 1
+
+            ax.set_title(group_value,
+                         fontsize=20,
+                         fontweight='bold')
+            ax.set_ylabel(ylabel,
+                          fontsize=14,
+                          fontweight='bold')
+            ax.set_xlabel(xlabel,
+                          fontsize=14,
+                          fontweight='bold')
+
+        fig.suptitle(title,
+                     fontsize=40,
                      fontweight='bold')
-        ax.set_ylabel(ylabel,
-                      fontsize=14,
-                      fontweight='bold')
-        ax.set_xlabel(xlabel,
-                      fontsize=14,
-                      fontweight='bold')
 
         for extension in self.extensions:
             outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
             fig.savefig(outpath)
         plt.close()
 
-    def plot_tvalue_boxplot(self, df, x="variable", y="value", hue=None,
-                            palette=None, xlabel="", ylabel="", filename=""):
+    def plot_rsquared_boxplot(self, df, x="variable", y="value", hue=None,
+                              palette=None, xlabel="", ylabel="", title="",
+                              filename=""):
+
+        sns.set_style("ticks")
+        fig, ax = plt.subplots(figsize=(12, 9))
+        sns.set(color_codes=True)
+
+        self.boxplot(fig=fig,
+                     ax=ax,
+                     df=df,
+                     x=x,
+                     y=y,
+                     hue=hue,
+                     palette=palette,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     title=title
+                     )
+
+        plt.tight_layout()
+        for extension in self.extensions:
+            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
+            fig.savefig(outpath)
+        plt.close()
+
+    def plot_boxplot(self, df, x="variable", y="value", hue=None,
+                     palette=None, xlabel="", ylabel="", filename=""):
+        print(df)
         width = 9
         if hue is not None:
             width = len(df[x].unique()) * 0.5
 
-        n_rows = 1
+        nrows = 1
         groups = [""]
         if hue is not None:
             groups = df[hue].unique()
@@ -346,10 +356,12 @@ class main():
             hue = "hue"
 
         sns.set_style("ticks")
-        fig, axes = plt.subplots(nrows=n_rows,
+        fig, axes = plt.subplots(nrows=nrows,
                                  ncols=1,
                                  sharex="all",
-                                 figsize=(width, 5 * n_rows))
+                                 figsize=(width, 5 * nrows))
+        if nrows == 1:
+            axes = [axes]
 
         for ax, group in zip(axes, groups):
             color = "#404040"
@@ -369,31 +381,6 @@ class main():
                          xlabel=xlabel,
                          ylabel=ylabel,
                          )
-
-        plt.tight_layout()
-        for extension in self.extensions:
-            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
-            fig.savefig(outpath)
-        plt.close()
-
-    def plot_rsquared_boxplot(self, df, x="variable", y="value", hue=None,
-                              palette=None, xlabel="", ylabel="", title="",
-                              filename=""):
-
-        sns.set_style("ticks")
-        fig, ax = plt.subplots()
-
-        self.boxplot(fig=fig,
-                     ax=ax,
-                     df=df,
-                     x=x,
-                     y=y,
-                     hue=hue,
-                     palette=palette,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     title=title
-                     )
 
         plt.tight_layout()
         for extension in self.extensions:
@@ -427,7 +414,7 @@ class main():
         if ax.get_legend() is not None:
             ax.get_legend().remove()
 
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=0)
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
         ax.set_title(title,
                      fontsize=20,
                      fontweight='bold')
@@ -515,11 +502,8 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Data:")
-        interaction_paths = self.interaction_paths
-        if self.interaction_paths is None:
-            interaction_paths = [None] * len(self.names)
-        for i, (name, data_fpath, interaction_fpath) in enumerate(zip(self.names, self.data_paths, interaction_paths)):
-            print("  > {} = {} / {}".format(name, data_fpath, interaction_fpath))
+        for i, (name, data_fpath) in enumerate(zip(self.names, self.data_paths)):
+            print("  > {} = {}".format(name, data_fpath))
         print("  > Output filename: {}".format(self.output_filename))
         print("  > Output directory {}".format(self.outdir))
         print("")
