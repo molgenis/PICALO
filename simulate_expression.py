@@ -65,6 +65,53 @@ Syntax:
     -kc 0 \
     -hc 2 \
     -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised
+    
+./simulate_expression.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first3ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -use_real_distributions \
+    -kc 0 \
+    -hc 3 \
+    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first3ExprPCForceNormalised
+    
+./simulate_expression.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2022-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -use_real_distributions \
+    -kc 0 \
+    -hc 2 \
+    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix
+    
+./simulate_expression.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -use_real_distributions \
+    -kc 0 \
+    -hc 2 \
+    -of 2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first2ExprPCForceNormalised-GenotypeFix
+    
+### 20 covariates ###
+
+./simulate_expression.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -use_real_distributions \
+    -kc 0 \
+    -hc 20 \
+    -of 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised
+    
+./simulate_expression.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -use_real_distributions \
+    -kc 0 \
+    -hc 20 \
+    -of 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised
 """
 
 
@@ -75,6 +122,7 @@ class main():
         self.eqtl = getattr(arguments, 'eqtl')
         self.genotype = getattr(arguments, 'genotype')
         self.genotype_na = getattr(arguments, 'genotype_na')
+        self.std_path = getattr(arguments, 'sample_to_dataset')
         self.distributions = getattr(arguments, 'distributions')
         self.use_real_distributions = getattr(arguments, 'use_real_distributions')
         self.n_individuals = getattr(arguments, 'individuals')
@@ -138,6 +186,12 @@ class main():
                             default=-1,
                             help="The genotype value that equals a missing "
                                  "value. Default: -1.")
+        parser.add_argument("-std",
+                            "--sample_to_dataset",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The path to the sample-dataset link matrix.")
         parser.add_argument("-d",
                             "--distributions",
                             type=str,
@@ -226,6 +280,7 @@ class main():
 
         geno_df = self.load_file(inpath=self.genotype, header=0, index_col=0,
                                  nrows=self.n_eqtls)
+        geno_df[geno_df == self.genotype_na] = np.nan
         print(geno_df)
 
         n_eqtls = geno_df.shape[0]
@@ -246,6 +301,29 @@ class main():
 
         ########################################################################
 
+        dataset_df = pd.DataFrame({"sample": geno_df.columns, "dataset": "None"})
+        if self.std_path is not None:
+            dataset_df = self.load_file(self.std_path, header=0, index_col=None)
+            if dataset_df.iloc[:, 0].values.tolist() != geno_df.columns.tolist():
+                print("\tError, Dataset does not match genotype.")
+                exit()
+
+        # self.log.info("Filling missing values with average")
+        # geno_nan_mask = (geno_df == self.genotype_na)
+        # if geno_nan_mask.sum().sum() > 0:
+        #     # Calculate the dataset genotype means per eQTL and fill nan values
+        #     # with the dataset mean.
+        #     geno_dataset_mean_m = self.calculate_geno_mean_per_dataset(
+        #         geno_df=geno_df,
+        #         dataset_df=dataset_df)
+        #     geno_df[geno_nan_mask] = geno_dataset_mean_m[geno_nan_mask]
+
+        self.log.info("Simulating genotypes")
+        geno_df = self.simulate_genotypes(df=geno_df, dataset_df=dataset_df)
+        print(geno_df)
+
+        ########################################################################
+
         self.log.info("Defining distributions to sample from")
         dist_beta_m = np.zeros((self.n_eqtls, self.n_terms), dtype=np.float64)
         dist_std_m = np.ones((self.n_eqtls, self.n_terms), dtype=np.float64)
@@ -262,10 +340,12 @@ class main():
             dist_std_m = std_df.to_numpy()
             del distribution_df, beta_df, std_df
 
-        self.log.info("Mean:")
+        self.log.info("Beta:")
         print(pd.DataFrame(dist_beta_m))
-        self.log.info("Loc:")
+        self.log.info("Std:")
         print(pd.DataFrame(dist_std_m))
+
+        ########################################################################
 
         self.log.info("Selecting individuals")
         individuals_mask = np.ones(n_individuals, dtype=np.bool)
@@ -276,6 +356,8 @@ class main():
             individuals_mask[np.random.choice(n_individuals,
                                               size=n_individuals - self.n_individuals,
                                               replace=False)] = 0
+
+        ########################################################################
 
         cov_m = None
         if self.n_covariates > 0:
@@ -291,6 +373,8 @@ class main():
             model_columns += ["known_covariate_interaction{}".format(i) for i in range(self.n_known_covariates)] + \
                              ["hidden_covariate_interaction{}".format(i) for i in range(self.n_hidden_covariates)]
         model_columns += ["noise"]
+
+        ########################################################################
 
         # Iterate through the experiments.
         self.log.info("Generate experiments")
@@ -329,11 +413,11 @@ class main():
                 model_m[:, 1] = geno_df.iloc[eqtl_index, individuals_mask].copy().to_numpy()
 
                 if self.n_covariates > 0:
-                    # Resample the covariate matrix if need be. Each entry is drawn
-                    # from N(0,1).
-                    if self.resample_covariates:
-                        self.log.info("\tResampling covariates")
-                        cov_m = np.random.normal(0, 1, size=(self.n_individuals, self.n_covariates))
+                    # # Resample the covariate matrix if need be. Each entry is drawn
+                    # # from N(0,1).
+                    # if self.resample_covariates:
+                    #     self.log.info("\tResampling covariates")
+                    #     cov_m = np.random.normal(0, 1, size=(self.n_individuals, self.n_covariates))
 
                     # Fill in the simulated covariate data.
                     model_m[:, 2:(self.n_covariates + 2)] = cov_m
@@ -345,7 +429,7 @@ class main():
                 # Fill in the noise matrix. Each entry is drawn from N(0,1).
                 model_m[:, self.n_terms - 1] = np.random.normal(0, 1, size=(self.n_individuals))
 
-                if eqtl_index == 0:
+                if eqtl_index < 2:
                     self.log.info("\tExample model")
                     print(pd.DataFrame(model_m, index=sample_names, columns=model_columns))
 
@@ -356,13 +440,13 @@ class main():
                 for term_index in range(self.n_terms):
                     weights_m[:, term_index] = np.random.normal(dist_beta_m[eqtl_index, term_index], dist_std_m[eqtl_index, term_index], size=(self.n_individuals,))
 
-                if eqtl_index == 0:
-                    self.log.info("\tIntended distributions")
-                    print(pd.DataFrame({"loc": dist_beta_m[eqtl_index, :], "scale": dist_std_m[eqtl_index, :]}, index=model_columns))
-                    self.log.info("\tExample weights")
-                    print(pd.DataFrame(weights_m, index=sample_names, columns=model_columns))
-                    self.log.info("\tReal distributions")
-                    print(pd.DataFrame({"loc": weights_m.mean(axis=0), "scale": weights_m.std(axis=0)}, index=model_columns))
+                # if eqtl_index < 2:
+                #     self.log.info("\tIntended distributions")
+                #     print(pd.DataFrame({"loc": dist_beta_m[eqtl_index, :], "scale": dist_std_m[eqtl_index, :]}, index=model_columns))
+                #     self.log.info("\tExample weights")
+                #     print(pd.DataFrame(weights_m, index=sample_names, columns=model_columns))
+                #     self.log.info("\tReal distributions")
+                #     print(pd.DataFrame({"loc": weights_m.mean(axis=0), "scale": weights_m.std(axis=0)}, index=model_columns))
 
         ########################################################################
 
@@ -370,17 +454,18 @@ class main():
                 weighted_model_m = model_m * weights_m
                 expr_a = np.sum(weighted_model_m, axis=1)
 
-                if eqtl_index == 0:
-                    self.log.info("\tWeighted model distributions")
-                    print(pd.DataFrame({"loc": weighted_model_m.mean(axis=0), "scale": weighted_model_m.std(axis=0)}, index=model_columns))
-                    self.log.info("\tExample expression")
-                    print(pd.Series(expr_a, index=sample_names))
+                # if eqtl_index < 2:
+                #     self.log.info("\tWeighted model distributions")
+                #     print(pd.DataFrame({"loc": weighted_model_m.mean(axis=0), "scale": weighted_model_m.std(axis=0)}, index=model_columns))
+                #     self.log.info("\tExample expression")
+                #     print(pd.Series(expr_a, index=sample_names))
 
                 # Save.
                 expr_m[eqtl_index, :] = expr_a
                 beta_m[eqtl_index, :] = weights_m.mean(axis=0)
                 std_m[eqtl_index, :] = weights_m.std(axis=0)
 
+                # OLS.
                 inv_m = inverse(model_m)
                 betas = fit(X=model_m, y=expr_a, inv_m=inv_m)
                 y_hat = predict(X=model_m, betas=betas)
@@ -391,8 +476,9 @@ class main():
         ########################################################################
 
             self.log.info("\tGenerating starting vectors")
+            zscores = (expr_m - np.mean(expr_m, axis=0)) / np.std(expr_m, axis=0)
             pca = PCA(n_components=self.n_starting_vectors)
-            pca.fit(expr_m)
+            pca.fit(zscores)
             expr_pcs_df = pd.DataFrame(pca.components_)
             expr_pcs_df.index = ["PC{}".format(i + 1) for i, _ in enumerate(expr_pcs_df.index)]
             expr_pcs_df.columns = sample_names
@@ -436,7 +522,8 @@ class main():
 
             self.log.info("\tSaving data")
 
-            # Save the expression matrix.
+            # Save.
+            self.save_file(df=geno_df, outpath=os.path.join(exp_outdir, "genotype_table.txt.gz"))
             if self.n_known_covariates > 0:
                 self.save_file(df=pd.DataFrame(cov_m[:, :self.n_known_covariates], index=sample_names, columns=model_columns[2:(self.n_known_covariates + 2)]),
                                outpath=os.path.join(exp_outdir, "tech_covariates_with_interaction_df.txt.gz"))
@@ -469,6 +556,69 @@ class main():
                       "with shape: {}".format(os.path.basename(inpath),
                                               df.shape))
         return df
+
+    @staticmethod
+    def calculate_geno_mean_per_dataset(geno_df, dataset_df):
+        overall_mean = geno_df.mean(axis=1)
+
+        geno_dataset_mean = []
+        for dataset in dataset_df.iloc[:, 1].unique():
+            dataset_mask = (dataset_df.iloc[:, 1] == dataset).to_numpy()
+            dataset_mean_s = geno_df.loc[:, dataset_mask].mean(axis=1)
+            na_mask = dataset_mean_s.isna()
+            dataset_mean_s.loc[na_mask] = overall_mean[na_mask]
+            geno_dataset_mean.extend([dataset_mean_s] * np.sum(dataset_mask))
+
+        geno_dataset_mean_df = pd.concat(geno_dataset_mean, axis=1)
+        geno_dataset_mean_df.columns = geno_df.columns
+
+        return geno_dataset_mean_df
+
+    @staticmethod
+    def simulate_genotypes(df, dataset_df):
+        rounded_m = df.to_numpy(dtype=np.float64)
+        rounded_m = np.rint(rounded_m)
+
+        n_rows = rounded_m.shape[0]
+
+        # Count the genotypes.
+        zero_a = np.sum(rounded_m == 0, axis=1)
+        one_a = np.sum(rounded_m == 1, axis=1)
+        two_a = np.sum(rounded_m == 2, axis=1)
+
+        counts = np.column_stack((zero_a, one_a, two_a))
+        fractions = counts / np.sum(counts, axis=1)[:, None]
+        # print(pd.DataFrame(fractions))
+
+        simulated_geno_m = np.empty_like(rounded_m)
+        for dataset in dataset_df.iloc[:, 1].unique():
+            dataset_mask = (dataset_df.iloc[:, 1] == dataset).to_numpy()
+
+            # Calculate the rounded counts for each genotype.
+            # Based on https://stackoverflow.com/questions/44737874/rounding-floats-while-maintaining-total-sum-equal/51451847#51451847
+            # adapted to work on matrices.
+            N = np.sum(dataset_mask)
+            xs = fractions * N
+            Rs = np.floor(xs).astype(int)
+            K = N - np.sum(Rs, axis=1)
+            fs = xs - Rs
+            indices = (-fs).argsort()
+            ys = Rs
+            for i in range(np.max(K)):
+                mask = i < K
+                ys[mask, indices[mask, i]] += 1
+
+            # Create the genotype matrix.
+            dataset_geno_m = np.empty((n_rows, N), dtype=np.float64)
+            for i in range(n_rows):
+                dataset_geno_m[i, :] = np.array([0] * ys[i, 0] + [1] * ys[i, 1] + [2] * ys[i, 2])
+            np.random.shuffle(dataset_geno_m.T)
+
+            # Save.
+            simulated_geno_m[:, dataset_mask] = dataset_geno_m
+            del dataset_geno_m
+
+        return pd.DataFrame(simulated_geno_m, index=df.index, columns=df.columns)
 
     @staticmethod
     def corrcoef(m1, m2):
@@ -531,6 +681,7 @@ class main():
         self.log.info("  > eQTL data: {}".format(self.eqtl))
         self.log.info("  > Genotype data: {}".format(self.genotype))
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
+        self.log.info("  > Sample-to-dataset data: {}".format(self.std_path))
         self.log.info("  > Distributions: {}".format(self.distributions))
         self.log.info("  > Use real distributions: {}".format(self.use_real_distributions))
         self.log.info("  > Individuals: {}".format(self.n_individuals))
