@@ -22,6 +22,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.special import ndtri
+from statsmodels.regression.linear_model import OLS
 
 # Local application imports.
 from src.logger import Logger
@@ -45,33 +46,19 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./fast_eqtl_mapper.py -h
-   
-./fast_eqtl_mapper.py \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first1ExpressionPCs.txt.gz \
-    -force_normalise_covariates \
-    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised \
-    -verbose
+    
+### BIOS Two covariates ###
 
 ./fast_eqtl_mapper.py \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/PICs.txt.gz \
-    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised-Simulation1 \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first2ExpressionPCs.txt.gz \
+    -force_normalise_covariates \
+    -od /groups/umcg-bios/tmp01/projects/PICALO \
+    -of 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised \
     -verbose
     
-./fast_eqtl_mapper.py \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/simulation1/PICs.txt.gz \
-    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised-Simulation1-FilteredeQTLs \
-    -verbose
-    
-### two covariates ###
+### MetaBrain Two covariates ###
 
 ./fast_eqtl_mapper.py \
     -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
@@ -79,16 +66,7 @@ Syntax:
     -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first2ExpressionPCs.txt.gz \
     -force_normalise_covariates \
     -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised \
-    -verbose
-    
-./fast_eqtl_mapper.py \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -filter_variants \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/expression_table.txt.gz \
-    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/PICs.txt.gz \
-    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-Simulation1-FilteredeQTLs \
+    -of 2023-07-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised \
     -verbose
 """
 
@@ -108,6 +86,7 @@ class main():
         self.covariate_path = getattr(arguments, 'covariate')
         self.force_normalise_covariates = getattr(arguments, 'force_normalise_covariates')
         self.exclude_covariate_interactions = getattr(arguments, 'exclude_covariate_interactions')
+        self.ols = getattr(arguments, 'ols')
         self.eqtl_alpha = getattr(arguments, 'eqtl_alpha')
         outdir = getattr(arguments, 'outdir')
         outfolder = getattr(arguments, 'outfolder')
@@ -202,6 +181,10 @@ class main():
                             action='store_true',
                             help="Include covariate + covariate * genotype "
                                  "terms. Default: False.")
+        parser.add_argument("-ols",
+                            action='store_true',
+                            help="Use OLS from statsmodels instead of matrix"
+                                 "inverse. Default: False.")
         parser.add_argument("-ea",
                             "--eqtl_alpha",
                             type=float,
@@ -274,23 +257,18 @@ class main():
                     exit()
         self.log.info("")
 
+        self.log.info("Calculating genotype stats")
+        geno_stats_df = self.calculate_genotype_stats(df=geno_df)
+        save_dataframe(df=geno_stats_df,
+                       outpath=os.path.join(self.outdir, "GenotypeStats.txt.gz"),
+                       header=True,
+                       index=True,
+                       log=self.log)
+        geno_stats_df.reset_index(drop=True, inplace=True)
+
         if self.filter_variants:
             self.log.info("Filtering variants.")
-            geno_df, call_rate_df = self.calculate_call_rate(geno_df=geno_df)
-
-            self.log.info("Calculating genotype stats for inclusing criteria")
-            cr_keep_mask = ~(geno_df == self.genotype_na).all(axis=1).to_numpy(dtype=bool)
-            geno_stats_df = pd.DataFrame(np.nan, index=geno_df.index, columns=["N", "NaN", "0", "1", "2", "min GS", "HW pval", "allele1", "allele2", "MA", "MAF"])
-            geno_stats_df["N"] = 0
-            geno_stats_df["NaN"] = geno_df.shape[1]
-            geno_stats_df.loc[cr_keep_mask, :] = self.calculate_genotype_stats(df=geno_df.loc[cr_keep_mask, :])
-            save_dataframe(df=geno_stats_df,
-                           outpath=os.path.join(self.outdir, "GenotypeStats.txt.gz"),
-                           header=True,
-                           index=True,
-                           log=self.log)
-
-            # Checking which eQTLs pass the requirements
+            cr_keep_mask = (geno_stats_df.loc[:, "CR"] >= self.call_rate).to_numpy(dtype=bool)
             n_keep_mask = (geno_stats_df.loc[:, "N"] >= 6).to_numpy(dtype=bool)
             mgs_keep_mask = (geno_stats_df.loc[:, "min GS"] >= self.mgs).to_numpy(dtype=bool)
             hwpval_keep_mask = (geno_stats_df.loc[:, "HW pval"] >= self.hw_pval).to_numpy(dtype=bool)
@@ -306,6 +284,7 @@ class main():
                 self.log.warning("\t  ----------------------------------------")
                 self.log.warning("\t  {:,} eQTL(s) are discarded in total".format(geno_n_skipped))
 
+            geno_stats_df = geno_stats_df.loc[combined_keep_mask, :]
             geno_df = geno_df.loc[combined_keep_mask, :]
             expr_df = expr_df.loc[combined_keep_mask, :]
 
@@ -368,31 +347,17 @@ class main():
             # Get the expression.
             y = expr_m[eqtl_index, mask]
 
-            # Fit the model.
-            inv_m = inverse(X)
-            betas = fit(X=X, y=y, inv_m=inv_m)
-            y_hat = predict(X=X, betas=betas)
-            rss_alt = calc_rss(y=y, y_hat=y_hat)
-            std = calc_std(rss=rss_alt, n=n, df=n_terms, inv_m=inv_m)
-
-            # Calculate residuals.
-            res = calc_residuals(y=y, y_hat=y_hat)
-
-            # Calculate R2.
-            pearsonr = calc_pearsonr_vector(x=y, y=y_hat)
-            r_squared = pearsonr * pearsonr
-
-            # Calculate the p-values.
-            ieqtl_p_values = np.empty(n_terms, np.float32)
-            for col_index in range(n_terms):
-                column_mask = np.ones(n_terms, bool)
-                column_mask[col_index] = False
-
-                rss_null = calc_rss(y=y, y_hat=fit_and_predict(X=X[:, column_mask], y=y))
-                ieqtl_p_values[col_index] = calc_p_value(rss1=rss_null, rss2=rss_alt, df1=n_terms - 1, df2=n_terms, n=n)
-
             # Save results.
-            ieqtl_results[eqtl_index, :] = np.hstack((np.array([n]), betas, np.mean(res), std, np.std(res), ieqtl_p_values, np.array([r_squared])))
+            if self.ols:
+                ieqtl_results[eqtl_index, :] = self.ols_model(y=y,
+                                                              X=X,
+                                                              n=n)
+            else:
+                ieqtl_results[eqtl_index, :] = self.matrix_model(y=y,
+                                                                 X=X,
+                                                                 n=n,
+                                                                 n_terms=n_terms)
+
         self.log.info("")
 
         # Convert to pandas data frame.
@@ -409,6 +374,7 @@ class main():
                                                  ["std-noise"] +
                                                  ["pvalue-{}".format(col) for col in columns] +
                                                  ["r-squared"])
+        df = pd.concat([df, geno_stats_df[["CR", "HW pval", "MAF"]]], axis=1)
         df.insert(0, "gene", expr_df.index.tolist())
         df.insert(0, "SNP", geno_df.index.tolist())
 
@@ -431,15 +397,6 @@ class main():
         self.log.info("Finished")
         self.log.info("")
 
-    def calculate_call_rate(self, geno_df):
-        call_rate_df = ((geno_df != self.genotype_na).astype(int).sum(axis=1) / geno_df.shape[1]).to_frame()
-        call_rate_df.columns = ["CR"]
-
-        geno_df.loc[call_rate_df["CR"] < self.call_rate, :] = self.genotype_na
-
-        return geno_df, call_rate_df
-
-
     def calculate_genotype_stats(self, df):
         rounded_m = df.to_numpy(dtype=np.float64)
         rounded_m = np.rint(rounded_m)
@@ -447,6 +404,9 @@ class main():
         # Calculate the total samples that are not NaN.
         nan = np.sum(rounded_m == self.genotype_na, axis=1)
         n = rounded_m.shape[1] - nan
+
+        # Calculate the call rate
+        cr = n / rounded_m.shape[1]
 
         # Count the genotypes.
         zero_a = np.sum(rounded_m == 0, axis=1)
@@ -472,6 +432,7 @@ class main():
 
         # Construct output data frame.
         output_df = pd.DataFrame({"N": n,
+                                  "CR": cr,
                                   "NaN": nan,
                                   "0": zero_a,
                                   "1": one_a,
@@ -557,19 +518,72 @@ class main():
 
         return p_hwe
 
+    @staticmethod
+    def matrix_model(y, X, n, n_terms):
+        # Fit the model.
+        inv_m = inverse(X)
+        betas = fit(X=X, y=y, inv_m=inv_m)
+        y_hat = predict(X=X, betas=betas)
+        rss_alt = calc_rss(y=y, y_hat=y_hat)
+        std = calc_std(rss=rss_alt, n=n, df=n_terms, inv_m=inv_m)
+
+        # Calculate residuals.
+        res = calc_residuals(y=y, y_hat=y_hat)
+
+        # Calculate R2.
+        pearsonr = calc_pearsonr_vector(x=y, y=y_hat)
+        r_squared = pearsonr * pearsonr
+
+        # Calculate the p-values.
+        p_values = np.empty(n_terms, np.float32)
+        for col_index in range(n_terms):
+            column_mask = np.ones(n_terms, bool)
+            column_mask[col_index] = False
+
+            rss_null = calc_rss(y=y,
+                                y_hat=fit_and_predict(X=X[:, column_mask],
+                                                      y=y))
+            p_values[col_index] = calc_p_value(rss1=rss_null,
+                                               rss2=rss_alt,
+                                               df1=n_terms - 1,
+                                               df2=n_terms,
+                                               n=n)
+
+        return np.hstack((np.array([n]),
+                          betas,
+                          np.mean(res),
+                          std,
+                          np.std(res),
+                          p_values,
+                          np.array([r_squared])))
+
+    @staticmethod
+    def ols_model(y, X, n):
+        model = OLS(y, X).fit()
+        return np.hstack((np.array([n]),
+                          model.params,
+                          np.mean(model.resid),
+                          model.bse,
+                          np.std(model.resid),
+                          model.pvalues,
+                          np.array([model.rsquared])))
+
+
     def print_arguments(self):
         self.log.info("Arguments:")
         self.log.info("  > Genotype input path: {}".format(self.genotype_path))
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
         self.log.info("  > Filter variants: {}".format(self.filter_variants))
-        self.log.info("  > SNP call rate: >{}".format(self.call_rate))
-        self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
-        self.log.info("  > MAF: >{}".format(self.maf))
-        self.log.info("  > Minimal group size: >={}".format(self.mgs))
+        if self.filter_variants:
+            self.log.info("  > SNP call rate: >{}".format(self.call_rate))
+            self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
+            self.log.info("  > MAF: >{}".format(self.maf))
+            self.log.info("  > Minimal group size: >={}".format(self.mgs))
         self.log.info("  > Expression input path: {}".format(self.expression_path))
         self.log.info("  > Covariate input path: {}".format(self.covariate_path))
         self.log.info("  > Force normalise covariate: {}".format(self.force_normalise_covariates))
         self.log.info("  > Exclude covariate interaction: {}".format(self.exclude_covariate_interactions))
+        self.log.info("  > OLS: {}".format(self.ols))
         self.log.info("  > eQTL alpha: <={}".format(self.eqtl_alpha))
         self.log.info("  > Output directory: {}".format(self.outdir))
         self.log.info("")

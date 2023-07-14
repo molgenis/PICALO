@@ -47,40 +47,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_comparison_scatterplot2.py -h
-
-./create_comparison_scatterplot2.py \
-    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeTwoCovariates/simulation1/PICs.txt.gz \
-    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeTwoCovariates/PICs.txt.gz \
-    -y_transpose \
-    -o 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeTwoCovariates
-    
-./create_comparison_scatterplot2.py \
-    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeFiveCovariates/simulation1/PICs.txt.gz \
-    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeFiveCovariates/PICs.txt.gz \
-    -y_transpose \
-    -o 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealInterceptAndGenotypeFiveCovariates
-    
-./create_comparison_scatterplot2.py \
-    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealBetasAndBetaDistributionsFiveCovariates/simulation1/PICs.txt.gz \
-    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealBetasAndBetaDistributionsFiveCovariates/PICs.txt.gz \
-    -y_transpose \
-    -o 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealBetasAndBetaDistributionsFiveCovariates
-
-./create_comparison_scatterplot2.py \
-    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealBetasAndBetaDistributionsFiveCovariates-NewIntercept-CenterScaled/simulation1/PICs.txt.gz \
-    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealBetasAndBetaDistributionsFiveCovariates-NewIntercept-CenterScaled/PICs.txt.gz \
-    -y_transpose \
-    -o 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-RealBetasAndBetaDistributionsFiveCovariates-NewIntercept-CenterScaled
-    
-./create_comparison_scatterplot2.py \
-    -xd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-2023-06-28-mds-NoRNAPhenoNA-NoSexNA-NoMixups-SamplesVariantFilter-BonferroniHWE-allchr-mds.txt.gz \
-    -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-VariantSubsetFilter.txt.gz \
-    -o BIOS-2023-06-28-mds-NoRNAPhenoNA-NoSexNA-NoMixups-SamplesVariantFilter-1e4HWE_vs_BonferroniHWE
-    
-./create_comparison_scatterplot2.py \
-    -xd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-2023-06-28-mds-NoRNAPhenoNA-NoSexNA-NoMixups-SamplesVariantFilter-BonferroniHWE-NoMDSOutlierallchr-mds.txt.gz \
-    -yd /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/preprocess_mds_file/BIOS-allchr-mds-BIOS-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-VariantSubsetFilter.txt.gz \
-    -o BIOS-2023-06-28-mds-NoRNAPhenoNA-NoSexNA-NoMixups-SamplesVariantFilter-NoMDSOutlier-1e4HWE_vs_BonferroniHWE
 """
 
 
@@ -94,11 +60,13 @@ class main():
         self.y_transpose = getattr(arguments, 'y_transpose')
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.palette_path = getattr(arguments, 'palette')
+        outdir = getattr(arguments, 'outdir')
         self.out_filename = getattr(arguments, 'outfile')
         self.extensions = getattr(arguments, 'extensions')
 
-        # Set variables.
-        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
+        if outdir is None:
+            outdir = str(os.path.dirname(os.path.abspath(__file__)))
+        self.outdir = os.path.join(outdir, 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -150,7 +118,13 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
-        parser.add_argument("-o",
+        parser.add_argument("-od",
+                            "--outdir",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The name of the output path.")
+        parser.add_argument("-of",
                             "--outfile",
                             type=str,
                             required=False,
@@ -172,6 +146,7 @@ class main():
         print("Loading data.")
         x_df = self.load_file(self.x_data_path, header=0, index_col=0)
         y_df = self.load_file(self.y_data_path, header=0, index_col=0)
+        # y_df = y_df.iloc[:5, :]
 
         print("Pre-process")
         if self.x_transpose:
@@ -232,7 +207,15 @@ class main():
                     df["facecolors"] = df["hue"].map(palette)
                     facecolors = df["facecolors"]
 
-                ax = axes[i, j]
+                if nrows == 1 and ncols == 1:
+                    ax = axes
+                elif nrows == 1:
+                    ax = axes[j]
+                elif ncols == 1:
+                    ax = axes[i]
+                else:
+                    ax = axes[i, j]
+
                 sns.despine(fig=fig, ax=ax)
 
                 n = df.shape[0]
@@ -356,9 +339,9 @@ class main():
         print("    > Data: {}".format(self.y_data_path))
         print("    > Transpose: {}".format(self.y_transpose))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
-        print("  > Extensions: {}".format(self.extensions))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
+        print("  > Extensions: {}".format(self.extensions))
         print("")
 
 

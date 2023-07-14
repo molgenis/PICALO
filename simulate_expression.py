@@ -3,8 +3,8 @@
 """
 File:         simulate_expression.py
 Created:      2023/06/07
-Last Changed: 2023/06/19
-Author:       M.Vochteloo, loosely based on work by Zhou et al. Genome Biology (2022).
+Last Changed: 2023/07/13
+Author:       M.Vochteloo
 
 Copyright (C) 2020 University Medical Center Groningen.
 
@@ -20,6 +20,7 @@ import os
 # Third party imports.
 import pandas as pd
 import numpy as np
+from scipy import stats
 from scipy.special import betainc
 from sklearn.decomposition import PCA
 
@@ -45,73 +46,28 @@ __description__ = "{} is a program developed and maintained by {}. " \
 Syntax: 
 ./simulate_expression.py -h
 
-
-### 2023-06-27 ###
-
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised/eQTLSummaryStats.txt.gz \
-    -use_real_distributions \
-    -kc 0 \
-    -hc 1 \
-    -of 2023-06-08-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-firstExprPCForceNormalised
-    
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2022-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
-    -use_real_distributions \
-    -kc 0 \
-    -hc 2 \
-    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised
-    
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first3ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
-    -use_real_distributions \
-    -kc 0 \
-    -hc 3 \
-    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first3ExprPCForceNormalised
-    
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2022-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
-    -use_real_distributions \
-    -kc 0 \
-    -hc 2 \
-    -of 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix
-    
-./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
-    -use_real_distributions \
-    -kc 0 \
-    -hc 2 \
-    -of 2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first2ExprPCForceNormalised-GenotypeFix
-    
-### 20 covariates ###
+### MetaBrain 2 covariates ###
 
 ./simulate_expression.py \
     -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
     -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
     -use_real_distributions \
     -kc 0 \
-    -hc 20 \
-    -of 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised
+    -hc 2 \
+    -of 2023-07-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised
+    
+### BIOS 2 covariates ###
     
 ./simulate_expression.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -d /groups/umcg-bios/tmp01/projects/PICALO/fast_eqtl_mapper/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
     -use_real_distributions \
     -kc 0 \
-    -hc 20 \
-    -of 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised
+    -hc 2 \
+    -of 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised
+
 """
 
 
@@ -308,16 +264,6 @@ class main():
                 print("\tError, Dataset does not match genotype.")
                 exit()
 
-        # self.log.info("Filling missing values with average")
-        # geno_nan_mask = (geno_df == self.genotype_na)
-        # if geno_nan_mask.sum().sum() > 0:
-        #     # Calculate the dataset genotype means per eQTL and fill nan values
-        #     # with the dataset mean.
-        #     geno_dataset_mean_m = self.calculate_geno_mean_per_dataset(
-        #         geno_df=geno_df,
-        #         dataset_df=dataset_df)
-        #     geno_df[geno_nan_mask] = geno_dataset_mean_m[geno_nan_mask]
-
         self.log.info("Simulating genotypes")
         geno_df = self.simulate_genotypes(df=geno_df, dataset_df=dataset_df)
         print(geno_df)
@@ -483,6 +429,8 @@ class main():
             expr_pcs_df.index = ["PC{}".format(i + 1) for i, _ in enumerate(expr_pcs_df.index)]
             expr_pcs_df.columns = sample_names
             print(expr_pcs_df)
+            explained_var_df = pd.DataFrame(pca.explained_variance_ratio_ * 100, index=["PC{}".format(i + 1) for i in range(self.n_starting_vectors)], columns=["ExplainedVariance"])
+            print(explained_var_df)
 
             if self.n_hidden_covariates > 0:
                 self.log.info("\tChecking correlation between hidden covariates and PCs")
@@ -540,6 +488,8 @@ class main():
                            outpath=os.path.join(exp_outdir, "model_rsquared.txt.gz"))
             self.save_file(df=expr_pcs_df,
                            outpath=os.path.join(exp_outdir, "first{}ExpressionPCs.txt.gz".format(self.n_starting_vectors)))
+            self.save_file(df=explained_var_df,
+                           outpath=os.path.join(exp_outdir, "first{}ExpressionPCsExplainedVariance.txt.gz".format(self.n_starting_vectors)))
             self.save_file(df=pd.DataFrame(random_start_m, index=["Random{}".format(i + 1) for i in range(self.n_starting_vectors)], columns=sample_names),
                            outpath=os.path.join(exp_outdir, "{}RandomVectors.txt.gz".format(self.n_starting_vectors)))
 
@@ -556,23 +506,6 @@ class main():
                       "with shape: {}".format(os.path.basename(inpath),
                                               df.shape))
         return df
-
-    @staticmethod
-    def calculate_geno_mean_per_dataset(geno_df, dataset_df):
-        overall_mean = geno_df.mean(axis=1)
-
-        geno_dataset_mean = []
-        for dataset in dataset_df.iloc[:, 1].unique():
-            dataset_mask = (dataset_df.iloc[:, 1] == dataset).to_numpy()
-            dataset_mean_s = geno_df.loc[:, dataset_mask].mean(axis=1)
-            na_mask = dataset_mean_s.isna()
-            dataset_mean_s.loc[na_mask] = overall_mean[na_mask]
-            geno_dataset_mean.extend([dataset_mean_s] * np.sum(dataset_mask))
-
-        geno_dataset_mean_df = pd.concat(geno_dataset_mean, axis=1)
-        geno_dataset_mean_df.columns = geno_df.columns
-
-        return geno_dataset_mean_df
 
     @staticmethod
     def simulate_genotypes(df, dataset_df):
@@ -663,9 +596,6 @@ class main():
 
     @staticmethod
     def save_file(df, outpath, header=True, index=True, sep="\t"):
-        # print(outpath)
-        # print(df)
-        # return
         compression = 'infer'
         if outpath.endswith('.gz'):
             compression = 'gzip'

@@ -136,16 +136,24 @@ class main():
         sample_labels = ["Sample_{}".format(i) for i in range(n_samples)]
         covariate_labels = ["Context_{}".format(i) for i in range(n_covariates)]
 
+        print("Construct eQTL data")
+        eqtl_df = pd.DataFrame({
+            "SNPName": variant_labels,
+            "ProbeName": probe_labels,
+            "FDR": 0
+        })
+        print(eqtl_df)
+
         print("Simulate covariate data")
         # Simulate N normally distributed hidden covariates.
         cov_m = np.random.normal(0, 1, size=(n_samples, n_covariates))
         # print(pd.DataFrame(cov_m, index=sample_labels, columns=covariate_labels))
 
         print("Simulate genotype data")
-        geno_m = np.zeros((n_probes, n_samples), dtype=np.float64)
+        geno_m = np.zeros((n_probes, n_samples), dtype=np.uint8)
         maf_m = np.repeat(stats_df["MAF"].to_numpy()[:, np.newaxis], n_samples, axis=1)
         for i in range(2):
-            geno_m += (np.random.uniform(0, 1, size=(n_probes, n_samples)) < maf_m).astype(np.float64)
+            geno_m += (np.random.uniform(0, 1, size=(n_probes, n_samples)) < maf_m).astype(np.uint8)
         # print(pd.DataFrame(geno_m, index=variant_labels, columns=sample_labels))
 
         print("Simulate expression data")
@@ -182,6 +190,8 @@ class main():
         print(pd.DataFrame(expr_m, index=probe_labels, columns=sample_labels))
 
         print("Save data")
+        self.save_file(df=eqtl_df,
+                       outpath=os.path.join(self.outdir, "eQTLProbesProbeLevel.txt.gz"))
         self.save_file(df=pd.DataFrame(cov_m, index=sample_labels, columns=covariate_labels).T,
                        outpath=os.path.join(self.outdir, "simulated_covariates.txt.gz"))
         self.save_file(df=pd.DataFrame(geno_m, index=variant_labels, columns=sample_labels),

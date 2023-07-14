@@ -21,6 +21,7 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
+from scipy.special import ndtri
 from scipy import stats
 import seaborn as sns
 import matplotlib
@@ -92,6 +93,49 @@ Syntax:
     -n 400 \
     -e png pdf
     
+###
+    
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/genotype_table.txt.gz \
+    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-07-10-MetaBrain_CortexEUR-CovariatesRemovedOLS-first20ExprPCForceNormalised-GenotypeFix/PICs.txt.gz \
+    -i ENSG00000237651.6_2:61150884:rs1729652:A_G_PIC1 ENSG00000128944.13_15:40383242:rs7169404:G_T_PIC1 ENSG00000240344.9_2:200877622:rs2136600:C_T_PIC1 ENSG00000258289.8_14:64911980:rs7160518:G_T_PIC1 ENSG00000197345.13_11:68899730:rs636049:A_C_PIC1 \
+    -n 1000 \
+    -e png
+    
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/genotype_table.txt.gz \
+    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/first25ExpressionPCs.txt.gz \
+    -i ENSG00000237651.6_2:61150884:rs1729652:A_G_PC4 ENSG00000128944.13_15:40383242:rs7169404:G_T_PC4 _ENSG00000240344.9_2:200877622:rs2136600:C_TPC4 ENSG00000258289.8_14:64911980:rs7160518:G_T_PC4 ENSG00000197345.13_11:68899730:rs636049:A_C_PC4 \
+    -n 400 \
+    -e png
+    
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
+    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
+    -i ENSG00000013573.17_12:31073901:rs7953706:T_A_Comp1 ENSG00000013573.17_12:31073901:rs7953706:T_A_Comp2 ENSG00000013573.17_12:31073901:rs7953706:T_A_Comp3 ENSG00000013573.17_12:31073901:rs7953706:T_A_Comp4 ENSG00000013573.17_12:31073901:rs7953706:T_A_Comp5 \
+    -n 50 \
+    -e png
+    
+./visualise_interaction_eqtl.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/genotype_table.txt.gz \
+    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/expression_table.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/PICs.txt.gz \
+    -transpose_covariate \
+    -i ENSG00000013573.17_12:31073901:rs7953706:T_A_hidden_covariate0 ENSG00000013573.17_12:31073901:rs7953706:T_A_hidden_covariate1 ENSG00000013573.17_12:31073901:rs7953706:T_A_hidden_covariate2 ENSG00000013573.17_12:31073901:rs7953706:T_A_hidden_covariate3 ENSG00000013573.17_12:31073901:rs7953706:T_A_hidden_covariate4 \
+    -n 50 \
+    -e png
+    
 """
 
 
@@ -104,6 +148,8 @@ class main():
         self.alleles_path = getattr(arguments, 'alleles')
         self.expr_path = getattr(arguments, 'expression')
         self.cova_path = getattr(arguments, 'covariate')
+        self.transpose_covariate = getattr(arguments, 'transpose_covariate')
+        self.force_normalise_covariate = getattr(arguments, 'force_normalise_covariate')
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.interest = getattr(arguments, 'interest')
         self.nrows = getattr(arguments, 'nrows')
@@ -161,6 +207,12 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the covariate matrix.")
+        parser.add_argument("-transpose_covariate",
+                            action='store_true',
+                            help="Transpose the covariate file.")
+        parser.add_argument("-force_normalise_covariate",
+                            action='store_true',
+                            help="Force-normalise the covariate file.")
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
@@ -199,6 +251,13 @@ class main():
         alleles_df = self.load_file(self.alleles_path, header=0, index_col=0, nrows=self.nrows)
         expr_df = self.load_file(self.expr_path, header=0, index_col=0, nrows=self.nrows)
         cova_df = self.load_file(self.cova_path, header=0, index_col=0)
+
+        if self.transpose_covariate:
+            cova_df = cova_df.T
+
+        if self.force_normalise_covariate:
+            print("\t  Force normalise covariate matrix.")
+            cova_df = ndtri((cova_df.rank(axis=1, ascending=True) - 0.5) / cova_df.shape[1])
 
         if self.std_path:
             std_df = self.load_file(self.std_path, header=0, index_col=None)
@@ -298,7 +357,10 @@ class main():
                     eqtl_pvalue_str = "<{:.1e}".format(1e-308)
                 eqtl_pearsonr, _ = stats.pearsonr(data["expression"], data["genotype"])
 
-                interaction_pvalue = OLS(data["expression"], data[["intercept", "genotype", "covariate", "interaction"]]).fit().pvalues[3]
+                interaction_model = OLS(data["expression"], data[["intercept", "genotype", "covariate", "interaction"]]).fit()
+                interaction_betas = interaction_model.params
+                interaction_std = interaction_model.bse
+                interaction_pvalue = interaction_model.pvalues[3]
                 interaction_pvalue_str = "{:.2e}".format(interaction_pvalue)
                 if interaction_pvalue == 0:
                     interaction_pvalue_str = "<{:.1e}".format(1e-308)
@@ -318,8 +380,11 @@ class main():
                           "MAF: {:.2f}".format(minor_allele_frequency)]
                 annot2 = ["{} - {}".format(print_snp_name, minor_allele),
                           "N: {:,}".format(data.shape[0]),
-                          "interaction p-value: {}".format(
-                              interaction_pvalue_str),
+                          "Intercept: {:.2e} [±{:.2e}]".format(interaction_betas[0], interaction_std[0]),
+                          "Genotype: {:.2e} [±{:.2e}]".format(interaction_betas[1], interaction_std[1]),
+                          "Covariate: {:.2e} [±{:.2e}]".format(interaction_betas[2], interaction_std[2]),
+                          "Interaction: {:.2e} [±{:.2e}]".format(interaction_betas[3], interaction_std[3]),
+                          "interaction p-value: {}".format(interaction_pvalue_str),
                           "eQTL p-value: {:.2e}".format(eqtl_pvalue),
                           "MAF: {:.2f}".format(minor_allele_frequency)]
 
@@ -519,6 +584,8 @@ class main():
         print("  > Alleles path: {}".format(self.alleles_path))
         print("  > Expression path: {}".format(self.expr_path))
         print("  > Covariate path: {}".format(self.cova_path))
+        print("  > Transpose covariate: {}".format(self.transpose_covariate))
+        print("  > Force-normalise covariate: {}".format(self.force_normalise_covariate))
         print("  > Sample-to-dataset file: {}".format(self.std_path))
         print("  > Interest: {}".format(self.interest))
         print("  > Nrows: {}".format(self.nrows))

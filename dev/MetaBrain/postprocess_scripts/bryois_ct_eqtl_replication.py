@@ -63,7 +63,7 @@ Syntax:
 """
 
 # Metadata
-__program__ = "Decon-eQTL Bryois Replication Plot"
+__program__ = "Bryois Cell Type eQTL Replication"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
