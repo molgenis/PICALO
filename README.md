@@ -70,7 +70,7 @@ deactivate
 <details>
   <summary>Required data arguments</summary>
 
- * **-eq**, **--eqtl**: The path to the eqtl matrix. Expects to contain the columns 'Pvalue' (eQTL p-value), 'SNPName' (the eQTL SNP), and 'ProbeName' (the eQTL gene).
+ * **-eq**, **--eqtl**: The path to the eqtl matrix. Expects to contain the columns 'FDR' (eQTL FDR), 'SNPName' (the eQTL SNP), and 'ProbeName' (the eQTL gene).
 
  * **-ge**, **--genotype**: The path to the genotype matrix. Expects to contain genotype dosages (between 0 en 2). Missing genotypes are by default -1 (can be changed used **-na** / **--genotype_na**). The rows should contain the SNPs on the same order as the **-eq** / **--eqtl** files. The columns should contain the samples on the same order as the **-ex** / **--expression** and **-co** / **--covariate** files.
 
