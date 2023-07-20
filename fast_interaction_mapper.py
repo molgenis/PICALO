@@ -86,6 +86,90 @@ Syntax:
     -od /groups/umcg-bios/tmp01/projects/PICALO \
     -of 2022-10-25-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CFAsCov \
     -verbose
+    
+### Even / Odd split BIOS ###
+
+./fast_interaction_mapper.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/genotype_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/first40ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd/PICs.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -od /groups/umcg-bios/tmp01/projects/PICALO \
+    -of 2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPICs \
+    -verbose
+    
+./fast_interaction_mapper.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/genotype_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/first40ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_WithUncenteredPCA_odd/data/first25ExpressionPCs.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -od /groups/umcg-bios/tmp01/projects/PICALO \
+    -of 2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPCs \
+    -verbose
+    
+### Even / odd split Biogen ###
+
+./fast_interaction_mapper.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/genotype_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/expression_table.txt.gz \
+    -tc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/first80ExpressionPCs.txt.gz \
+    -tci /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd/PICs.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
+    -of 2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPICs \
+    -verbose
+    
+./fast_interaction_mapper.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/genotype_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/expression_table.txt.gz \
+    -tc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/first80ExpressionPCs.txt.gz \
+    -tci /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_WithUncenteredPCA_odd/data/first25ExpressionPCs.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/even/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
+    -of 2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPCs \
+    -verbose
+
+### ###
+
+./fast_interaction_mapper.py \
+    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/genotype_table.txt.gz \
+    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/expression_table.txt.gz \
+    -tc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/first80ExpressionPCs.txt.gz \
+    -tci /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd/PICs.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/split_picalo_files/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
+    -of 2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd_PICs \
+    -verbose
+    
+./fast_interaction_mapper.py \
+    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
+    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/genotype_table.txt.gz \
+    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/expression_table.txt.gz \
+    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/first40ExpressionPCs.txt.gz \
+    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/tech_covariates_with_interaction_df.txt.gz \
+    -co /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd/PICs.txt.gz \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/split_picalo_files/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/odd/sample_to_dataset.txt.gz \
+    -maf 0.05 \
+    -od /groups/umcg-bios/tmp01/projects/PICALO \
+    -of 2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd_PICs \
+    -verbose
 """
 
 

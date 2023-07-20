@@ -124,6 +124,9 @@ class main():
         # Determine the beta and std columns.
         beta_columns = [col for col in stats_df.columns if col.startswith("beta-")]
         std_columns = [col for col in stats_df.columns if col.startswith("std-")]
+        if stats_df.loc[:, beta_columns + std_columns].isna().values.sum() > 0:
+            print("\t  Summary statistics file contains NaN values")
+            exit()
 
         # Determine the number of hidden covariates
         n_terms = len(beta_columns)

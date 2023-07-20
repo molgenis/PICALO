@@ -142,6 +142,52 @@ Syntax:
     -cn brain \
     -m Pearson \
     -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_zscore_comparison
+    
+### simulations
+
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/PICs.txt.gz \
+    -rn simulated \
+    -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GapsFilled-DatasetsCorrected/PICs.txt.gz \
+    -cn observed \
+    -m Pearson \
+    -o 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-simulation1-GapsFilled-DatasetsCorrected
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised/simulation1/PICs.txt.gz \
+    -rn simulated \
+    -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised/simulation1/first25ExpressionPCs.txt.gz \
+    -cn exprPCs \
+    -m Pearson \
+    -o 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised-simulation1-ExprPCs-vs-Contexts
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised/simulation1/PICs.txt.gz \
+    -rn simulated \
+    -m Pearson \
+    -o 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised-simulation1-PICs
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix/simulation1/PICs.txt.gz \
+    -rn simulated \
+    -cd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix/components.txt.gz \
+    -cn observed \
+    -m Pearson \
+    -o 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix-simulation1
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix/simulation1/model_betas.txt.gz \
+    -rn ModelBetas \
+    -m Pearson \
+    -o 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix-simulation1-ModelBetas
+    
+./create_correlation_heatmap.py \
+    -rd /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_even/PICs.txt.gz \
+    -rn Even \
+    -cd /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd/PICs.txt.gz \
+    -cn Odd \
+    -m Pearson \
+    -o 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_even_vs_odd
 """
 
 
@@ -162,6 +208,10 @@ class main():
         self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
+
+        # Set the right pdf font for exporting.
+        matplotlib.rcParams['pdf.fonttype'] = 42
+        matplotlib.rcParams['ps.fonttype'] = 42
 
     @staticmethod
     def create_argument_parser():

@@ -47,6 +47,9 @@ Syntax:
 
 ./create_replication_heatmap.py \
     -w /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/bryois_pic_replication
+    
+./create_replication_heatmap.py \
+    -w /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/klein_ct_eqtl_replication/PICALODiscovery
 """
 
 
@@ -59,13 +62,19 @@ class main():
 
         self.cell_type_abbreviations = {
             "Astrocytes": "AST",
+            "Astrocyte": "AST",
             "EndothelialCells": "END",
+            "EndothelialCell": "END",
             "ExcitatoryNeurons": "EX",
+            "Excitatory": "EX",
             "InhibitoryNeurons": "IN",
+            "Inhibitory": "IN",
             "Microglia": "MIC",
             "Oligodendrocytes": "OLI",
+            "Oligodendrocyte": "OLI",
             "OPCsCOPs": "OPC",
-            "Pericytes": "PER"
+            "Pericytes": "PER",
+            "OtherNeuron": "NEU",
         }
 
         # Set the right pdf font for exporting.

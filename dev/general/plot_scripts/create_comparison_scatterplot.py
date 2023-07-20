@@ -45,6 +45,95 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_comparison_scatterplot.py -h
+
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/PICs.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-PICs
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/first25ExpressionPCs.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-PCs
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first3ExprPCForceNormalised/simulation1/first25ExpressionPCs.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first3ExprPCForceNormalised-PCs
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised/PICs.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first20ExprPCForceNormalised-PICs
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_WithUncenteredPCA/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.CovariatesRemovedOLS.ScaleAndLocReturned.PCAOverSamplesEigenvectors.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2022-03-24-MetaBrain_allCohorts_2020-02-16_TMM_freeze2dot1_SampleSelection_SampleSelection_ProbesWithZeroVarianceRemoved_Log2Transformed_CovariatesRemovedOLS_ScaleAndLocReturned_PCAOverSamplesEigenvectors
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_WithUncenteredPCA/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.PCAOverSamplesEigenvectors.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2022-03-24-MetaBrain_allCohorts_2020-02-16_TMM_freeze2dot1_SampleSelection_SampleSelection_ProbesWithZeroVarianceRemoved_Log2Transformed_ProbesCentered_SamplesZTransformed_CovariatesRemovedOLS_PCAOverSamplesEigenvectors
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix/simulation1/first25ExpressionPCs.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-GenotypeFix-Simulation1-First25ExprPCs
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first2ExprPCForceNormalised-GenotypeFix/simulation1/first25ExpressionPCs.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-10-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first2ExprPCForceNormalised-GenotypeFix-Simulation1-First25ExprPCs
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/first25ExpressionPCs.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised-Simulation1-First25ExprPCs
+    
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised/simulation1/first25ExpressionPCs.txt.gz \
+    -transpose \
+    -n 5 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-04-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-CovariatesRemovedOLS-first20ExprPCForceNormalised-Simulation1-First25ExprPCs
+    
+###ls 
+
+./create_comparison_scatterplot.py \
+    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-11-testNoDist/simulation1/first25ExpressionPCs.txt.gz \
+    -transpose \
+    -n 5 \
+    -a /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-11-testNoDist/simulation1/first25ExpressionPCsExplainedVariance.txt.gz \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-11-testNoDist-Simulation1-First25ExprPCs
 """
 
 
@@ -54,12 +143,17 @@ class main():
         arguments = self.create_argument_parser()
         self.data_path = getattr(arguments, 'data')
         self.nrows = getattr(arguments, 'n_rows')
+        self.transpose = getattr(arguments, 'transpose')
+        self.annot_path = getattr(arguments, 'annot')
         self.std_path = getattr(arguments, 'sample_to_dataset')
         self.palette_path = getattr(arguments, 'palette')
+        outdir = getattr(arguments, 'outdir')
         self.out_filename = getattr(arguments, 'outfile')
+        self.extensions = getattr(arguments, 'extensions')
 
-        # Set variables.
-        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
+        if outdir is None:
+            outdir = str(os.path.dirname(os.path.abspath(__file__)))
+        self.outdir = os.path.join(outdir, 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
 
@@ -93,6 +187,14 @@ class main():
                             required=False,
                             default=None,
                             help="The number of rows to plot. Default: all.")
+        parser.add_argument("-transpose",
+                            action='store_true',
+                            help="Transpose.")
+        parser.add_argument("-a",
+                            "--annot",
+                            type=str,
+                            required=False,
+                            help="The path to the annotation matrix.")
         parser.add_argument("-std",
                             "--sample_to_dataset",
                             type=str,
@@ -106,12 +208,25 @@ class main():
                             default=None,
                             help="The path to a json file with the"
                                  "dataset to color combinations.")
-        parser.add_argument("-o",
+        parser.add_argument("-od",
+                            "--outdir",
+                            type=str,
+                            required=False,
+                            default=None,
+                            help="The name of the output path.")
+        parser.add_argument("-of",
                             "--outfile",
                             type=str,
                             required=False,
                             default="comparison_scatterplot",
                             help="The name of the outfile.")
+        parser.add_argument("-e",
+                            "--extensions",
+                            type=str,
+                            nargs="+",
+                            default=["png"],
+                            choices=["eps", "pdf", "pgf", "png", "ps", "raw", "rgba", "svg", "svgz"],
+                            help="The output file format(s), default: ['png']")
 
         return parser.parse_args()
 
@@ -119,9 +234,21 @@ class main():
         self.print_arguments()
 
         print("Loading data.")
-        df = self.load_file(self.data_path, header=0, index_col=0, nrows=self.nrows)
-        df = df.T
+        df = self.load_file(self.data_path, header=0, index_col=0)
+        if self.transpose:
+            df = df.T
+        if self.nrows is not None:
+            df = df.iloc[:, :self.nrows]
         columns = df.columns.tolist()
+        print(df)
+        print(columns)
+
+        annot = None
+        if self.annot_path is not None:
+            print("Loading annotation")
+            annot_df = self.load_file(self.annot_path, header=0, index_col=0)
+            print(annot_df)
+            annot = dict(zip(annot_df.index, annot_df.iloc[:, 0]))
 
         print("Loading color data.")
         hue = None
@@ -130,13 +257,14 @@ class main():
             sa_df = self.load_file(self.std_path, header=0, index_col=None)
             sa_df.set_index(sa_df.columns[0], inplace=True)
             sa_df.columns = ["hue"]
+            sa_df["hue"] = sa_df["hue"].astype(str)
             df = df.merge(sa_df, left_index=True, right_index=True)
 
             hue = "hue"
             palette = self.palette
 
         # Plotting.
-        self.plot(df=df, columns=columns, hue=hue, palette=palette)
+        self.plot(df=df, columns=columns, annot=annot, hue=hue, palette=palette)
 
     @staticmethod
     def load_file(inpath, header, index_col, sep="\t", low_memory=True,
@@ -148,7 +276,7 @@ class main():
                                       df.shape))
         return df
 
-    def plot(self, df, columns, hue, palette):
+    def plot(self, df, columns, hue=None, annot=None, palette=None):
         ncols = len(columns)
         nrows = len(columns)
 
@@ -167,9 +295,9 @@ class main():
                 if i == 0 and j == (ncols - 1):
                     ax.set_axis_off()
                     if hue is not None and palette is not None:
-                        groups_present = df[hue].unique()
+                        groups_present = df[hue].unique().tolist()
                         handles = []
-                        for key, value in self.palette.items():
+                        for key, value in palette.items():
                             if key in groups_present:
                                 handles.append(mpatches.Patch(color=value, label=key))
                         ax.legend(handles=handles, loc=4, fontsize=25)
@@ -180,7 +308,11 @@ class main():
                 elif i == j:
                     ax.set_axis_off()
 
-                    ax.annotate(y_col,
+                    annot_str = ""
+                    if annot is not None and y_col in annot:
+                        annot_str = "\n{:.2f}%".format(annot[y_col])
+
+                    ax.annotate("{}{}".format(y_col, annot_str),
                                 xy=(0.5, 0.5),
                                 ha='center',
                                 xycoords=ax.transAxes,
@@ -230,9 +362,12 @@ class main():
         print("Arguments:")
         print("  > Data path: {}".format(self.data_path))
         print("  > N-rows: {}".format(self.nrows))
+        print("  > Transpose: {}".format(self.transpose))
+        print("  > Annotation path: {}".format(self.annot_path))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Output filename: {}".format(self.out_filename))
         print("  > Outpath {}".format(self.outdir))
+        print("  > Extensions: {}".format(self.extensions))
         print("")
 
 

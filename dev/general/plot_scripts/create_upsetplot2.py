@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-File:         create_upsetplot.py
-Created:      2021/05/10
-Last Changed: 2022/02/10
+File:         create_upsetplot2.py
+Created:      2023/07/20
+Last Changed:
 Author:       M.Vochteloo
 
 Copyright (C) 2020 University Medical Center Groningen.
@@ -34,7 +34,7 @@ import matplotlib.patches as mpatches
 # Local application imports.
 
 # Metadata
-__program__ = "Create Upsetplot"
+__program__ = "Create Upsetplot 2"
 __author__ = "Martijn Vochteloo"
 __maintainer__ = "Martijn Vochteloo"
 __email__ = "m.vochteloo@rug.nl"
@@ -49,7 +49,11 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-./create_upsetplot.py -h
+./create_upsetplot2.py -h
+
+./create_upsetplot2.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd_PICs \
+    -n 
 """
 
 
@@ -58,21 +62,12 @@ class main():
         # Get the command line arguments.
         arguments = self.create_argument_parser()
         self.input_directory = getattr(arguments, 'indir')
-        self.eqtl_path = getattr(arguments, 'eqtl')
-        self.palette_path = getattr(arguments, 'palette')
-        self.out_filename = getattr(arguments, 'outfile')
+        self.n_files = getattr(arguments, 'n_files')
 
         # Set variables.
         self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
-
-        # Loading palette.
-        self.palette = None
-        if self.palette_path is not None:
-            with open(self.palette_path) as f:
-                self.palette = json.load(f)
-            f.close()
 
     @staticmethod
     def create_argument_parser():
@@ -91,23 +86,12 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the input directory.")
-        parser.add_argument("-eq",
-                            "--eqtl",
-                            type=str,
-                            required=True,
-                            help="The path to the eqtl matrix.")
-        parser.add_argument("-p",
-                            "--palette",
-                            type=str,
-                            required=False,
+        parser.add_argument("-n",
+                            "--n_files",
+                            type=int,
                             default=None,
-                            help="The path to a json file with the"
-                                 "dataset to color combinations.")
-        parser.add_argument("-o",
-                            "--outfile",
-                            type=str,
-                            required=True,
-                            help="The name of the outfile.")
+                            help="The number of files to load. "
+                                 "Default: all.")
 
         return parser.parse_args()
 
@@ -332,9 +316,10 @@ class main():
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.input_directory))
-        print("  > Palette path: {}".format(self.palette_path))
-        print("  > EQTL path directory: {}".format(self.eqtl_path))
-        print("  > Output filename: {}".format(self.out_filename))
+        if self.n_files is None:
+            print("  > N-files: all")
+        else:
+            print("  > N-files: {:,}".format(self.n_files))
         print("  > Output directory: {}".format(self.outdir))
         print("")
 

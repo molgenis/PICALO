@@ -107,6 +107,16 @@ Syntax:
     -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_AvgExprCorrelation_vs_SULT4A1
     
 ./create_regplot.py \
+    -xd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/simulation1/PICs.txt.gz \
+    -x_transpose \
+    -xi hidden_covariate0 \
+    -yd /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/PICs.txt.gz \
+    -yi PIC2 \
+    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrainColorPalette.json \
+    -o 2023-07-03-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised-PIC2
+    
+./create_regplot.py \
     -xd /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_correlation_zscore.txt.gz \
     -x_transpose \
     -xi PIC1 \
@@ -175,6 +185,49 @@ Syntax:
     -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/BIOS-BIOS-cis-NoRNAPhenoNA-NoSexNA-NoMixups-NoMDSOutlier-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs/sample_to_dataset.txt.gz \
     -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
     -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_Comp5_vs_Granulocyte
+
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_even/PICs.txt.gz \
+    -xi PIC2 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd/PICs.txt.gz \
+    -yi PIC2 \
+    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
+    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
+    -o 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_even_vs_odd_PIC2 \
+    -e png
+    
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised-RandomVector-R02/PICs.txt.gz \
+    -xi PIC1 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/simulate_expression2/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised/simulated_covariates.txt.gz \
+    -yi Context_0 \
+    -o 2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised-RandomVector-R02 \
+    -e png
+    
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/dev/simulation_scripts/generate_starting_vectors/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised/starting_vector_rho02.txt.gz \
+    -xi Start0 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/simulate_expression2/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised/simulated_covariates.txt.gz \
+    -yi Context_0 \
+    -o 2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised-RandomVector-R02_start \
+    -e png pdf
+    
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/output/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised-RandomVector-R04/PICs.txt.gz \
+    -xi PIC2 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/simulate_expression2/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised/simulated_covariates.txt.gz \
+    -yi Context_2 \
+    -o 2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised-RandomVector-R04 \
+    -e png
+    
+./create_regplot.py \
+    -xd /groups/umcg-bios/tmp01/projects/PICALO/dev/simulation_scripts/generate_starting_vectors/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised/starting_vector_rho04.txt.gz \
+    -xi Start2 \
+    -yd /groups/umcg-bios/tmp01/projects/PICALO/simulate_expression2/2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised/simulated_covariates.txt.gz \
+    -yi Context_2 \
+    -o 2023-07-15-BIOS-SimulationOf-2022-03-24-first3ExprPCForceNormalised-RandomVector-R04_start2 \
+    -e png pdf
+
 
 """
 

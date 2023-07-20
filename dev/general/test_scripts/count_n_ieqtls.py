@@ -14,6 +14,7 @@ LICENSE file in the root directory of this source tree.
 
 # Standard imports.
 from __future__ import print_function
+import itertools
 import glob
 import argparse
 import re
@@ -22,6 +23,10 @@ import os
 # Third party imports.
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import upsetplot as up
 
 # Local application imports.
 
@@ -94,6 +99,18 @@ Syntax:
 ./count_n_ieqtls.py \
     -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-PICsAsCov-Conditional \
     -e PIC1 PIC4 PIC8
+    
+### odd / even split ###
+
+./count_n_ieqtls.py \
+    -i /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPCs \
+    -n 6 \
+    -plot
+    
+./count_n_ieqtls.py \
+    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPICs \
+    -n 7 \
+    -plot
 """
 
 
@@ -106,6 +123,12 @@ class main():
         self.skip_files = getattr(arguments, 'skip_files')
         self.n_files = getattr(arguments, 'n_files')
         self.conditional = getattr(arguments, 'conditional')
+        self.plot = getattr(arguments, 'plot')
+
+        # Set variables.
+        self.outdir = os.path.join(str(os.path.dirname(os.path.abspath(__file__))), 'plot')
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
 
     @staticmethod
     def create_argument_parser():
@@ -145,6 +168,9 @@ class main():
         parser.add_argument("-conditional",
                             action='store_true',
                             help="Perform conditional analysis. Default: False.")
+        parser.add_argument("-plot",
+                            action='store_true',
+                            help="Create upsetplot. Default: False.")
 
         return parser.parse_args()
 
@@ -199,6 +225,21 @@ class main():
                 print("\tN-eQTLs with {} interaction: {:,} [{:.2f}%]".format(value, n, (100 / eqtls_w_inter) * n))
         print("\tUnique: {:,} / {:,} [{:.2f}%]".format(eqtls_w_inter, total_eqtls, (100 / total_eqtls) * eqtls_w_inter))
 
+        if self.plot:
+            pic_data = {}
+            for col in ieqtl_fdr_df.columns:
+                pic_data[col] = set(ieqtl_fdr_df.loc[ieqtl_fdr_df[col] == 1, :].index.tolist())
+
+            # Plot upsetplot of all PICS combined.
+            counts = self.count(pic_data)
+            counts = counts[counts > 0]
+            print(counts)
+
+            print("Creating plot.")
+            up.plot(counts, sort_by='cardinality', show_counts=True)
+            plt.savefig(os.path.join(self.outdir, "{}_PICS_upsetplot.png".format(os.path.basename(self.indir))))
+            plt.close()
+
     @staticmethod
     def load_file(inpath, header=0, index_col=0, sep="\t", low_memory=True,
                   nrows=None, skiprows=None):
@@ -213,6 +254,48 @@ class main():
     def natural_keys(text):
         return [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', text)]
 
+
+    @staticmethod
+    def count(input_data):
+        combinations = []
+        cols = list(input_data.keys())
+        for i in range(1, len(cols) + 1):
+            combinations.extend(list(itertools.combinations(cols, i)))
+
+        indices = []
+        data = []
+        for combination in combinations:
+            index = []
+            for col in cols:
+                if col in combination:
+                    index.append(True)
+                else:
+                    index.append(False)
+
+            background = set()
+            for key in cols:
+                if key not in combination:
+                    work_set = input_data[key].copy()
+                    background.update(work_set)
+
+            overlap = None
+            for key in combination:
+                work_set = input_data[key].copy()
+                if overlap is None:
+                    overlap = work_set
+                else:
+                    overlap = overlap.intersection(work_set)
+
+            duplicate_set = overlap.intersection(background)
+            length = len(overlap) - len(duplicate_set)
+
+            indices.append(index)
+            data.append(length)
+
+        s = pd.Series(data, index=pd.MultiIndex.from_tuples(indices, names=cols))
+        s.name = "value"
+        return s
+
     def print_arguments(self):
         print("Arguments:")
         print("  > Input directory: {}".format(self.indir))
@@ -222,6 +305,7 @@ class main():
             print("  > N-files: all")
         else:
             print("  > N-files: {:,}".format(self.n_files))
+        print("  > Plot: {:,}".format(self.plot))
         print("")
 
 
