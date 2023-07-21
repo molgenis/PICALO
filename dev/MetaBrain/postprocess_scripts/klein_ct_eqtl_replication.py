@@ -201,7 +201,7 @@ class main():
         replication_stats_df_list = []
         ieqtl_dfs = {}
         pics = []
-        for i in [1, 2, 3, 4, 5]:
+        for i in [1, 2, 5]:
             pic = "PIC{}".format(i)
             picalo_pic_path = os.path.join(self.picalo_indir, "{}.txt.gz".format(pic))
 

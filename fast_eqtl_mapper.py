@@ -263,6 +263,7 @@ class main():
                 self.log.warning("\t  {:,} eQTL(s) are discarded in total".format(geno_n_skipped))
 
             geno_stats_df = geno_stats_df.loc[combined_keep_mask, :]
+            geno_stats_df.reset_index(drop=True, inplace=True)
             geno_df = geno_df.loc[combined_keep_mask, :]
             expr_df = expr_df.loc[combined_keep_mask, :]
 
