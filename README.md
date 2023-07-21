@@ -1,6 +1,6 @@
 # Principal Interaction Component Analysis through Likelihood Optimization (PICALO)
 
-Expression quantitative trait loci (eQTL) help explain the regulatory mechanisms of trait associated variants. eQTL effect sizes are often dependent on observed and unobserved biological contexts, such as cell type composition and environmental factors. Here, we introduce PICALO (Principal Interaction Component Analysis through Likelihood Optimization) which is an unbiased method to identify known and hidden contexts that influence eQTLs.
+Expression quantitative trait loci (eQTL) offer insights into the regulatory mechanisms of trait associated variants, but their effects often rely on contexts that are either unknown or unmeasured. We introduce PICALO, a method for hidden variable inference of eQTL contexts. PICALO identifies and disentangles technical from biological context in heterogeneous blood and brain bulk eQTL datasets.
 
 ## How it works
 
