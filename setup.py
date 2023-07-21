@@ -12,7 +12,7 @@ setup(
     install_requires=[
         'numpy==1.19.5',
         'pandas==1.2.1',
-        'scipy==1.6.0',
+        'scipy==1.10.0',
         'statsmodels==0.12.2',
         'matplotlib==3.3.4',
         'seaborn==0.11.1'
