@@ -46,13 +46,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./plot_interferon_signaling.py -h
-    
-./plot_interferon_signaling.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/data/interferome_experiment_data_bios_eqtl_genes.txt.gz \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/gene_set_enrichment/2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_ZscoreFiltering/info.txt.gz \
-    -p PIC2 PIC9 PIC10 \
-    -o 2022-04-13-BIOS_InterferonSignaling
-
 """
 
 

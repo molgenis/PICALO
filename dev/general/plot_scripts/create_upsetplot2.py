@@ -50,10 +50,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./create_upsetplot2.py -h
-
-./create_upsetplot2.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_interaction_mapper/2023-07-17-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_odd_PICs \
-    -n 
 """
 
 

@@ -41,12 +41,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./generate_starting_vectors.py -h
-    
-./generate_starting_vectors.py \
-    -rc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/simulate_expression/2023-07-11-Lude/ieQTLSummaryStats.txt.SimulatedCovariates.txt \
-    -r 0.3 \
-    -od /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/dev/simulation_scripts \
-    -of 2023-07-11-Lude-StartingVectors
 """
 
 

@@ -37,41 +37,7 @@ from adjustText import adjust_text
 
 """
 Syntax:
-
-
-### BIOS ### 
-./pic_replication.py \
-    -di /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_Even \
-    -dl even_PICs \
-    -ri /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ReplicateOddPICsInEveneQTLs \
-    -rl odd_PICs \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPICsInEveneQTLs \
-    -e png
-    
-./pic_replication.py \
-    -di /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_Odd \
-    -dl odd_PICs \
-    -ri /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ReplicateEvenPICsInOddeQTLs \
-    -rl even_PICs \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_EvenPICsInOddeQTLs \
-    -e png
-    
----- 
-    
-./pic_replication.py \
-    -di /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_Odd_PCsAsCovs \
-    -dl odd \
-    -ri /groups/umcg-bios/tmp01/projects/PICALO/fast_interaction_mapper/2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_ReplicateOddPCsInEveneQTLs \
-    -rl even \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2023-07-17-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPCsInEveneQTLs \
-    -e png
-    
-### MetaBrain ###
-
-
+./pic_replication.py -h
 """
 
 # Metadata

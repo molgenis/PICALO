@@ -40,14 +40,6 @@ Syntax:
 
 
 ### BIOS ### 
-./pic_replication_combined.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/pic_replication/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_EvenPICsInOddeQTLs_pic_replication.txt.gz /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/pic_replication/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_OddPICsInEveneQTLs_pic_replication.txt.gz \
-    -dl odd_PICs even_PICs \
-    -rl even_PICs odd_PICs \
-    -t odd_PIC_ieQTLs even_PIC_ieQTLs \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json \
-    -o 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -e png
 
 ### MetaBrain ###
 

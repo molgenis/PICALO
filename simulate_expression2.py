@@ -40,19 +40,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./simulate_expression2.py -h
-
-### MetaBrain 2 covariates ###
-
-./simulate_expression2.py \
-    -s /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/fast_eqtl_mapper/2023-07-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
-    -of 2023-07-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised
-    
-### BIOS 2 covariates ###
-    
-./simulate_expression2.py \
-    -s /groups/umcg-bios/tmp01/projects/PICALO/fast_eqtl_mapper/2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised/eQTLSummaryStats.txt.gz \
-    -of 2023-07-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA-first2ExprPCForceNormalised
-
 """
 
 

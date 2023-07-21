@@ -40,17 +40,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./calc_replication_score.py -h
-
-./calc_replication_score.py \
-    -pec /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/force_normalise_matrix/2022-04-08-MetaBrain-CortexAFR.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz_ForceNormalised.txt.gz \
-    -o 2022-04-14-MetaBrain-CortexAFR-ReplicationScore-CortexEUR-cis-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs
-
-./calc_replication_score.py \
-    -pec /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/correlate_components_with_genes/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/2022-03-24-MetaBrain_CortexAFR_NoMDSOutlier_NoRNAseqAlignmentMetrics_WithUncenteredPCA/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.ProbesCentered.SamplesZTransformed.CovariatesRemovedOLS.txt.gz \
-    -o 2022-04-14-MetaBrain-CortexAFR-ReplicationScore-CortexEUR-cis-NoRNAseqAlignmentMetrics-GT1AvgExprFilter-PrimaryeQTLs-NoFNPD
-
 """
 
 

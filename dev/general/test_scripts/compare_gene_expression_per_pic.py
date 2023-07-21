@@ -46,16 +46,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./compare_gene_expression_per_pic.py -h
-
-### BIOS ###
-
-./compare_gene_expression_per_pic.py \
-    -gc /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/correlate_components_with_genes/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_gene_correlations-avgExpressionAdded.txt.gz \
-    -o 2022-05-03-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations
-
-### MetaBrain ###
-
-
 """
 
 

@@ -47,7 +47,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./correlate_correlation_with_sn_rnaseq.py -h
-
 """
 
 

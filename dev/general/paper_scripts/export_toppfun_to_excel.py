@@ -27,13 +27,6 @@ import pandas as pd
 """
 Syntax:
 ./export_toppfun_to_excel.py -h
-
-### BIOS ###
-
-./export_toppfun_to_excel.py \
-    -b /groups/umcg-bios/tmp01/projects/PICALO/postprocess_scripts/gene_set_enrichment/2022-04-13-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_ZscoreFiltering/toppgene_enrichment_df.txt.gz \
-    -m /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/gene_set_enrichment/2022-04-13-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_FNPDGeneCorrelations_ZscoreFiltering/toppgene_enrichment_df.txt.gz \
-    -o 2022-04-13-SupplementaryTable4_v1
 """
 
 

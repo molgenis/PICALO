@@ -40,16 +40,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./calculate_correlation_start_vs_end.py -h
-
-### MetaBrain ###
-
-./calculate_correlation_start_vs_end.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/
-
-### BIOS ###
-
-./calculate_correlation_start_vs_end.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/
 """
 
 

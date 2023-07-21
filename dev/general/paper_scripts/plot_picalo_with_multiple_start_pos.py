@@ -49,18 +49,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./plot_picalo_with_multiple_start_pos.py -h
-
-### MetaBrain ###
-
-### BIOS ###
-
-./plot_picalo_with_multiple_start_pos.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/output \
-    -f 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -rx PIC2-Comp13 \
-    -ry PIC3-Comp13 \
-    -e png
-
 """
 
 

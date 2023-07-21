@@ -43,12 +43,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./visualise_replication_stats.py -h
-
-./visualise_replication_stats.py \
-    -d /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/afr_pic_replication/replication_stats.txt.gz \
-    -o 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICsAsCov \
-    -e png pdf
-    
 """
 
 

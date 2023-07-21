@@ -42,14 +42,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./check_results.py -h
-
-./check_results.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output \
-    -p 2022-03-24-
-
-./check_results.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/output \
-    -p 2022-03-24-
 """
 
 

@@ -50,16 +50,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./plot_rho_simulations.py -h
-
-### MetaBrain ###
-
-### Bios ###
-
-./plot_rho_simulations.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/ \
-    -f 2023-07-15-BIOS-SimulationOf-2022-03-24 \
-    -p /groups/umcg-bios/tmp01/projects/PICALO/data/BIOSColorPalette.json
-
 """
 
 

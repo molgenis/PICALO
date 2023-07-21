@@ -48,19 +48,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-
-./visualise_cmv_violinplot.py \
-    -xd /groups/umcg-bios/tmp01/projects/PICALO/antibodyPc2VsPic3.txt \
-    -x_transpose \
-    -xi antiBodyPc2 \
-    -xl Anti-Body_PC2 \
-    -yd /groups/umcg-bios/tmp01/projects/PICALO/antibodyPc2VsPic3.txt \
-    -y_transpose \
-    -yi pic3 \
-    -yl blood_PIC3 \
-    -o 2022-03-24-BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA_PICGeneExpressionCorrelation_PIC3_vs_ABPC2 \
-    -e png pdf
-
+./visualise_cmv_violinplot.py -h
 """
 
 

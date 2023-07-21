@@ -47,12 +47,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax: 
-
-### BIOS ###
-
-
-    
-### MetaBrain ###
 ./run_picalo_with_multiple_start_pos.py -h
 """
 

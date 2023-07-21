@@ -47,16 +47,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./evaluate_model_term_importance.py -h
-
-### BIOS ###
-
-./evaluate_model_term_importance.py \
-    -pd /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -o 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA
-
-### MetaBrain ###
-
-
 """
 
 

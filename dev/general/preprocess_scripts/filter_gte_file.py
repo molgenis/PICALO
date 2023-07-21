@@ -39,56 +39,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./filter_gte_file.py -h
-
-### MetaBrain EUR ###
-
-./filter_gte_file.py \
-    -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CortexEUR_ENASamples.txt.gz \
-    -o MetaBrain_CortexEUR_NoENA
-
-./filter_gte_file.py \
-    -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_EUR.txt.gz \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CortexEUR_ENASamples_andMDSOutlierSample.txt.gz \
-    -o MetaBrain_CortexEUR_NoENA_NoMDSOutlier
-
-### MetaBrain AFR ###
-
-./filter_gte_file.py \
-    -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_AFR.txt.gz \
-    -o MetaBrain_CortexAFR
-
-./filter_gte_file.py \
-    -gte /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_GTE_cortex_AFR.txt.gz \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/data/MetaBrain_CortexAFR_MDSOutlierSample.txt.gz \
-    -o MetaBrain_CortexAFR_NoMDSOutlier
-
-### BIOS ###
-
-./filter_gte_file.py \
-    -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
-    -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo.txt.gz \
-    -o BIOS_noRNAPhenoNA
-
-./filter_gte_file.py \
-    -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
-    -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo.txt.gz \
-    -o BIOS_NoRNAPhenoNA_NoSexNA
-
-./filter_gte_file.py \
-    -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
-    -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_Mixups.txt.gz \
-    -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups
-
-./filter_gte_file.py \
-    -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
-    -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_Mixups_and_MDSOutlierSamples.txt.gz \
-    -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier
-    
-./filter_gte_file.py \
-    -gte /groups/umcg-bios/tmp01/projects/PICALO/data/BIOS_GTE.txt.gz \
-    -e ../data/BIOS_SamplesWithoutRNAAlignmentInfo_and_SamplesWithoutSexInfo_and_Mixups_and_BonferroniHWEMDSOutlierSamples.txt.gz \
-    -o BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoBonferroniHWEMDSOutlier
 """
 
 

@@ -40,18 +40,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./correlate_samples_with_avg_gene_expression.py -h
-
-### MetaBrain ###
-
-./correlate_samples_with_avg_gene_expression.py \
-    -e /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/pre_process_expression_matrix/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_WithUncenteredPCA/data/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz \
-    -op MetaBrain
-
-### BIOS ###
-
-./correlate_samples_with_avg_gene_expression.py \
-    -e /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/pre_process_expression_matrix/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_WithUncenteredPCA/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.SampleSelection.ProbesWithZeroVarianceRemoved.Log2Transformed.txt.gz \
-    -op BIOS
 """
 
 

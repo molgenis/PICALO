@@ -44,12 +44,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./create_replication_heatmap.py -h
-
-./create_replication_heatmap.py \
-    -w /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/bryois_pic_replication
-    
-./create_replication_heatmap.py \
-    -w /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/postprocess_scripts/klein_ct_eqtl_replication/PICALODiscovery
 """
 
 

@@ -46,12 +46,7 @@ __description__ = "{} is a program developed and maintained by {}. " \
 
 """
 Syntax:
-
-./visualise_cell_fractions.py \
-    -cf /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_bios_phenotype_matrix/BIOS_CellFractionPercentages_forPlotting.txt.gz \
-    -o 2022-05-05-BIOS_CellFractionPercentages \
-    -e png pdf
-
+./visualise_cell_fractions.py -h
 """
 
 

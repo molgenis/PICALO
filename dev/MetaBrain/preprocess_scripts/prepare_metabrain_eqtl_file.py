@@ -40,13 +40,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./prepare_metabrain_eqtl_file.py -h
-
-./prepare_metabrain_eqtl_file.py \
-    -eq /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/matrix_preparation/CortexEUR-cis/combine_eqtlprobes/eQTLprobes_combined.txt.gz \
-    -mae 1 \
-    -std /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-10-12-deconvolution/deconvolution/data/MetaBrain_STD_cortex_EUR.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2019-11-06-FreezeTwoDotOne/2020-01-31-expression-tables/2020-02-05-step6-covariate-removal/2021-08-27-step5-remove-covariates-per-dataset/output-PCATitration-MDSCorrectedPerDsCovarOverall-cortex-EUR/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.ProbesWithZeroVarianceRemoved.txt.gz \
-    -p MetaBrain_
 """
 
 

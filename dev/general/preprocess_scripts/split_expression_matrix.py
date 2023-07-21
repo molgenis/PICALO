@@ -43,18 +43,8 @@ Syntax:
 ./split_expression_matrix.py -h
 
 ### BIOS ###
-./split_expression_matrix.py \
-    -d /groups/umcg-bios/tmp01/projects/PICALO/data/gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM.txt.gz \
-    -gi /groups/umcg-biogen/tmp01/annotation/GeneReference/GencodeV32/gencode.v32.primary_assembly.annotation.collapsedGenes.ProbeAnnotation.TSS.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/filter_gte_file/BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier/SampleToDataset.txt.gz \
-    -of 2023-07-17-gene_read_counts_BIOS_and_LLD_passQC.tsv.SampleSelection.ProbesWithZeroVarianceRemoved.TMM
 
 ### MetaBrain ###
-./split_expression_matrix.py \
-    -d /groups/umcg-biogen/prm03/projects/2022-DeKleinEtAl/output/2020-01-31-expression-tables/2020-02-04-step5-center-scale/MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection.txt.gz \
-    -gi /groups/umcg-biogen/tmp01/annotation/GeneReference/GencodeV32/gencode.v32.primary_assembly.annotation.collapsedGenes.ProbeAnnotation.TSS.txt.gz \
-    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/filter_gte_file/MetaBrain_CortexEUR_NoENA/SampleToDataset.txt.gz \
-    -of 2023-07-17-MetaBrain.allCohorts.2020-02-16.TMM.freeze2dot1.SampleSelection
 """
 
 

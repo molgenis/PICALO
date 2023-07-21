@@ -48,34 +48,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./visualise_PICALO_double_interaction_eqtl.py -h
-
-### BIOS ###
-
-./visualise_PICALO_double_interaction_eqtl.py \
-    -pp /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
-    -tc /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first40ExpressionPCs.txt.gz \
-    -tci /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
-    -std /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
-    -i ENSG00000013573_rs10843879_Comp1+PIC1 \
-    -n 2 \
-    -e png
-    
-### MetaBrain ###
-
-./visualise_PICALO_double_interaction_eqtl.py \
-    -pp /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table.txt.gz \
-    -tc /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first40ExpressionPCs.txt.gz \
-    -tci /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/tech_covariates_with_interaction_df.txt.gz \
-    -std /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/sample_to_dataset.txt.gz \
-    -i ENSG00000015592.16_8:27245507:rs17366947:A_G_Comp6+PIC2 ENSG00000137944.18_1:88964737:rs1536259:A_G_Comp3+PIC1 ENSG00000140873.16_16:77359175:rs891134:C_G_Comp6+PIC2 ENSG00000188732.11_7:23681366:rs4722244:C_T_Comp6+PIC2 ENSG00000214941.8_17:15973341:rs2779212:T_C_Comp3+PIC1 ENSG00000258289.8_14:64911980:rs7160518:G_T_Comp3+PIC1 ENSG00000117983.17_11:1232808:rs11026355:G_A_Comp9+PIC3 ENSG00000165271.17_9:33467579:rs2275228:T_C_Comp9+PIC3 ENSG00000213462.5_7:64958180:rs12666841:C_T_Comp3+PIC1 ENSG00000112599.9_6:42198814:rs6907587:C_T_Comp9+PIC3 ENSG00000084072.16_1:39753393:rs1046988:C_T_Comp6+PIC2 ENSG00000112599.9_6:42198814:rs6907587:C_T_Comp6+PIC2 ENSG00000134160.13_15:31102119:rs3809579:C_T_Comp6+PIC2 ENSG00000185149.6_4:155161607:rs13132330:C_A_Comp3+PIC1 ENSG00000095261.14_9:120832525:rs13299616:T_C_Comp9+PIC3 ENSG00000107165.13_9:12761820:rs7030485:G_A_Comp3+PIC1 ENSG00000134765.9_18:31156906:rs2118343:C_G_Comp9+PIC3 ENSG00000100225.18_22:32487295:rs3827335:A_G_Comp6+PIC2 ENSG00000185163.10_12:132141880:rs60927391:G_A_Comp3+PIC1 ENSG00000243335.9_7:66625676:rs1544549:T_A_Comp6+PIC2 ENSG00000197702.14_11:12362919:rs6485683:G_A_Comp3+PIC1 ENSG00000241935.9_10:97584164:rs12416267:G_A_Comp6+PIC2 ENSG00000174652.19_19:9415237:rs7258023:G_A_Comp9+PIC3 ENSG00000105976.15_7:116805037:rs187437:G_A_Comp3+PIC1 ENSG00000100726.15_16:1488362:rs1040499:C_A_Comp3+PIC1 \
-    -n 3750 \
-    -e png
 """
 
 

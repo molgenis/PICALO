@@ -47,55 +47,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax:
 ./visualise_double_interaction_eqtl.py -h
-
-### BIOS ###
-
-./visualise_double_interaction_eqtl.py \
-    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
-    -c1 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
-    -c2 /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
-    -i ENSG00000226278_rs12386672_Comp4+PIC8 ENSG00000188056_rs10214649_Comp2+PIC4 ENSG00000003137_rs62147573_Comp1+PIC1 ENSG00000167207_rs1981760_Comp12+PIC6 ENSG00000135845_rs2285176_Comp6+PIC5 ENSG00000226278_rs12386672_Comp3+PIC2 ENSG00000137267_rs9392465_Comp6+PIC5 ENSG00000251381_rs11022589_Comp1+PIC1 ENSG00000259235_rs964611_Comp1+PIC1 ENSG00000135953_rs2732824_Comp3+PIC2 ENSG00000198952_rs12128955_Comp3+PIC2 ENSG00000145730_rs2432162_Comp3+PIC2 ENSG00000136819_rs11788537_Comp6+PIC5 ENSG00000074803_rs964611_Comp1+PIC1 ENSG00000116688_rs28718032_Comp3+PIC2 ENSG00000129925_rs12921174_Comp3+PIC2 ENSG00000167207_rs1981760_Comp3+PIC2 ENSG00000059122_rs9928222_Comp1+PIC1 ENSG00000128973_rs1554223_Comp1+PIC1 ENSG00000197728_rs1131017_Comp1+PIC1 ENSG00000166435_rs10899051_Comp1+PIC1 ENSG00000164308_rs2910686_Comp1+PIC1 ENSG00000127946_rs1186222_Comp1+PIC1 ENSG00000100376_rs2350629_Comp1+PIC1 ENSG00000006282_rs9890200_Comp1+PIC1 \
-    -n 1200 \
-    -e png
-    
-./visualise_double_interaction_eqtl.py \
-    -eq /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
-    -c1 /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
-    -c2 /groups/umcg-bios/tmp01/projects/PICALO/output/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
-    -i ENSG00000137267_rs9392465_Comp6+PIC5 ENSG00000136819_rs11788537_Comp6+PIC5 \
-    -n 300 \
-    -e png pdf
-    
-### MetaBrain ###
-
-./visualise_double_interaction_eqtl.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
-    -c1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
-    -c2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
-    -i ENSG00000015592.16_8:27245507:rs17366947:A_G_Comp6+PIC2 ENSG00000137944.18_1:88964737:rs1536259:A_G_Comp3+PIC1 ENSG00000140873.16_16:77359175:rs891134:C_G_Comp6+PIC2 ENSG00000188732.11_7:23681366:rs4722244:C_T_Comp6+PIC2 ENSG00000214941.8_17:15973341:rs2779212:T_C_Comp3+PIC1 ENSG00000258289.8_14:64911980:rs7160518:G_T_Comp3+PIC1 ENSG00000117983.17_11:1232808:rs11026355:G_A_Comp9+PIC3 ENSG00000165271.17_9:33467579:rs2275228:T_C_Comp9+PIC3 ENSG00000213462.5_7:64958180:rs12666841:C_T_Comp3+PIC1 ENSG00000112599.9_6:42198814:rs6907587:C_T_Comp9+PIC3 ENSG00000084072.16_1:39753393:rs1046988:C_T_Comp6+PIC2 ENSG00000112599.9_6:42198814:rs6907587:C_T_Comp6+PIC2 ENSG00000134160.13_15:31102119:rs3809579:C_T_Comp6+PIC2 ENSG00000185149.6_4:155161607:rs13132330:C_A_Comp3+PIC1 ENSG00000095261.14_9:120832525:rs13299616:T_C_Comp9+PIC3 ENSG00000107165.13_9:12761820:rs7030485:G_A_Comp3+PIC1 ENSG00000134765.9_18:31156906:rs2118343:C_G_Comp9+PIC3 ENSG00000100225.18_22:32487295:rs3827335:A_G_Comp6+PIC2 ENSG00000185163.10_12:132141880:rs60927391:G_A_Comp3+PIC1 ENSG00000243335.9_7:66625676:rs1544549:T_A_Comp6+PIC2 ENSG00000197702.14_11:12362919:rs6485683:G_A_Comp3+PIC1 ENSG00000241935.9_10:97584164:rs12416267:G_A_Comp6+PIC2 ENSG00000174652.19_19:9415237:rs7258023:G_A_Comp9+PIC3 ENSG00000105976.15_7:116805037:rs187437:G_A_Comp3+PIC1 ENSG00000100726.15_16:1488362:rs1040499:C_A_Comp3+PIC1 \
-    -n 3750 \
-    -e png
-    
-./visualise_double_interaction_eqtl.py \
-    -eq /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz \
-    -ge /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_table.txt.gz \
-    -al /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/genotype_alleles_table.txt.gz \
-    -ex /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/expression_table_CovariatesRemovedOLS.txt.gz \
-    -c1 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/first25ExpressionPCs.txt.gz \
-    -c2 /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA/PICs.txt.gz \
-    -i ENSG00000140873.16_16:77359175:rs891134:C_G_Comp6+PIC2 ENSG00000188732.11_7:23681366:rs4722244:C_T_Comp6+PIC2 \
-    -n 350 \
-    -e png pdf
-
 """
 
 

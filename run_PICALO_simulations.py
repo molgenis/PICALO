@@ -6,19 +6,10 @@ Created:      2023/07/14
 Last Changed:
 Author:       M.Vochteloo
 
-Copyright (C) 2022 M.Vochteloo
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (C) 2020 University Medical Center Groningen.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the LICENSE file in the
-root directory of this source tree. If not, see <https://www.gnu.org/licenses/>.
+A copy of the BSD 3-Clause "New" or "Revised" License can be found in the
+LICENSE file in the root directory of this source tree.
 """
 
 # Standard imports.
@@ -51,23 +42,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./run_PICALO_simulations.py -h
-
-### BIOS ###
-./run_PICALO_simulations.py \
-    -i /groups/umcg-bios/tmp01/projects/PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -o /groups/umcg-bios/tmp01/projects/PICALO \
-    -n 1 2 3 4 5 10 20 \
-    -d 2023-07-15 \
-    --dryrun
-    
-    
-### MetaBrain ###
-
-./run_PICALO_simulations.py \
-    -i /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/preprocess_scripts/prepare_picalo_files/2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -o /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO \
-    -n 1 2 3 5 10 20 \
-    --dryrun
 """
 
 TIME_DICT = {

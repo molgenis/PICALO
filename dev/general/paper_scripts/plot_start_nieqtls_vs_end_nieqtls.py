@@ -47,15 +47,6 @@ __description__ = "{} is a program developed and maintained by {}. " \
 """
 Syntax: 
 ./plot_start_nieqtls_vs_end_nieqtls.py -h
-
-./plot_start_nieqtls_vs_end_nieqtls.py \
-    -mi /groups/umcg-biogen/tmp01/output/2020-11-10-PICALO/output/ \
-    -mf 2022-03-24-MetaBrain_CortexEUR_NoENA_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -bi /groups/umcg-bios/tmp01/projects/PICALO/output/ \
-    -bf 2022-03-24-BIOS_NoRNAPhenoNA_NoSexNA_NoMixups_NoMDSOutlier_NoRNAseqAlignmentMetrics_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -o 2022-03-24-MetaBrain_and_BIOS_GT1AvgExprFilter_PrimaryeQTLs_UncenteredPCA \
-    -e png pdf 
-
 """
 
 
