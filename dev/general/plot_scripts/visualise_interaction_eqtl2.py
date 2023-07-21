@@ -342,14 +342,6 @@ class main():
                     zorder=-1,
                     ax=ax)
 
-        # for i, sample in enumerate(["AC1C14ACXX-8-8", "AC1C40ACXX-8-8", "AC1C40ACXX-6-4", "AC1C14ACXX-7-22", "AC1C40ACXX-7-18", "AC1C40ACXX-8-6", "AC1C14ACXX-7-13", "AC1C40ACXX-7-22", "AC1C14ACXX-6-4", "AC1C14ACXX-8-6", "AC1C14ACXX-7-18"]):
-        #     ax.annotate(i,
-        #                 xy=(df.loc[sample, x], df.loc[sample, y]),
-        #                 horizontalalignment='left',
-        #                 color='#b22222',
-        #                 fontsize=12,
-        #                 fontweight='bold')
-
         ax.annotate(
             'N = {:,}'.format(df.shape[0]),
             xy=(0.03, 0.94),
@@ -424,14 +416,6 @@ class main():
                             alpha=0.75,
                             fontsize=12,
                             fontweight='bold')
-
-        # for i, sample in enumerate(["AC1C14ACXX-8-8", "AC1C40ACXX-8-8", "AC1C40ACXX-6-4", "AC1C14ACXX-7-22", "AC1C40ACXX-7-18", "AC1C40ACXX-8-6", "AC1C14ACXX-7-13", "AC1C40ACXX-7-22", "AC1C14ACXX-6-4", "AC1C14ACXX-8-6", "AC1C14ACXX-7-18"]):
-        #     ax.annotate(i,
-        #                 xy=(df.loc[sample, x], df.loc[sample, y]),
-        #                 horizontalalignment='center',
-        #                 color='#b22222',
-        #                 fontsize=12,
-        #                 fontweight='bold')
 
         ax.set_title(title,
                      fontsize=16,
