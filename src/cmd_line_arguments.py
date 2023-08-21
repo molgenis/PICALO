@@ -1,7 +1,7 @@
 """
 File:         cmd_line_arguments.py
 Created:      2020/11/16
-Last Changed: 2022/06/24
+Last Changed: 2023/08/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 University Medical Center Groningen.
@@ -98,13 +98,6 @@ class CommandLineArguments:
                             default=30,
                             help="The minimal number of samples per dataset. "
                                  "Default: >=30.")
-        parser.add_argument("-ea",
-                            "--eqtl_alpha",
-                            type=float,
-                            required=False,
-                            default=0.05,
-                            help="The eQTL significance cut-off. "
-                                 "Default: <=0.05.")
         parser.add_argument("-cr",
                             "--call_rate",
                             type=float,

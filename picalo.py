@@ -3,7 +3,7 @@
 """
 File:         picalo.py
 Created:      2020/11/16
-Last Changed: 2022/01/27
+Last Changed: 2023/08/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 University Medical Center Groningen.
@@ -53,7 +53,6 @@ if __name__ == '__main__':
     COVARIATE_PATH = CLA.get_argument('covariate')
     SAMPLE_DATASET_PATH = CLA.get_argument('sample_to_dataset')
     MIN_DATASET_SIZE = CLA.get_argument('min_dataset_size')
-    EQTL_ALPHA = CLA.get_argument('eqtl_alpha')
     IEQTL_ALPHA = CLA.get_argument('ieqtl_alpha')
     CALL_RATE = CLA.get_argument('call_rate')
     HW_PVAL = CLA.get_argument('hardy_weinberg_pvalue')
@@ -84,7 +83,6 @@ if __name__ == '__main__':
                    covariate_path=COVARIATE_PATH,
                    sample_dataset_path=SAMPLE_DATASET_PATH,
                    min_dataset_size=MIN_DATASET_SIZE,
-                   eqtl_alpha=EQTL_ALPHA,
                    ieqtl_alpha=IEQTL_ALPHA,
                    call_rate=CALL_RATE,
                    hw_pval=HW_PVAL,

@@ -1,7 +1,7 @@
 """
 File:         main.py
 Created:      2020/11/16
-Last Changed: 2022/12/15
+Last Changed: 2023/08/21
 Author:       M.Vochteloo
 
 Copyright (C) 2020 University Medical Center Groningen.
@@ -31,13 +31,12 @@ class Main:
     def __init__(self, current_dir, eqtl_path, genotype_path, genotype_na,
                  expression_path, tech_covariate_path,
                  tech_covariate_with_inter_path, covariate_path,
-                 sample_dataset_path, min_dataset_size, eqtl_alpha,
-                 ieqtl_alpha, call_rate, hw_pval, maf, mgs, n_components,
-                 min_iter, max_iter, tol, force_continue, outdir, verbose):
+                 sample_dataset_path, min_dataset_size, ieqtl_alpha,
+                 call_rate, hw_pval, maf, mgs, n_components, min_iter,
+                 max_iter, tol, force_continue, outdir, verbose):
         # Safe arguments.
         self.genotype_na = genotype_na
         self.min_dataset_sample_size = min_dataset_size
-        self.eqtl_alpha = eqtl_alpha
         self.call_rate = call_rate
         self.hw_pval = hw_pval
         self.maf = maf
@@ -78,26 +77,9 @@ class Main:
 
         ########################################################################
 
-        self.log.info("Loading eQTL data and filter on FDR values of the "
-                      "main eQTL effect")
+        self.log.info("Loading eQTL data, genotype data, and dataset info")
         eqtl_df = self.data.get_eqtl_df()
-        eqtl_fdr_keep_mask = (eqtl_df["FDR"] <= self.eqtl_alpha).to_numpy(dtype=bool)
-        eqtl_signif_df = eqtl_df.loc[eqtl_fdr_keep_mask, :]
-        eqtl_signif_df.reset_index(drop=True, inplace=True)
-
-        eqtl_fdr_n_skipped = np.size(eqtl_fdr_keep_mask) - np.sum(eqtl_fdr_keep_mask)
-        if eqtl_fdr_n_skipped > 0:
-            self.log.warning("\t{:,} eQTLs have been skipped due to "
-                             "FDR cut-off".format(eqtl_fdr_n_skipped))
-        self.log.info("")
-
-        ########################################################################
-
-        self.log.info("Loading genotype data and dataset info")
-        skiprows = None
-        if eqtl_fdr_n_skipped > 0:
-            skiprows = [x+1 for x in eqtl_df.index[~eqtl_fdr_keep_mask]]
-        geno_df = self.data.get_geno_df(skiprows=skiprows, nrows=max(eqtl_signif_df.index)+1)
+        geno_df = self.data.get_geno_df()
         std_df = self.data.get_std_df()
 
         if std_df is not None:
@@ -165,16 +147,12 @@ class Main:
             self.log.warning("\t  {:,} eQTL(s) are discarded in total".format(geno_n_skipped))
 
         # Select rows that meet requirements.
-        eqtl_signif_df = eqtl_signif_df.loc[combined_keep_mask, :]
+        eqtl_df = eqtl_df.loc[combined_keep_mask, :]
         geno_df = geno_df.loc[combined_keep_mask, :]
-
-        # Combine the skip masks.
-        keep_mask = np.copy(eqtl_fdr_keep_mask)
-        keep_mask[eqtl_fdr_keep_mask] = combined_keep_mask
 
         # Add mask to genotype stats data frame.
         geno_stats_df["mask"] = 0
-        geno_stats_df.loc[keep_mask, "mask"] = 1
+        geno_stats_df.loc[combined_keep_mask, "mask"] = 1
 
         save_dataframe(df=geno_stats_df,
                        outpath=os.path.join(self.outdir, "genotype_stats.txt.gz"),
@@ -183,16 +161,16 @@ class Main:
                        log=self.log)
         self.log.info("")
 
-        del call_rate_df, geno_stats_df, eqtl_fdr_keep_mask, n_keep_mask, mgs_keep_mask, hwpval_keep_mask, maf_keep_mask, combined_keep_mask
+        del call_rate_df, geno_stats_df, n_keep_mask, mgs_keep_mask, hwpval_keep_mask, maf_keep_mask
 
         ########################################################################
 
         self.log.info("Loading other data")
-        self.log.info("\tIncluded {:,} eQTLs".format(np.sum(keep_mask)))
+        self.log.info("\tIncluded {:,} eQTLs".format(np.sum(combined_keep_mask)))
         skiprows = None
-        if (eqtl_fdr_n_skipped + geno_n_skipped) > 0:
-            skiprows = [x+1 for x in eqtl_df.index[~keep_mask]]
-        expr_df = self.data.get_expr_df(skiprows=skiprows, nrows=max(eqtl_signif_df.index)+1)
+        if geno_n_skipped > 0:
+            skiprows = [i + 1 for i in range(0, max(eqtl_df.index) + 1) if i not in eqtl_df.index]
+        expr_df = self.data.get_expr_df(skiprows=skiprows, nrows=max(eqtl_df.index) + 1)
         covs_df = self.data.get_covs_df()
 
         # Check for nan values.
@@ -216,7 +194,7 @@ class Main:
 
         # Validate that the input data (still) matches.
         self.validate_data(std_df=std_df,
-                           eqtl_df=eqtl_signif_df,
+                           eqtl_df=eqtl_df,
                            geno_df=geno_df,
                            expr_df=expr_df,
                            covs_df=covs_df)
@@ -226,7 +204,7 @@ class Main:
         ########################################################################
 
         self.log.info("Transform to numpy matrices for speed")
-        eqtl_m = eqtl_signif_df[["SNPName", "ProbeName"]].to_numpy(object)
+        eqtl_m = eqtl_df[["SNPName", "ProbeName"]].to_numpy(object)
         geno_m = geno_df.to_numpy(np.float64)
         expr_m = expr_df.to_numpy(np.float64)
         dataset_m = dataset_df.to_numpy(np.uint8)
@@ -733,7 +711,6 @@ class Main:
         self.log.info("Arguments:")
         self.log.info("  > Genotype NA value: {}".format(self.genotype_na))
         self.log.info("  > Minimal dataset size: >={}".format(self.min_dataset_sample_size))
-        self.log.info("  > eQTL alpha: <={}".format(self.eqtl_alpha))
         self.log.info("  > SNP call rate: >{}".format(self.call_rate))
         self.log.info("  > Hardy-Weinberg p-value: >={}".format(self.hw_pval))
         self.log.info("  > MAF: >{}".format(self.maf))
