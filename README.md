@@ -162,7 +162,7 @@ The files are split between **general** and dataset specific scripts (**BIOS** /
 
 ## How to cite
 
-Please cite: *Unbiased identification of unknown cellular and environmental factors that mediate eQTLs using principal interaction component analysis* by Vochteloo et al., bioRxiv, 2022.
+Please cite: Vochteloo, M., Deelen, P., Vink, B. et al. *PICALO: principal interaction component analysis for the identification of discrete technical, cell-type, and environmental factors that mediate eQTLs.* Genome Biol **25**, 29 (2024). https://doi.org/10.1186/s13059-023-03151-0
 
 ## Author  
 
