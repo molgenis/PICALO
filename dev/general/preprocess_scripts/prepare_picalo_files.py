@@ -144,12 +144,9 @@ class main():
 
         print("Loading sample-to-dataset file")
         gte_df = self.load_file(self.gte_path, header=0, index_col=None)
-        genotype_ids = gte_df.iloc[:, 0].tolist()
-        rnaseq_ids = gte_df.iloc[:, 1].tolist()
 
         std_df = gte_df.loc[:, ["rnaseq_id", "dataset"]]
         std_df.columns = ["sample", "dataset"]
-        self.save_file(df=std_df, outpath=os.path.join(self.outdir, "sample_to_dataset.txt.gz"), index=False)
 
         print("Creating dataset file.")
         dataset_sample_counts = list(zip(*np.unique(std_df.iloc[:, 1], return_counts=True)))
@@ -160,8 +157,6 @@ class main():
         for dataset in datasets:
             dataset_df.loc[(std_df.iloc[:, 1] == dataset).values, dataset] = 1
         dataset_df.index.name = "-"
-        self.save_file(df=dataset_df, outpath=os.path.join(self.outdir, "datasets_table.txt.gz"))
-        del std_df, dataset_df
 
         print("Loading eQTL file.")
         eqtl_df = self.load_file(self.eqtl_path, header=0, index_col=None)
@@ -206,11 +201,27 @@ class main():
             if row["SNPName"] in present_snps and row["ProbeName"] in present_genes:
                 mask[i] = True
         present_eqtl_df = eqtl_df.loc[mask, :]
-        geno_df = geno_df.loc[mask, :].loc[:, genotype_ids]
-        geno_df.columns = rnaseq_ids
+        geno_df = geno_df.loc[mask, :]
         allele_df = allele_df.loc[mask, :]
-        expr_df = expr_df.loc[mask, :].loc[:, rnaseq_ids]
+        expr_df = expr_df.loc[mask, :]
 
+        # Filter samples present in the data.
+        genotype_ids = []
+        rnaseq_ids = []
+        mask = np.zeros(gte_df.shape[0], dtype=bool)
+        for i, (_, row) in enumerate(gte_df.iterrows()):
+            if row[0] in geno_df.columns and row[1] in expr_df.columns:
+                genotype_ids.append(row[0])
+                rnaseq_ids.append(row[1])
+                mask[i] = True
+        std_df = std_df.loc[mask, :]
+        dataset_df = dataset_df.loc[mask, :]
+        geno_df = geno_df.loc[:, genotype_ids]
+        geno_df.columns = rnaseq_ids
+        expr_df = expr_df.loc[:, rnaseq_ids]
+
+        self.save_file(df=std_df, outpath=os.path.join(self.outdir, "sample_to_dataset.txt.gz"), index=False)
+        self.save_file(df=dataset_df, outpath=os.path.join(self.outdir, "datasets_table.txt.gz"))
         self.save_file(df=present_eqtl_df, outpath=os.path.join(self.outdir, "eQTLProbesFDR0.05-ProbeLevel-Available.txt.gz"), index=False)
         self.save_file(df=geno_df, outpath=os.path.join(self.outdir, "genotype_table.txt.gz"))
         self.save_file(df=allele_df, outpath=os.path.join(self.outdir, "genotype_alleles_table.txt.gz"))
