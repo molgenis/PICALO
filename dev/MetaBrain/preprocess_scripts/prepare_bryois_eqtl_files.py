@@ -93,18 +93,6 @@ class main():
                             type=str,
                             required=True,
                             help="The path to the bryois eqtl matrix.")
-        parser.add_argument("-ni",
-                            "--n_iterations",
-                            type=int,
-                            default=4,
-                            help="The number of eQTL iterations to include. "
-                                 "Default: 4.")
-        parser.add_argument("-nd",
-                            "--n_datasets",
-                            type=int,
-                            default=2,
-                            help="The number of required datasets per SNP. "
-                                 "Default: 2.")
         parser.add_argument("-mae",
                             "--min_avg_expression",
                             type=float,

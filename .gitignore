@@ -132,3 +132,4 @@ dmypy.json
 jobs/
 settings/
 syntax/
+dev/scratch.py

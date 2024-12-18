@@ -139,7 +139,7 @@ class main():
         eqtl_df = eqtl_df.loc[eqtl_df["Iteration"] <= self.n_iterations, :]
 
         # Filter on having enough datasets.
-        eqtl_df = eqtl_df.loc[eqtl_df["DatasetsWhereSNPProbePairIsAvailableAndPassesQC"] >= 2, :]
+        eqtl_df = eqtl_df.loc[eqtl_df["DatasetsWhereSNPProbePairIsAvailableAndPassesQC"] >= self.n_datasets, :]
 
         # Filter on having high enough expression.
         file_appendix = ""
@@ -210,7 +210,7 @@ class main():
         print("  > eQTL: {}".format(self.eqtl_path))
         print("  > Prefix: {}".format(self.prefix))
         print("  > N-iterations: {}".format(self.n_iterations))
-        print("  > N-datasets: {}".format(self.n_iterations))
+        print("  > N-datasets: {}".format(self.n_datasets))
         print("  > Minimal average expression: >{}".format(self.min_avg_expression))
         print("  > Sample-to-dataset path: {}".format(self.std_path))
         print("  > Expression: {}".format(self.expression_path))

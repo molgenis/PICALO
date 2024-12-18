@@ -196,79 +196,46 @@ class main():
                                       df.shape))
         return df
 
-    def barplot(self, df, panels, panel_col, x="variable", y="value",
-                order=None, palette=None, xlabel="", ylabel="", appendix=""):
-        nplots = len(panels) + 1
-        ncols = math.ceil(np.sqrt(nplots))
-        nrows = math.ceil(nplots / ncols)
+    def barplot(self, df, x="x", y="y", hue=None, palette=None, xlabel="",
+                 ylabel="", title="", filename="plot"):
+        color = None
+        if hue is None:
+            color = "#000000"
 
+        sns.set(rc={'figure.figsize': (24, 9)})
         sns.set_style("ticks")
-        fig, axes = plt.subplots(nrows=nrows,
-                                 ncols=ncols,
-                                 sharex='all',
-                                 sharey='none',
-                                 figsize=(12 * ncols, 12 * nrows))
-        sns.set(color_codes=True)
+        fig, ax = plt.subplots()
+        sns.despine(fig=fig, ax=ax)
 
-        row_index = 0
-        col_index = 0
-        for i in range(ncols * nrows):
-            print(i)
-            if nrows == 1:
-                ax = axes[col_index]
-            elif ncols == 1:
-                ax = axes[row_index]
-            else:
-                ax = axes[row_index, col_index]
+        g = sns.barplot(x=x,
+                        y=y,
+                        hue=hue,
+                        data=df,
+                        color=color,
+                        palette=palette,
+                        ax=ax)
 
-            if i < len(panels):
-                sns.despine(fig=fig, ax=ax)
+        y_adjust = ax.get_ylim()[1] * 0.01
+        for i, (_, row) in enumerate(df.iterrows()):
+            g.text(i, row[y] + y_adjust,
+                   round(row[y], 2),
+                   color="#000000",
+                   ha="center")
 
-                g = sns.barplot(x=x,
-                                y=y,
-                                data=df.loc[df[panel_col] == panels[i], :],
-                                order=order,
-                                palette=palette,
-                                ax=ax)
+        ax.set_xlabel(xlabel,
+                      fontsize=10,
+                      fontweight='bold')
+        ax.set_ylabel(ylabel,
+                      fontsize=10,
+                      fontweight='bold')
 
-                tmp_xlabel = ""
-                if row_index == (nrows - 1):
-                    tmp_xlabel = xlabel
-                ax.set_xlabel(tmp_xlabel,
-                              color="#000000",
-                              fontsize=20,
-                              fontweight='bold')
-                tmp_ylabel = ""
-                if col_index == 0:
-                    tmp_ylabel = ylabel
-                ax.set_ylabel(tmp_ylabel,
-                              color="#000000",
-                              fontsize=20,
-                              fontweight='bold')
-
-                ax.set_title(panels[i],
-                             color="#000000",
-                             fontsize=25,
-                             fontweight='bold')
-
-            else:
-                ax.set_axis_off()
-
-                if palette is not None and i == (nplots - 1):
-
-                    handles = []
-                    for key, value in palette.items():
-                        handles.append(mpatches.Patch(color=value, label=key))
-                    ax.legend(handles=handles, loc=8, fontsize=25)
-
-            col_index += 1
-            if col_index > (ncols - 1):
-                col_index = 0
-                row_index += 1
+        fig.suptitle(title,
+                     fontsize=14,
+                     fontweight='bold')
 
         plt.tight_layout()
         for extension in self.extensions:
-            outpath = os.path.join(self.outdir, "{}{}.{}".format(self.out_filename, appendix, extension))
+            outpath = os.path.join(self.outdir, "{}.{}".format(filename, extension))
             fig.savefig(outpath)
         plt.close()
 

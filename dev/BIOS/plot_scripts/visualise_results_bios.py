@@ -145,6 +145,8 @@ class main():
                 pics.append(pic)
                 fpaths = glob.glob(os.path.join(self.input_data_path, pic, "results_iteration*"))
                 fpaths.sort()
+                if len(fpaths) == 0:
+                    break
                 last_iter_fpaths.append(fpaths[-1])
 
                 # Plot scatterplot.
